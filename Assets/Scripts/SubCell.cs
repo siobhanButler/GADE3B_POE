@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class SubCell
 {
-    public int localX, localY;   // position inside the LargeCell
     public Vector3 worldPosition;
+    public int localX, localY;   // position inside the LargeCell
     public CellState state;
+    public LargeCell parentCell;
     
     // Neighbors (inside the same LargeCell)
     public SubCell north;
@@ -13,12 +14,13 @@ public class SubCell
     public SubCell west;
     
     // Constructor
-    public SubCell(int x, int y, Vector3 worldPos)
+    public SubCell(int x, int y, Vector3 worldPos, LargeCell parentCell)
     {
         this.localX = x;
         this.localY = y;
         this.worldPosition = worldPos;
         this.state = CellState.Floor;
+        this.parentCell = parentCell;
     }
     
     // Set neighbors

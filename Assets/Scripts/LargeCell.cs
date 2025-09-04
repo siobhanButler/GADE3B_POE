@@ -2,14 +2,16 @@ using UnityEngine;
 
 public class LargeCell
 {
+    public Vector3 worldPosition; // center in world space
     public int x, y;             // grid coords
     public bool active;          // whether this big cell is removed
     public SubCell[,] subCells;  // 9x9 or 10x10 sub cells
-    public Vector3 worldPosition; // center in world space
+    
     
     // Cell state and type
     public CellState state;
     public bool bActive;        //removed or not
+    public CellBorderState borderState;
     
     // Neighbors
     public LargeCell north;
@@ -28,6 +30,7 @@ public class LargeCell
         
         // Initialize sub-cells
         this.subCells = new SubCell[subCellCount, subCellCount];
+        /*
         for (int sx = 0; sx < subCellCount; sx++)
         {
             for (int sy = 0; sy < subCellCount; sy++)
@@ -40,6 +43,7 @@ public class LargeCell
                 subCells[sx, sy] = new SubCell(sx, sy, subWorldPos);
             }
         }
+        */
     }
     
     // Set neighbors
@@ -121,6 +125,19 @@ public enum CellState
     EnemySpawner,
     DefenseTower,
     EnemyPath
+}
+
+public enum CellBorderState
+{
+    None = 0,       //not a border
+    North = 1,
+    NECorner = 2,
+    East = 3,
+    SECorner = 4,
+    South = 5,
+    SWCorner = 6,
+    West = 7,
+    NWCorner = 8,
 }
 
 [System.Flags]

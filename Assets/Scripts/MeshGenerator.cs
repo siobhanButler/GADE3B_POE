@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(MeshFilter))] //Require a MeshFilter component
 [RequireComponent(typeof(MeshRenderer))] //Require a MeshRenderer component
@@ -10,21 +11,62 @@ public class MeshGenerator : MonoBehaviour
     MeshRenderer meshRenderer; //MeshRenderer component
 
     Vector3[] vertices; //Array of vertices (●)
-    int[] triangles; //Array of triangles (△)
-    Vector2[] uvs; //UV coordinates for texturing
+    int[] triangles;    //Array of triangles (△)
+    Vector2[] uvs;      //UV coordinates for texturing
+    
+    List<Vector3> allVertices; //Combined vertices from all cells
+    List<int> allTriangles;    //Combined triangles from all cells
 
-    public int xSize = 10;
-    public int zSize = 10;
+    public int xSize = 9;
+    public int zSize = 9;
+
+    private LargeCell[,] grid;  //grid goes grid[x,z] where z is the row and x is the column
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Start()
     {
         mesh = new Mesh();
+        mesh.name = "Floor Mesh";
         GetComponent<MeshFilter>().mesh = mesh;
         meshRenderer = GetComponent<MeshRenderer>();
 
+        CreateGrid(4, 3);
+
         //CreateShape();  //Create the shape (2 triangles △ = 1 quad □)
         //UpdateMesh();  //Update the mesh
+    }
+
+    public void CreateGrid(int xRoomSize, int zRoomSize)
+    {
+        grid = new LargeCell[xRoomSize, zRoomSize];
+        
+        //Initialize lists for combined mesh data
+        allVertices = new List<Vector3>();
+        allTriangles = new List<int>();
+
+        //z first then x, so that it matches the CreateCellShape()'s left to right, bottom to top method
+        for(int z = 0; z < zRoomSize; z++)
+        {
+            for(int x = 0; x < xRoomSize; x++)
+            {
+                CreateCellShape(x, z);  //x and z determine the cell starting position
+                //UpdateMesh will not be called here
+            }
+        }
+
+        //After all cells are created, update the mesh with combined data
+        UpdateCombinedMesh();
+
+        //REMOVE Corners
+    
+        for(int z = 0; z < zRoomSize; z++)
+        {
+            for(int x = 0; x < xRoomSize; x++)
+            {
+                //Update Neighbours
+                UpdateNeighbours(x, z);
+            }
+        }
     }
 
     public void CreateQuad()
@@ -95,6 +137,139 @@ public class MeshGenerator : MonoBehaviour
         //    (0,0) - (1,0) - (2,0)  
     }
 
+    public void CreateCellShape(int xCellPosition, int zCellPosition) //xCellPosition and zCellPosition determine the starting positions of the cells
+    {
+        int xStartPosition = xCellPosition * xSize;
+        int zStartPosition = zCellPosition * zSize;
+
+        vertices = new Vector3[(xSize + 1) * (zSize + 1)];   //vertexCount = (xSize + 1) * (zSize + 1)
+
+        //loop through vertices, assigning them a position on the grid(i) and in space (Vector3), going from left to right
+        int i = 0;
+        for(int z = 0; z <= zSize; z++)  //<= because its zSize+1
+        {
+            for(int x = 0; x <= xSize; x++)  //<= because its xSize+1
+            {
+                vertices[i] = new Vector3(x+xStartPosition, 0, z+zStartPosition);   //adjusting the location based on the starting position
+                i++;
+            }
+        }
+        
+        //Create new LargeCell using newly created vertices to calculate the center
+        Vector3 center = (vertices[0] 
+                         + vertices[xSize] 
+                         + vertices[zSize * (xSize + 1)] 
+                         + vertices[(zSize * (xSize + 1)) + xSize]) / 4;
+        grid[xCellPosition, zCellPosition] = new LargeCell(xCellPosition, zCellPosition, center, xSize);
+
+        //Store the starting index for this cell's vertices in the combined list
+        int vertexStartIndex = allVertices.Count;
+        //Add vertices array to the combined list
+        allVertices.AddRange(vertices);
+        
+        //Create the sub-cell quads
+        triangles = new int[xSize * zSize * 6];
+        int vert = 0 + vertexStartIndex;    //using vertexStartIndex to account for vertices already in the combined list
+        int tris = 0;
+
+        for(int z = 0; z < zSize; z++)
+        {
+            for (int x = 0; x < xSize; x++)
+            {
+                //triangle 1
+                triangles[tris + 0] = vert + 0;
+                triangles[tris + 1] = vert + xSize + 1;
+                triangles[tris + 2] = vert + 1;
+                //triangle 2
+                triangles[tris + 3] = vert + 1;
+                triangles[tris + 4] = vert + xSize + 1;
+                triangles[tris + 5] = vert + xSize + 2;
+
+                //Add this new subCell to Large cell sub-cell array (-vertexStartIndex to account for the previous vert + vertexStartIndex adjustment)
+                Vector3 subCellCenter = (vertices[vert-vertexStartIndex] 
+                                        + vertices[vert-vertexStartIndex + 1] 
+                                        + vertices[vert-vertexStartIndex + xSize + 1] 
+                                        + vertices[vert-vertexStartIndex + xSize + 2]) / 4;
+                
+                // Bounds check to prevent IndexOutOfRangeException
+                if (x < grid[xCellPosition, zCellPosition].subCells.GetLength(0) && z < grid[xCellPosition, zCellPosition].subCells.GetLength(1))
+                {
+                    grid[xCellPosition, zCellPosition].subCells[x, z] = 
+                    new SubCell(x, z, subCellCenter, grid[xCellPosition, zCellPosition]);
+                }
+                else
+                {
+                    Debug.Log("MeshGenerator CreateCellShape(): IndexOutOfRangeException");
+                }
+
+                vert++;
+                tris += 6;
+            }
+            vert++;
+        }
+        
+        //Add triangles array to the combined list
+        allTriangles.AddRange(triangles);
+    }
+    
+    public void UpdateNeighbours(int x, int z)
+    {
+        //z is row so arrayName.GetLength(0); x is column so arrayName.GetLength(1)
+        //North (x, z + 1)
+        if(z+1 >= 0 && z+1 < grid.GetLength(1))
+        {
+            grid[x,z].north = grid[x,z+1];
+        }
+        else
+        {
+            grid[x,z].north = null;
+        }
+        //South (x, z - 1)
+        if(z-1 >= 0 && z-1 < grid.GetLength(1))
+        {
+            grid[x,z].south = grid[x,z-1];
+        }
+        else
+        {
+            grid[x,z].south = null;
+        }
+        //East (x + 1, z)
+        if(x+1 >= 0 && x+1 < grid.GetLength(0))
+        {
+            grid[x,z].east = grid[x+1,z];
+        }
+        else
+        {
+            grid[x,z].east = null;
+        }
+        //West (x - 1, z)
+        if(x-1 >= 0 && x-1 < grid.GetLength(0))
+        {
+            grid[x,z].west = grid[x-1,z];
+        }
+        else
+        {
+            grid[x,z].west = null;
+        }
+
+        //  (0,2) - (1,2) - (2,2)       X - N - X          ()   - (x,z+1) -   ()
+        //  (0,1) - (1,1) - (2,1)       W - O - E       (x-1,z) -  (x,z)  - (x+1,z)
+        //  (0,1) - (1,0) - (2,0)       X - S - X          ()   - (x,z-1) -   ()
+    }
+
+    public void UpdateCombinedMesh()
+    {
+        //Clear the mesh
+        mesh.Clear();
+
+        //Assign combined vertices and triangles to the mesh
+        mesh.vertices = allVertices.ToArray();
+        mesh.triangles = allTriangles.ToArray();
+
+        mesh.RecalculateNormals();  //Recalculate the normals of the mesh
+    }
+
+    //OLD UPDATE MESH METHOD
     public void UpdateMesh()
     {
         mesh.Clear();   //Clear the mesh
