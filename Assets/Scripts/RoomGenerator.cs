@@ -36,8 +36,9 @@ public class RoomGenerator : MonoBehaviour
     // Private fields
     private GridSystem gridSystem;
     private CellManager cellManager;
-    private int roomWidth;
-    private int roomLength; 
+    private int roomWidth;      //x
+    private int roomLength;     //z
+    private LargeCell[,] grid;  //grid[x,z]
     
     void Start()
     {
@@ -48,18 +49,25 @@ public class RoomGenerator : MonoBehaviour
     {
         // Step 1: Determine room dimensions
         DetermineRoomDimensions();
-        // Step 2: Initialize grid system
-        InitializeGridSystem();
-        // Step 3: Process corners (remove cells) - MUST happen before mesh generation
-        ProcessCorners();
-        // Step 4: Generate floor mesh - Now happens after corners are processed
+        
+        // Step 2: Generate floor mesh first
         GenerateFloorMesh();
-        // Step 5: Place walls and doors
-        PlaceWallsAndDoors();
+        
+        // Step 3: Process corners (remove cells)
+        ProcessCorners();
+        
+        // Step 4: Set up neighbors and border states (CRITICAL for wall placement)
+        SetupNeighborsAndBorderStates();
+        
+        // Step 5: Place walls
+        PlaceWalls();
+        
         // Step 6: Place furniture
-        PlaceFurniture();
+        //PlaceFurniture();
+        
         // Step 7: Place gameplay elements
-        PlaceGameplayElements();
+        //PlaceGameplayElements();
+        
         // Step 8: Generate enemy paths
         //GenerateEnemyPaths();
     }
@@ -89,37 +97,60 @@ public class RoomGenerator : MonoBehaviour
     void GenerateFloorMesh()
     {
         var meshGen = GetComponent<MeshGenerator>() ?? gameObject.AddComponent<MeshGenerator>();
-        meshGen.xSize = roomWidth * subCellsPerLargeCell;
-        meshGen.zSize = roomLength * subCellsPerLargeCell;
+        grid = meshGen.CreateGrid(roomWidth, roomLength);
+    }
+    
+    void SetupNeighborsAndBorderStates()
+    {
+        // Set up neighbor relationships for all cells
+        for (int x = 0; x < roomWidth; x++)
+        {
+            for (int y = 0; y < roomLength; y++)
+            {
+                LargeCell currentCell = grid[x, y];
+                
+                // Set neighbors (null if out of bounds)
+                LargeCell north = (y + 1 < roomLength) ? grid[x, y + 1] : null;
+                LargeCell south = (y - 1 >= 0) ? grid[x, y - 1] : null;
+                LargeCell east = (x + 1 < roomWidth) ? grid[x + 1, y] : null;
+                LargeCell west = (x - 1 >= 0) ? grid[x - 1, y] : null;
+                
+                currentCell.SetNeighbors(north, south, east, west);
+                
+                // Set border state for this cell
+                currentCell.SetBorderState();
+            }
+        }
         
-        meshGen.CreateShape();
-        meshGen.UpdateMesh();
+        Debug.Log("Neighbors and border states set up for all cells");
     }
     
     void ProcessCorners()
     {
-        // Process each corner of the room
-        Vector2[] corners = {
-            new Vector2(0, 0), // Bottom-left
-            new Vector2(roomWidth - 1, 0), // Bottom-right
-            new Vector2(0, roomLength - 1), // Top-left
-            new Vector2(roomWidth - 1, roomLength - 1) // Top-right
+        // Define the four corners of the room
+        LargeCell[] corners = { 
+            grid[0, 0],                                    // bottom left
+            grid[roomWidth - 1, 0],                        // bottom right
+            grid[0, roomLength - 1],                       // top left
+            grid[roomWidth - 1, roomLength - 1]            // top right
         };
         
-        //Randomize if corner should be removed or not
-        foreach (Vector2 corner in corners)
+        // Process each corner
+        foreach (LargeCell corner in corners)
         {
             if (Random.value < cornerRemovalChance)
             {
-                int removalSize = Random.Range(0, 5); // 0=none, 1=1x1, 2=1x2, 3=2x1, 4=2x2
-                RemoveCornerCells(new Vector2Int((int)corner.x, (int)corner.y), removalSize);
+                int removalSize = Random.Range(1, 5);   // 1=1x1, 2=1x2, 3=2x1, 4=2x2 (skip 0)
+                RemoveCornerCells(corner, removalSize);
+                Debug.Log($"Removing corner at ({corner.x}, {corner.y}) with size {removalSize}");
             }
         }
     }
     
-    void RemoveCornerCells(Vector2Int corner, int removalType)
+    void RemoveCornerCells(LargeCell corner, int removalType)
     {
-        int width = 0, height = 0;
+        int width = 0;
+        int height = 0;
         
         switch (removalType)
         {
@@ -139,6 +170,31 @@ public class RoomGenerator : MonoBehaviour
         
         if (width > 0 && height > 0)
         {
+            // Use the corner's grid coordinates as the starting point
+            int startX = corner.x;
+            int startY = corner.y;
+            
+            for(int h = 0; h < height; h++)
+            {
+                for(int w = 0; w < width; w++)
+                {
+                    int cellX = startX + w;
+                    int cellY = startY + h;
+                    
+                    // Make sure we don't go out of bounds
+                    if (cellX < roomWidth && cellY < roomLength)
+                    {
+                        grid[cellX, cellY].state = CellState.Removed;
+                        grid[cellX, cellY].bActive = false;
+                        Debug.Log($"Removed cell at ({cellX}, {cellY})");
+                    }
+                }
+            }
+        }
+
+        /*
+        if (width > 0 && height > 0)
+        {
             List<Vector2Int> cellsToRemove = new List<Vector2Int>();
             
             // Collect cells to remove
@@ -154,45 +210,93 @@ public class RoomGenerator : MonoBehaviour
             // Remove cells using cell manager
             cellManager.RemoveCells(cellsToRemove);
         }
+        */
     }
     
-    void PlaceWallsAndDoors()
+    void PlaceWalls()
     {
-        // Use cell manager to get cells that need walls
-        List<LargeCell> cellsNeedingWalls = cellManager.GetCellsNeedingWalls();
+        int wallsPlaced = 0;
+        int inactiveCells = 0;
+        int borderCells = 0;
         
-        // Place walls based on cell neighbor analysis
-        foreach (LargeCell cell in cellsNeedingWalls)
+        foreach (LargeCell cell in grid)
         {
-            WallDirection wallDirections = cell.GetWallDirections();
-            PlaceWallsForCell(cell, wallDirections);
+            if(cell.bActive == false || cell.state == CellState.Removed)
+            {
+                //place wall at large cell world position
+                PlaceWallAtPosition(cell.worldPosition);
+                wallsPlaced++;
+                inactiveCells++;
+                Debug.Log($"Placed wall on inactive/removed cell at ({cell.x}, {cell.y})");
+            }
+            else
+            {
+                switch(cell.borderState)
+                {
+                    case CellBorderState.None:     //None
+                        // No walls needed for interior cells
+                        break;
+                    case CellBorderState.North:     //North
+                        //place wall at north edge of cell
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.forward * (largeCellSize));
+                        wallsPlaced++;
+                        borderCells++;
+                        Debug.Log($"Placed north wall at ({cell.x}, {cell.y})");
+                        break;
+                    case CellBorderState.East:     //East
+                        //place wall at east edge of cell
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.right * (largeCellSize));
+                        wallsPlaced++;
+                        borderCells++;
+                        Debug.Log($"Placed east wall at ({cell.x}, {cell.y})");
+                        break;
+                    case CellBorderState.South:     //South
+                        //place wall at south edge of cell
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.back * (largeCellSize));
+                        wallsPlaced++;
+                        borderCells++;
+                        Debug.Log($"Placed south wall at ({cell.x}, {cell.y})");
+                        break;
+                    case CellBorderState.West:     //West
+                        //place wall at west edge of cell
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.left * (largeCellSize));
+                        wallsPlaced++;
+                        borderCells++;
+                        Debug.Log($"Placed west wall at ({cell.x}, {cell.y})");
+                        break;
+                    case CellBorderState.NECorner: //North-East corner
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.forward * (largeCellSize));
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.right * (largeCellSize));
+                        wallsPlaced += 2;
+                        borderCells++;
+                        Debug.Log($"Placed NE corner walls at ({cell.x}, {cell.y})");
+                        break;
+                    case CellBorderState.SECorner: //South-East corner
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.back * (largeCellSize));
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.right * (largeCellSize));
+                        wallsPlaced += 2;
+                        borderCells++;
+                        Debug.Log($"Placed SE corner walls at ({cell.x}, {cell.y})");
+                        break;
+                    case CellBorderState.SWCorner: //South-West corner
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.back * (largeCellSize));
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.left * (largeCellSize));
+                        wallsPlaced += 2;
+                        borderCells++;
+                        Debug.Log($"Placed SW corner walls at ({cell.x}, {cell.y})");
+                        break;
+                    case CellBorderState.NWCorner: //North-West corner
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.forward * (largeCellSize));
+                        PlaceWallAtPosition(cell.worldPosition + Vector3.left * (largeCellSize));
+                        wallsPlaced += 2;
+                        borderCells++;
+                        Debug.Log($"Placed NW corner walls at ({cell.x}, {cell.y})");
+                        break;
+                }
+            }
         }
         
-        // Place doors on perimeter walls
-        PlaceDoorsOnPerimeter();
-    }
-    
-    void PlaceWallsForCell(LargeCell cell, WallDirection wallDirections)
-    {
-        Vector3 cellPos = cell.worldPosition;
-        
-        // Place walls based on directions needed
-        if ((wallDirections & WallDirection.North) != 0)
-        {
-            PlaceWallAtPosition(cellPos + Vector3.forward * (largeCellSize / 2f));
-        }
-        if ((wallDirections & WallDirection.South) != 0)
-        {
-            PlaceWallAtPosition(cellPos + Vector3.back * (largeCellSize / 2f));
-        }
-        if ((wallDirections & WallDirection.East) != 0)
-        {
-            PlaceWallAtPosition(cellPos + Vector3.right * (largeCellSize / 2f));
-        }
-        if ((wallDirections & WallDirection.West) != 0)
-        {
-            PlaceWallAtPosition(cellPos + Vector3.left * (largeCellSize / 2f));
-        }
+        Debug.Log($"Wall placement complete: {wallsPlaced} walls placed, {inactiveCells} inactive cells, {borderCells} border cells");
     }
     
     void PlaceWallAtPosition(Vector3 position)
@@ -412,6 +516,46 @@ public class RoomGenerator : MonoBehaviour
         // This will be implemented in Pathfinding.cs
         // For now, just log that paths need to be generated
         Debug.Log("Enemy paths need to be generated");
+    }
+
+//UNUSED
+    void PlaceWallsAndDoors()
+    {
+        // Use cell manager to get cells that need walls
+        List<LargeCell> cellsNeedingWalls = cellManager.GetCellsNeedingWalls();
+        
+        // Place walls based on cell neighbor analysis
+        foreach (LargeCell cell in cellsNeedingWalls)
+        {
+            WallDirection wallDirections = cell.GetWallDirections();
+            PlaceWallsForCell(cell, wallDirections);
+        }
+        
+        // Place doors on perimeter walls
+        PlaceDoorsOnPerimeter();
+    }
+    
+    void PlaceWallsForCell(LargeCell cell, WallDirection wallDirections)
+    {
+        Vector3 cellPos = cell.worldPosition;
+        
+        // Place walls based on directions needed
+        if ((wallDirections & WallDirection.North) != 0)
+        {
+            PlaceWallAtPosition(cellPos + Vector3.forward * (largeCellSize / 2f));
+        }
+        if ((wallDirections & WallDirection.South) != 0)
+        {
+            PlaceWallAtPosition(cellPos + Vector3.back * (largeCellSize / 2f));
+        }
+        if ((wallDirections & WallDirection.East) != 0)
+        {
+            PlaceWallAtPosition(cellPos + Vector3.right * (largeCellSize / 2f));
+        }
+        if ((wallDirections & WallDirection.West) != 0)
+        {
+            PlaceWallAtPosition(cellPos + Vector3.left * (largeCellSize / 2f));
+        }
     }
 }
 

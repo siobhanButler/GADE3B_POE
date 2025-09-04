@@ -352,15 +352,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1519399446}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 34857bcadf8b98b439d8fe7bb5d5f8af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minRoomWidth: 5
-  maxRoomWidth: 12
-  minRoomLength: 5
-  maxRoomLength: 12
+  minRoomWidth: 1
+  maxRoomWidth: 1
+  minRoomLength: 1
+  maxRoomLength: 1
   largeCellSize: 9
   subCellSize: 1
   subCellsPerLargeCell: 9

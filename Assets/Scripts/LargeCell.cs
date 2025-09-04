@@ -45,6 +45,53 @@ public class LargeCell
         }
         */
     }
+
+    public void SetBorderState()
+    {
+        // Check if this cell is on the border (has null neighbors)
+        bool hasNorthNeighbor = north != null;
+        bool hasEastNeighbor = east != null;
+        bool hasSouthNeighbor = south != null;
+        bool hasWestNeighbor = west != null;
+        
+        // Determine border state based on missing neighbors
+        if (!hasNorthNeighbor && !hasEastNeighbor)
+        {
+            borderState = CellBorderState.NECorner;
+        }
+        else if (!hasEastNeighbor && !hasSouthNeighbor)
+        {
+            borderState = CellBorderState.SECorner;
+        }
+        else if (!hasSouthNeighbor && !hasWestNeighbor)
+        {
+            borderState = CellBorderState.SWCorner;
+        }
+        else if (!hasWestNeighbor && !hasNorthNeighbor)
+        {
+            borderState = CellBorderState.NWCorner;
+        }
+        else if (!hasNorthNeighbor)
+        {
+            borderState = CellBorderState.North;
+        }
+        else if (!hasEastNeighbor)
+        {
+            borderState = CellBorderState.East;
+        }
+        else if (!hasSouthNeighbor)
+        {
+            borderState = CellBorderState.South;
+        }
+        else if (!hasWestNeighbor)
+        {
+            borderState = CellBorderState.West;
+        }
+        else
+        {
+            borderState = CellBorderState.None; // Interior cell
+        }
+    }
     
     // Set neighbors
     public void SetNeighbors(LargeCell pNorth, LargeCell pSouth, LargeCell pEast, LargeCell pWest)
@@ -130,13 +177,14 @@ public enum CellState
 public enum CellBorderState
 {
     None = 0,       //not a border
-    North = 1,
-    NECorner = 2,
-    East = 3,
-    SECorner = 4,
-    South = 5,
-    SWCorner = 6,
-    West = 7,
+    North = 1,  
+    East = 2,    
+    South = 3,  
+    West = 4,
+
+    NECorner = 5,
+    SECorner = 6,
+    SWCorner = 7,
     NWCorner = 8,
 }
 

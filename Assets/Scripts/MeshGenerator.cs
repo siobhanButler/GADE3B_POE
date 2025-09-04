@@ -25,19 +25,25 @@ public class MeshGenerator : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Start()
     {
-        mesh = new Mesh();
-        mesh.name = "Floor Mesh";
-        GetComponent<MeshFilter>().mesh = mesh;
-        meshRenderer = GetComponent<MeshRenderer>();
+        //mesh = new Mesh();
+        //mesh.name = "Floor Mesh";
+        //GetComponent<MeshFilter>().mesh = mesh;
+        //meshRenderer = GetComponent<MeshRenderer>();
 
-        CreateGrid(4, 3);
+        //CreateGrid(4, 3);
 
         //CreateShape();  //Create the shape (2 triangles △ = 1 quad □)
         //UpdateMesh();  //Update the mesh
     }
 
-    public void CreateGrid(int xRoomSize, int zRoomSize)
+    public LargeCell[,] CreateGrid(int xRoomSize, int zRoomSize)
     {
+        //here instead of start because it was happening too late
+        mesh = new Mesh();
+        mesh.name = "Floor Mesh";
+        GetComponent<MeshFilter>().mesh = mesh;
+        meshRenderer = GetComponent<MeshRenderer>();
+
         grid = new LargeCell[xRoomSize, zRoomSize];
         
         //Initialize lists for combined mesh data
@@ -67,6 +73,8 @@ public class MeshGenerator : MonoBehaviour
                 UpdateNeighbours(x, z);
             }
         }
+
+        return grid;
     }
 
     public void CreateQuad()
@@ -251,6 +259,8 @@ public class MeshGenerator : MonoBehaviour
         {
             grid[x,z].west = null;
         }
+
+        grid[x,z].SetBorderState();
 
         //  (0,2) - (1,2) - (2,2)       X - N - X          ()   - (x,z+1) -   ()
         //  (0,1) - (1,1) - (2,1)       W - O - E       (x-1,z) -  (x,z)  - (x+1,z)
