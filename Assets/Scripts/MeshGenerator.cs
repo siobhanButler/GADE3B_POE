@@ -17,7 +17,7 @@ public class MeshGenerator : MonoBehaviour
     List<Vector3> allVertices; //Combined vertices from all cells
     List<int> allTriangles;    //Combined triangles from all cells
 
-    public int xSize = 9;
+    public int xSize = 9;       //overrides RoomGen's cell size
     public int zSize = 9;
 
     private LargeCell[,] grid;  //grid goes grid[x,z] where z is the row and x is the column

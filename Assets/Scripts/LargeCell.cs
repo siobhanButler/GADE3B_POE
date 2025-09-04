@@ -11,6 +11,7 @@ public class LargeCell
     // Cell state and type
     public CellState state;
     public bool bActive;        //removed or not
+    public bool bWalkable;
     public CellBorderState borderState;
     
     // Neighbors
@@ -26,11 +27,11 @@ public class LargeCell
         this.y = y;
         this.worldPosition = worldPos;
         this.bActive = true;
+        this.bWalkable = true;
         this.state = CellState.Floor;
         
         // Initialize sub-cells
         this.subCells = new SubCell[subCellCount, subCellCount];
-        /*
         for (int sx = 0; sx < subCellCount; sx++)
         {
             for (int sy = 0; sy < subCellCount; sy++)
@@ -40,10 +41,9 @@ public class LargeCell
                     worldPos.y,
                     worldPos.z - (subCellCount / 2f) + sy + 0.5f
                 );
-                subCells[sx, sy] = new SubCell(sx, sy, subWorldPos);
+                subCells[sx, sy] = new SubCell(sx, sy, subWorldPos, this);
             }
         }
-        */
     }
 
     public void SetBorderState()
@@ -74,18 +74,54 @@ public class LargeCell
         else if (!hasNorthNeighbor)
         {
             borderState = CellBorderState.North;
+            // Set all northmost sub-cells to North border
+            int northEdge = subCells.GetLength(1) - 1; // Top row (highest Z)
+            for (int x = 0; x < subCells.GetLength(0); x++)
+            {
+                if (subCells[x, northEdge] != null)
+                {
+                    subCells[x, northEdge].borderState = CellBorderState.North;
+                }
+            }
         }
         else if (!hasEastNeighbor)
         {
             borderState = CellBorderState.East;
+            // Set all eastmost sub-cells to East border
+            int eastEdge = subCells.GetLength(0) - 1; // Right column (highest X)
+            for (int z = 0; z < subCells.GetLength(1); z++)
+            {
+                if (subCells[eastEdge, z] != null)
+                {
+                    subCells[eastEdge, z].borderState = CellBorderState.East;
+                }
+            }
         }
         else if (!hasSouthNeighbor)
         {
             borderState = CellBorderState.South;
+            // Set all southmost sub-cells to South border
+            int southEdge = 0; // Bottom row (lowest Z)
+            for (int x = 0; x < subCells.GetLength(0); x++)
+            {
+                if (subCells[x, southEdge] != null)
+                {
+                    subCells[x, southEdge].borderState = CellBorderState.South;
+                }
+            }
         }
         else if (!hasWestNeighbor)
         {
             borderState = CellBorderState.West;
+            // Set all westmost sub-cells to West border
+            int westEdge = 0; // Left column (lowest X)
+            for (int z = 0; z < subCells.GetLength(1); z++)
+            {
+                if (subCells[westEdge, z] != null)
+                {
+                    subCells[westEdge, z].borderState = CellBorderState.West;
+                }
+            }
         }
         else
         {

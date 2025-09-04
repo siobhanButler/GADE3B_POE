@@ -5,6 +5,7 @@ public class SubCell
     public Vector3 worldPosition;
     public int localX, localY;   // position inside the LargeCell
     public CellState state;
+    public CellBorderState borderState;
     public LargeCell parentCell;
     
     // Neighbors (inside the same LargeCell)
@@ -20,6 +21,7 @@ public class SubCell
         this.localY = y;
         this.worldPosition = worldPos;
         this.state = CellState.Floor;
+        this.borderState = CellBorderState.None;
         this.parentCell = parentCell;
     }
     
