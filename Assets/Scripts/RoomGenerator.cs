@@ -296,6 +296,7 @@ public class RoomGenerator : MonoBehaviour
             Vector3 worldPos = validSubCells[index].worldPosition;
             GameObject spawner = Instantiate(enemySpawnerPrefab, worldPos, Quaternion.identity);
             spawner.transform.SetParent(transform);
+            spawner.GetComponent<SpawnerManager>().Setup(validSubCells[index]);
 
             validSubCells[index].state = CellState.EnemySpawner;
             validSubCells[index].parentCell.state = CellState.EnemySpawner;

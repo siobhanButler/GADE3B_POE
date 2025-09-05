@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -3363435053144338096}
   - component: {fileID: -914249002432701815}
   - component: {fileID: 2084443334652839628}
+  - component: {fileID: 5346264311578462723}
   - component: {fileID: 5464121699189145045}
   - component: {fileID: -8118491335358680929}
   - component: {fileID: 2060095197361238173}
@@ -112,6 +113,7 @@ MonoBehaviour:
   UIManager: {fileID: 0}
   health: {fileID: 0}
   attack: {fileID: 0}
+  movement: {fileID: 0}
   canvasPrefab: {fileID: 4929489544935956522, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
   enemyType: Enemy
 --- !u!114 &-914249002432701815
@@ -150,6 +152,20 @@ MonoBehaviour:
   attackSpeed: 1
   attackableTags: []
   isAttacking: 0
+--- !u!114 &5346264311578462723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8641729460655824074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99f715f11fc2f27488e8763aca6e92da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 3
+  target: {fileID: 0}
 --- !u!54 &5464121699189145045
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -175,7 +191,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 32
   m_CollisionDetection: 0
 --- !u!65 &-8118491335358680929
 BoxCollider:

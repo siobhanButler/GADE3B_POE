@@ -18,6 +18,8 @@ public class PathGenerator : MonoBehaviour
     private int roomWidth;
     private int roomLength;
     private int subCellsPerLargeCell;
+
+    private Dictionary<SubCell, List<SubCell>> spawnerPaths = new Dictionary<SubCell, List<SubCell>>();
     
     public void Initialize(LargeCell[,] grid, int roomWidth, int roomLength, int subCellsPerLargeCell)
     {
@@ -42,12 +44,12 @@ public class PathGenerator : MonoBehaviour
         {
             if (spawner != null)
             {
-                GeneratePathFromSpawnerToTower(spawner, mainTower);
+                spawnerPaths[spawner] = GeneratePathFromSpawnerToTower(spawner, mainTower);
             }
         }
     }
     
-    private void GeneratePathFromSpawnerToTower(SubCell start, SubCell goal)
+    private List<SubCell> GeneratePathFromSpawnerToTower(SubCell start, SubCell goal)
     {
         Debug.Log($"Attempting to generate path from spawner at {start.worldPosition} to tower at {goal.worldPosition}");
         
@@ -67,10 +69,12 @@ public class PathGenerator : MonoBehaviour
             
             CreatePathVisualization(path);
             Debug.Log($"Generated path with {path.Count} cells from spawner to tower");
+            return path;
         }
         else
         {
             Debug.LogWarning($"Failed to generate path from spawner to tower");
+            return null;
         }
     }
     
@@ -281,5 +285,10 @@ public class PathGenerator : MonoBehaviour
         
         // You can add additional customization here if needed
         // For example, random rotation, scaling, etc.
+    }
+
+    public List<SubCell> GetPathForSpawner(SubCell spawner)
+    {
+        return spawnerPaths.ContainsKey(spawner) ? spawnerPaths[spawner] : null;
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
@@ -10,10 +11,13 @@ public class EnemyManager : MonoBehaviour
     public ObjectUIManager UIManager;
     public Health health;
     public Attack attack;
+    public EnemyMovement movement;
 
     public Canvas canvasPrefab;  //assign in inspector
 
     public string enemyType = "Enemy";
+
+    public List<SubCell> pathFromSpawner;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -30,6 +34,8 @@ public class EnemyManager : MonoBehaviour
         health.Setup(UIManager);
         attack = GetComponent<Attack>() ?? gameObject.AddComponent<Attack>();
         attack.Setup(rigidBody, hitBox, rangeCollider);
+        movement = GetComponent<EnemyMovement>() ?? gameObject.AddComponent<EnemyMovement>();
+        movement.Setup();
 
         this.tag = enemyType;  //set tag to tower
     }
