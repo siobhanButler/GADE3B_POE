@@ -18,8 +18,8 @@ GameObject:
   - component: {fileID: 7564483025522920281}
   - component: {fileID: 9083771151248980207}
   m_Layer: 0
-  m_Name: MainTower_p
-  m_TagString: MainTower
+  m_Name: DefenceTower
+  m_TagString: DefenceTower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -34,7 +34,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 1, y: 6, z: 1}
+  m_LocalScale: {x: 1, y: 4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8611202489756324627}
@@ -182,7 +182,7 @@ MonoBehaviour:
   health: {fileID: 0}
   attack: {fileID: 0}
   canvasPrefab: {fileID: 4929489544935956522, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
-  towerType: MainTower
+  towerType: DefenceTower
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,9 +198,9 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
-  attackDamage: 1
-  rangeRadius: 3.5
-  attackSpeed: 2
+  attackDamage: 4
+  rangeRadius: 1
+  attackSpeed: 0.5
   attackableTags:
   - Enemy
   isAttacking: 0

@@ -9,6 +9,7 @@ public class EnemyMovement : MonoBehaviour
     private bool isMoving = false;
 
     public float speed = 2f;
+    public float speedWhenAttacking = 0.3f;
     public Transform target;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -50,8 +51,20 @@ public class EnemyMovement : MonoBehaviour
         // Get the current target position
         Vector3 targetPosition = pathFromSpawner[currentPathIndex].worldPosition;
         
+        // Check if enemy is attacking and adjust speed accordingly
+        Attack attackComponent = GetComponent<Attack>();
+        float currentSpeed = speed;
+        if (attackComponent != null && attackComponent.isAttacking)
+        {
+            currentSpeed = speedWhenAttacking; // Slow down when attacking
+        }
+        else
+        {
+            currentSpeed = speed;
+        }
+        
         // Move towards the current target
-        float step = speed * Time.deltaTime;
+        float step = currentSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
         
         // Check if we've reached the current target
@@ -61,4 +74,5 @@ public class EnemyMovement : MonoBehaviour
             currentPathIndex++;
         }
     }
+
 }

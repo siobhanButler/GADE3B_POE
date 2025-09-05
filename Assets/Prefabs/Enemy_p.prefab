@@ -20,7 +20,7 @@ GameObject:
   - component: {fileID: 2060095197361238173}
   m_Layer: 0
   m_Name: Enemy_p
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -128,7 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 836f7aa9109816d49aca171b6534eeaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 10
+  maxHealth: 8
   currentHealth: 0
   isDead: 0
   healthBarUIManager: {fileID: 0}
@@ -147,10 +147,12 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
-  attackDamage: 2
-  rangeRadius: 30
+  attackDamage: 0.5
+  rangeRadius: 10
   attackSpeed: 1
-  attackableTags: []
+  attackableTags:
+  - DefenceTower
+  - MainTower
   isAttacking: 0
 --- !u!114 &5346264311578462723
 MonoBehaviour:
@@ -164,7 +166,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99f715f11fc2f27488e8763aca6e92da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
+  speed: 2
   target: {fileID: 0}
 --- !u!54 &5464121699189145045
 Rigidbody:

@@ -44,6 +44,20 @@ public class Health : MonoBehaviour
     void Die()
     {
         isDead = true;
-        // Add death logic here (e.g., play animation, disable components, give coins)
+        
+        // Check if this object has the Enemy tag and add coins to player
+        if (gameObject.CompareTag("Enemy"))
+        {
+            // Find the GameManager and add coins
+            GameManager gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager != null)
+            {
+                // Add coins when enemy dies (you can adjust the amount as needed)
+                gameManager.playerMoney += 10;
+            }
+        }
+        
+        // Destroy the object after a short delay to allow for any death animations
+        Destroy(gameObject, 0.1f);
     }
 }

@@ -1,10 +1,7 @@
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class UIManager : MonoBehaviour
 {
-    public int playerMoney = 100;
-    public GameState gameState = GameState.Playing;
-
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -16,14 +13,4 @@ public class GameManager : MonoBehaviour
     {
         
     }
-
-
-}
-
-public enum GameState
-{
-    Playing,
-    Paused,
-    GameOver,
-    Win
 }

@@ -53,7 +53,7 @@ public class Attack : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (attackableTags.Contains(other.tag))  //is it a valid target
+        if (attackableTags.Contains(other.tag) && IsRangeIntersectingWithHitbox(other))  //is it a valid target
         {
             targetsInRange.Add(other);  //add as a target
 
@@ -90,6 +90,7 @@ public class Attack : MonoBehaviour
 
     void RangeAttack(Collider other)
     {
+        Debug.Log(this.name + " is attacking " + other.name);
         Health otherHealth = other.GetComponent<Health>();
         if (otherHealth != null)
         {        
@@ -104,5 +105,24 @@ public class Attack : MonoBehaviour
             RangeAttack(currentTarget);
             yield return new WaitForSeconds(attackSpeed);
         }
+    }
+
+    bool IsRangeIntersectingWithHitbox(Collider target)
+    {
+        // Get the target's hitbox (assuming it has a BoxCollider for hitbox)
+        BoxCollider targetHitbox = target.GetComponent<BoxCollider>();
+        if (targetHitbox == null)
+        {
+            // If no BoxCollider, use the target's main collider
+            targetHitbox = target as BoxCollider;
+        }
+        
+        if (targetHitbox == null)
+        {
+            return false; // No hitbox found
+        }
+        
+        // Check if the range collider bounds intersect with the target's hitbox bounds
+        return rangeCollider.bounds.Intersects(targetHitbox.bounds);
     }
 }
