@@ -15,10 +15,14 @@ public class LargeCell
     public CellBorderState borderState;
     
     // Neighbors
-    public LargeCell north;
-    public LargeCell south;
-    public LargeCell east;
-    public LargeCell west;
+    public LargeCell north;         // (x, z+1)
+    public LargeCell south;         // (x, z-1)
+    public LargeCell east;          // (x+1, z)
+    public LargeCell west;          // (x-1, z)
+    public LargeCell northEast;     // (x+1, z+1)
+    public LargeCell southEast;     // (x+1, z-1)
+    public LargeCell southWest;     // (x-1, z-1)
+    public LargeCell northWest;     // (x-1, z+1)
     
     // Constructor
     public LargeCell(int x, int y, Vector3 worldPos, int subCellCount)
@@ -42,6 +46,15 @@ public class LargeCell
                     worldPos.z - (subCellCount / 2f) + sy + 0.5f
                 );
                 subCells[sx, sy] = new SubCell(sx, sy, subWorldPos, this);
+            }
+        }
+        
+        // Set up sub-cell neighbors AFTER all sub-cells are created
+        for (int sx = 0; sx < subCellCount; sx++)
+        {
+            for (int sy = 0; sy < subCellCount; sy++)
+            {
+                subCells[sx, sy].SetupNeighbors(subCells, sx, sy);
             }
         }
     }
@@ -130,14 +143,134 @@ public class LargeCell
     }
     
     // Set neighbors
-    public void SetNeighbors(LargeCell pNorth, LargeCell pSouth, LargeCell pEast, LargeCell pWest)
+    public void SetNeighbors(LargeCell pNorth, LargeCell pSouth, LargeCell pEast, LargeCell pWest, LargeCell pNorthEast, LargeCell pSouthEast, LargeCell pSouthWest, LargeCell pNorthWest)
     {
         north = pNorth;
         south = pSouth;
         east = pEast;
         west = pWest;
+        northEast = pNorthEast;
+        southEast = pSouthEast;
+        southWest = pSouthWest;
+        northWest = pNorthWest;
     }
     
+    public void SetSubCellNeighborsAndBorderStates()
+    {
+        // width = X dimension (first index), length = Z dimension (second index)
+        int cellWidth = subCells.GetLength(0);
+        int cellLength = subCells.GetLength(1);
+
+        int lastX = cellWidth - 1;
+        int lastZ = cellLength - 1;
+
+        // Set up neighbor relationships for all cells
+        for (int x = 0; x < cellWidth; x++)
+        {
+            for (int z = 0; z < cellLength; z++)
+            {
+                SubCell currentCell = subCells[x, z];
+
+                // Cardinal neighbors with cross-large-cell stitching
+                SubCell subNorth = (z + 1 < cellLength)
+                    ? subCells[x, z + 1]
+                    : (north != null ? north.subCells[x, 0] : null);
+
+                SubCell subSouth = (z - 1 >= 0)
+                    ? subCells[x, z - 1]
+                    : (south != null ? south.subCells[x, lastZ] : null);
+
+                SubCell subEast = (x + 1 < cellWidth)
+                    ? subCells[x + 1, z]
+                    : (east != null ? east.subCells[0, z] : null);
+
+                SubCell subWest = (x - 1 >= 0)
+                    ? subCells[x - 1, z]
+                    : (west != null ? west.subCells[lastX, z] : null);
+
+                // Diagonal neighbors with comprehensive cross-large-cell stitching
+                SubCell subNorthEast;
+                if (x + 1 < cellWidth && z + 1 < cellLength)
+                {
+                    subNorthEast = subCells[x + 1, z + 1];
+                }
+                else if (x + 1 < cellWidth && z + 1 >= cellLength)
+                {
+                    subNorthEast = (north != null) ? north.subCells[x + 1, 0] : null;
+                }
+                else if (x + 1 >= cellWidth && z + 1 < cellLength)
+                {
+                    subNorthEast = (east != null) ? east.subCells[0, z + 1] : null;
+                }
+                else
+                {
+                    subNorthEast = (northEast != null) ? northEast.subCells[0, 0] : null;
+                }
+
+                SubCell subSouthEast;
+                if (x + 1 < cellWidth && z - 1 >= 0)
+                {
+                    subSouthEast = subCells[x + 1, z - 1];
+                }
+                else if (x + 1 < cellWidth && z - 1 < 0)
+                {
+                    subSouthEast = (south != null) ? south.subCells[x + 1, lastZ] : null;
+                }
+                else if (x + 1 >= cellWidth && z - 1 >= 0)
+                {
+                    subSouthEast = (east != null) ? east.subCells[0, z - 1] : null;
+                }
+                else
+                {
+                    subSouthEast = (southEast != null) ? southEast.subCells[0, lastZ] : null;
+                }
+
+                SubCell subSouthWest;
+                if (x - 1 >= 0 && z - 1 >= 0)
+                {
+                    subSouthWest = subCells[x - 1, z - 1];
+                }
+                else if (x - 1 >= 0 && z - 1 < 0)
+                {
+                    subSouthWest = (south != null) ? south.subCells[x - 1, lastZ] : null;
+                }
+                else if (x - 1 < 0 && z - 1 >= 0)
+                {
+                    subSouthWest = (west != null) ? west.subCells[lastX, z - 1] : null;
+                }
+                else
+                {
+                    subSouthWest = (southWest != null) ? southWest.subCells[lastX, lastZ] : null;
+                }
+
+                SubCell subNorthWest;
+                if (x - 1 >= 0 && z + 1 < cellLength)
+                {
+                    subNorthWest = subCells[x - 1, z + 1];
+                }
+                else if (x - 1 >= 0 && z + 1 >= cellLength)
+                {
+                    subNorthWest = (north != null) ? north.subCells[x - 1, 0] : null;
+                }
+                else if (x - 1 < 0 && z + 1 < cellLength)
+                {
+                    subNorthWest = (west != null) ? west.subCells[lastX, z + 1] : null;
+                }
+                else
+                {
+                    subNorthWest = (northWest != null) ? northWest.subCells[lastX, 0] : null;
+                }
+
+                currentCell.SetNeighbors(subNorth, subSouth, subEast, subWest, subNorthEast, subSouthEast, subSouthWest, subNorthWest);
+
+                // Set border state for this cell
+                currentCell.SetBorderState();
+            }
+        }
+
+        Debug.Log("Neighbors and border states set up for all cells");
+    }
+
     // Get all neighbors as array
     public LargeCell[] GetNeighbors()
     {

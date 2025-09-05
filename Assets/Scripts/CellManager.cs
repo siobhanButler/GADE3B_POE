@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class CellManager : MonoBehaviour
 {
+    /*
+    
     [Header("Grid Settings")]
     public int gridWidth;
     public int gridHeight;
@@ -282,4 +284,5 @@ public class CellManager : MonoBehaviour
             }
         }
     }
+    */
 }

@@ -38,9 +38,13 @@ public class RoomGenerator : MonoBehaviour
     // Private fields
     private GridSystem gridSystem;
     private CellManager cellManager;
+    private PathGenerator pathGenerator;
     private int roomWidth;      //x
     private int roomLength;     //z
     private LargeCell[,] grid;  //grid[x,z]
+
+    SubCell mainTowerCell;
+    SubCell[] enemySpawnerCells;
     
     void Start()
     {
@@ -67,11 +71,11 @@ public class RoomGenerator : MonoBehaviour
         // Step 7: Place gameplay elements
         PlaceGameplayElements();
 
+        // Step 8: Generate enemy paths
+        GenerateEnemyPaths();
+
         // Step 6: Place furniture
         PlaceFurniture();
-        
-        // Step 8: Generate enemy paths
-        //GenerateEnemyPaths();
     }
     
     void DetermineRoomDimensions()
@@ -102,11 +106,20 @@ public class RoomGenerator : MonoBehaviour
                 LargeCell south = (z - 1 >= 0) ? grid[x, z - 1] : null;
                 LargeCell east = (x + 1 < roomWidth) ? grid[x + 1, z] : null;
                 LargeCell west = (x - 1 >= 0) ? grid[x - 1, z] : null;
+
+                // Diagonal neighbors
+                LargeCell northEast = (x + 1 < roomWidth && z + 1 < roomLength) ? grid[x + 1, z + 1] : null;
+                LargeCell southEast = (x + 1 < roomWidth && z - 1 >= 0) ? grid[x + 1, z - 1] : null;
+                LargeCell southWest = (x - 1 >= 0 && z - 1 >= 0) ? grid[x - 1, z - 1] : null;
+                LargeCell northWest = (x - 1 >= 0 && z + 1 < roomLength) ? grid[x - 1, z + 1] : null;
                 
-                currentCell.SetNeighbors(north, south, east, west);
+                currentCell.SetNeighbors(north, south, east, west, northEast, southEast, southWest, northWest);
                 
                 // Set border state for this cell
                 currentCell.SetBorderState();
+                
+                // Also set sub-cell neighbors and border states (uses 8-direction neighbors across large cells)
+                currentCell.SetSubCellNeighborsAndBorderStates();
             }
         }
         
@@ -250,6 +263,7 @@ public class RoomGenerator : MonoBehaviour
         mainTower.transform.SetParent(transform);
         centerCell.state = CellState.MainTower;
         centerSubCell.state = CellState.MainTower;
+        mainTowerCell = centerSubCell;
         
         // Place enemy spawners at edges
         PlaceEnemySpawners();
@@ -258,6 +272,7 @@ public class RoomGenerator : MonoBehaviour
     void PlaceEnemySpawners()
     {
         int spawnerCount = Random.Range(minSpawnerCount, maxSpawnerCount + 1); // Random number between min and max (inclusive)
+        enemySpawnerCells = new SubCell[spawnerCount];
         List<SubCell> validSubCells = GetValidSpawnerSubCells();
          
         Debug.Log($"Attempting to place {spawnerCount} spawners from {validSubCells.Count} valid positions");
@@ -273,6 +288,7 @@ public class RoomGenerator : MonoBehaviour
 
             validSubCells[index].state = CellState.EnemySpawner;
             validSubCells[index].parentCell.state = CellState.EnemySpawner;
+            enemySpawnerCells[i] = validSubCells[index];
             validSubCells.RemoveAt(index); // Remove to avoid duplicates
         }
          
@@ -374,13 +390,20 @@ public class RoomGenerator : MonoBehaviour
     
     void GenerateEnemyPaths()
     {
-        // This will be implemented in Pathfinding.cs
-        // For now, just log that paths need to be generated
-        Debug.Log("Enemy paths need to be generated");
+        // Initialize path generator
+        pathGenerator = GetComponent<PathGenerator>() ?? gameObject.AddComponent<PathGenerator>();
+        pathGenerator.Initialize(grid, roomWidth, roomLength, subCellsPerLargeCell);
+        
+        // Generate paths from all spawners to the main tower using stored references
+        pathGenerator.GenerateEnemyPaths(mainTowerCell, enemySpawnerCells);
+        
+        Debug.Log("Enemy paths generated successfully");
     }
 
 //----------------------------------------------------------------------------------------------------------------------------
 //                                           METHODS NOT IN USE
+/*
+
     void InitializeGridSystem()
     {
         gridSystem = GetComponent<GridSystem>() ?? gameObject.AddComponent<GridSystem>();
@@ -527,5 +550,8 @@ public class RoomGenerator : MonoBehaviour
             }
         }
     }
+
+---------------------------------------------------------------------------------------------------------------------------------------
+    */
 }
 

@@ -269,7 +269,7 @@ GameObject:
   - component: {fileID: 1519399448}
   - component: {fileID: 1519399451}
   - component: {fileID: 1519399453}
-  - component: {fileID: 1519399452}
+  - component: {fileID: 1519399454}
   m_Layer: 0
   m_Name: Mesh Generator
   m_TagString: Untagged
@@ -376,18 +376,6 @@ MonoBehaviour:
   mainTowerPrefab: {fileID: 4481481441890430569, guid: 18b1b8f3ae417974e874922978af492b, type: 3}
   enemySpawnerPrefab: {fileID: 3698806880055105173, guid: a412eeb1b377c844eaeb295a58b60acf, type: 3}
   defenseTowerPrefab: {fileID: 0}
---- !u!114 &1519399452
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1519399446}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62a6c6e149edd81409292eff0a327def, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1519399453
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -402,6 +390,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xSize: 10
   zSize: 10
+--- !u!114 &1519399454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1519399446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30c4bc4e78200f2459535c237b020733, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  jitterAmount: 0.3
+  jitterFrequency: 0.5
+  maxPathAttempts: 3
+  pathPrefab: {fileID: 7504565514096408905, guid: 28e577ffdf1f0b14a9163c0c54e7df40, type: 3}
+  pathHeight: 0.1
 --- !u!1 &1741370971
 GameObject:
   m_ObjectHideFlags: 0
