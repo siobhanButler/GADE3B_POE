@@ -361,9 +361,9 @@ MonoBehaviour:
   maxRoomWidth: 10
   minRoomLength: 5
   maxRoomLength: 10
-  largeCellSize: 10
-  subCellSize: 1
+  subCellSize: 3
   subCellsPerLargeCell: 10
+  largeCellSize: 10
   cornerRemovalChance: 0.8
   furniturePlacementChance: 0.4
   maxFurniturePercent: 0.3
@@ -388,8 +388,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a787c5344d6a24eb392a7aaa3abfc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSize: 10
-  zSize: 10
+  xSize: 5
+  zSize: 5
+  subCellSize: 1
 --- !u!114 &1519399454
 MonoBehaviour:
   m_ObjectHideFlags: 0

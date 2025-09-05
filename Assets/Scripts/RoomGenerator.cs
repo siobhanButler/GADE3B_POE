@@ -10,9 +10,9 @@ public class RoomGenerator : MonoBehaviour
     public int maxRoomLength = 12;
     
     [Header("Cell Settings")]
-    public float largeCellSize = 9f; // Size of each large cell
-    public float subCellSize = 1f; // Size of each sub-cell (1x1)
+    private float subCellSize = 1f; // Size of each sub-cell (1x1) - don't chnage, it will mess shit up :( 
     public int subCellsPerLargeCell = 10; // 9x9/10x10 sub-grid per large cell
+    public float largeCellSize = 10f; // Size of each large cell
     
      [Header("Generation Settings")]
      [Range(0f, 1f)]
@@ -27,7 +27,6 @@ public class RoomGenerator : MonoBehaviour
      public int maxSpawnerCount = 5;
     
     [Header("Prefabs")]
-    public GameObject floorTilePrefab;
     public GameObject wallPrefab;
     public GameObject doorPrefab;
     public GameObject furniturePrefab;
@@ -48,6 +47,7 @@ public class RoomGenerator : MonoBehaviour
     
     void Start()
     {
+        largeCellSize = subCellsPerLargeCell * subCellSize;
         GenerateRoom();
     }
     
@@ -62,19 +62,19 @@ public class RoomGenerator : MonoBehaviour
         // Step 3: Process corners (remove cells)
         ProcessCorners();
         
-        // Step 4: Set up neighbors and border states (CRITICAL for wall placement)
+        // Step 4: Set up neighbors and border states
         SetupNeighborsAndBorderStates();
         
-        // Step 5: Place walls
+        // Step 5: Place walls (on border and removed cells)
         PlaceWalls();
         
-        // Step 7: Place gameplay elements
+        // Step 7: Place gameplay elements (main tower and enemy spawners)
         PlaceGameplayElements();
 
-        // Step 8: Generate enemy paths
+        // Step 8: Generate enemy paths (from enemy spawners to main tower)
         GenerateEnemyPaths();
 
-        // Step 6: Place furniture
+        // Step 6: Place furniture (on walkable active cells)
         PlaceFurniture();
     }
     
@@ -89,7 +89,7 @@ public class RoomGenerator : MonoBehaviour
     void GenerateFloorMesh()
     {
         var meshGen = GetComponent<MeshGenerator>() ?? gameObject.AddComponent<MeshGenerator>();
-        grid = meshGen.CreateGrid(roomWidth, roomLength);
+        grid = meshGen.CreateGrid(roomWidth, roomLength, subCellsPerLargeCell);
     }
     
     void SetupNeighborsAndBorderStates()
@@ -126,6 +126,7 @@ public class RoomGenerator : MonoBehaviour
         Debug.Log("Neighbors and border states set up for all cells");
     }
     
+    // ============================ CORNER METHODS ============================
     void ProcessCorners()
     {
         // Define the four corners of the room
@@ -194,6 +195,7 @@ public class RoomGenerator : MonoBehaviour
         }
     }
     
+    // ============================ WALL METHODS ============================
     void PlaceWalls()
     {
         foreach (LargeCell cell in grid)
@@ -253,6 +255,7 @@ public class RoomGenerator : MonoBehaviour
         wall.transform.SetParent(transform);
     }
     
+    // ============================ GAMEPLAY ELEMENT METHODS ============================
     void PlaceGameplayElements()
     {
         LargeCell centerCell = grid[Mathf.RoundToInt(roomWidth/2), Mathf.RoundToInt(roomLength/2)];
@@ -294,31 +297,6 @@ public class RoomGenerator : MonoBehaviour
          
         Debug.Log($"Successfully placed {spawnerCount - validSubCells.Count} spawners");
     }
-    
-    void PlaceFurniture()
-    {
-        int maxFurnitureAmount = Mathf.RoundToInt(maxFurniturePercent * (roomLength * roomWidth));
-        Debug.Log("Max furniture is " + maxFurnitureAmount);
-        int furnitureAmount = 0;
-        // Place furniture, based on random value, on walkable active cells 
-        for (int x = 1; x < roomWidth; x++)
-        {
-            for (int y = 1; y < roomLength; y++)
-            {
-                LargeCell cell = grid[x, y];
-                if (cell != null && cell.IsWalkable() && !cell.IsRemoved() && cell.state != CellState.MainTower && cell.state != CellState.EnemySpawner && cell.state != CellState.EnemyPath)
-                {
-                    if (Random.value < furniturePlacementChance && furnitureAmount < maxFurnitureAmount)
-                    {
-                        cell.state = CellState.Furniture;
-                        GameObject furniture = Instantiate(furniturePrefab, cell.worldPosition, Quaternion.identity);
-                        furniture.transform.SetParent(transform);
-                        furnitureAmount++;
-                    }
-                }
-            }
-        }
-    }
 
     List<SubCell> GetValidSpawnerSubCells()
     {
@@ -354,40 +332,35 @@ public class RoomGenerator : MonoBehaviour
         }
         
         return validSubCells;
-    }
+    }  
     
-    bool IsSubCellInRemovedLargeCell(int subX, int subZ)
+    // ============================ FURNITURE METHODS ============================
+    void PlaceFurniture()
     {
-        // Convert sub-cell coordinates to large cell coordinates
-        int largeX = subX / subCellsPerLargeCell;
-        int largeZ = subZ / subCellsPerLargeCell;
-        
-        // Check if the large cell containing this sub-cell is removed
-        return gridSystem.IsLargeCellRemoved(largeX, largeZ);
-    }
-    
-    bool IsAdjacentToWall(int subX, int subZ)
-    {
-        // Check if this sub-cell is adjacent to a wall
-        Vector2Int[] directions = {
-            new Vector2Int(0, 1),   // North
-            new Vector2Int(1, 0),   // East
-            new Vector2Int(0, -1),  // South
-            new Vector2Int(-1, 0)   // West
-        };
-        
-        foreach (Vector2Int dir in directions)
+        int maxFurnitureAmount = Mathf.RoundToInt(maxFurniturePercent * (roomLength * roomWidth));
+        Debug.Log("Max furniture is " + maxFurnitureAmount);
+        int furnitureAmount = 0;
+        // Place furniture, based on random value, on walkable active cells 
+        for (int x = 1; x < roomWidth; x++)
         {
-            Vector2Int neighbor = new Vector2Int(subX, subZ) + dir;
-            if (gridSystem.GetSubCellType(neighbor.x, neighbor.y) == GridSystem.CellType.Wall)
+            for (int y = 1; y < roomLength; y++)
             {
-                return true;
+                LargeCell cell = grid[x, y];
+                if (cell != null && cell.IsWalkable() && !cell.IsRemoved() && cell.state != CellState.MainTower && cell.state != CellState.EnemySpawner && cell.state != CellState.EnemyPath)
+                {
+                    if (Random.value < furniturePlacementChance && furnitureAmount < maxFurnitureAmount)
+                    {
+                        cell.state = CellState.Furniture;
+                        GameObject furniture = Instantiate(furniturePrefab, cell.worldPosition, Quaternion.identity);
+                        furniture.transform.SetParent(transform);
+                        furnitureAmount++;
+                    }
+                }
             }
         }
-        
-        return false;
     }
-    
+
+    // ============================ ENEMY PATH METHODS ============================
     void GenerateEnemyPaths()
     {
         // Initialize path generator
@@ -549,6 +522,38 @@ public class RoomGenerator : MonoBehaviour
                 break;
             }
         }
+    }
+
+     bool IsSubCellInRemovedLargeCell(int subX, int subZ)
+    {
+        // Convert sub-cell coordinates to large cell coordinates
+        int largeX = subX / subCellsPerLargeCell;
+        int largeZ = subZ / subCellsPerLargeCell;
+        
+        // Check if the large cell containing this sub-cell is removed
+        return gridSystem.IsLargeCellRemoved(largeX, largeZ);
+    }
+
+    bool IsAdjacentToWall(int subX, int subZ)
+    {
+        // Check if this sub-cell is adjacent to a wall
+        Vector2Int[] directions = {
+            new Vector2Int(0, 1),   // North
+            new Vector2Int(1, 0),   // East
+            new Vector2Int(0, -1),  // South
+            new Vector2Int(-1, 0)   // West
+        };
+        
+        foreach (Vector2Int dir in directions)
+        {
+            Vector2Int neighbor = new Vector2Int(subX, subZ) + dir;
+            if (gridSystem.GetSubCellType(neighbor.x, neighbor.y) == GridSystem.CellType.Wall)
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
 ---------------------------------------------------------------------------------------------------------------------------------------

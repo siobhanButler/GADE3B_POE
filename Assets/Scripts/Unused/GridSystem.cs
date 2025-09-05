@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class GridSystem : MonoBehaviour
 {
+/*
     // Grid dimensions
     private int largeCellWidth;
     private int largeCellLength;
@@ -214,4 +215,5 @@ public class GridSystem : MonoBehaviour
             Gizmos.DrawLine(start, end);
         }
     }
+    */
 }
