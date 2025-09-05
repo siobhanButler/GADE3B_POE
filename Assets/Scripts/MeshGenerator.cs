@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(MeshFilter))] //Require a MeshFilter component
 [RequireComponent(typeof(MeshRenderer))] //Require a MeshRenderer component
+[RequireComponent(typeof(MeshCollider))] //Require a MeshRenderer component
 
 public class MeshGenerator : MonoBehaviour
 {
@@ -151,8 +152,16 @@ public class MeshGenerator : MonoBehaviour
         mesh.triangles = allTriangles.ToArray();
 
         mesh.RecalculateNormals();  //Recalculate the normals of the mesh
-    }
+        mesh.RecalculateBounds();   //for mesh collider
 
+        //For Physics
+        MeshCollider meshCollider = GetComponent<MeshCollider>();
+        if (meshCollider != null)
+        {
+            meshCollider.sharedMesh = null;   // clear first to force Unity to refresh
+            meshCollider.sharedMesh = mesh;
+        }
+    }
 
 
 /*  ======================== UNUSED METHODS ========================
