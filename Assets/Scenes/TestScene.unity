@@ -361,7 +361,6 @@ MonoBehaviour:
   maxRoomWidth: 10
   minRoomLength: 5
   maxRoomLength: 10
-  subCellSize: 3
   subCellsPerLargeCell: 10
   largeCellSize: 10
   cornerRemovalChance: 0.8
@@ -369,13 +368,14 @@ MonoBehaviour:
   maxFurniturePercent: 0.3
   minSpawnerCount: 2
   maxSpawnerCount: 5
-  floorTilePrefab: {fileID: 0}
+  minDefenceCount: 10
+  maxDefenceCount: 30
   wallPrefab: {fileID: 1324545293484928417, guid: a8e9b9372c3c29d46909e1f0288c29a0, type: 3}
   doorPrefab: {fileID: 7002816945552119249, guid: f3aec781ae2fc294e821a3dd2734de5c, type: 3}
   furniturePrefab: {fileID: 4390529268743058174, guid: a87439584d63b6547b63eacf32943974, type: 3}
   mainTowerPrefab: {fileID: 4481481441890430569, guid: 18b1b8f3ae417974e874922978af492b, type: 3}
   enemySpawnerPrefab: {fileID: 3698806880055105173, guid: a412eeb1b377c844eaeb295a58b60acf, type: 3}
-  defenseTowerPrefab: {fileID: 0}
+  defenseTowerLocationPrefab: {fileID: 4423518689117694565, guid: c02f6566198ec1147bc17989d09c4aae, type: 3}
 --- !u!114 &1519399453
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -390,7 +390,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xSize: 5
   zSize: 5
-  subCellSize: 1
 --- !u!114 &1519399454
 MonoBehaviour:
   m_ObjectHideFlags: 0

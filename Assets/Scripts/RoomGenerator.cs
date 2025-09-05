@@ -25,6 +25,10 @@ public class RoomGenerator : MonoBehaviour
      [Header("Spawner Settings")]
      public int minSpawnerCount = 2;
      public int maxSpawnerCount = 5;
+
+     [Header("Defence Tower Settings")]
+     public int minDefenceCount = 10;
+     public int maxDefenceCount = 30;
     
     [Header("Prefabs")]
     public GameObject wallPrefab;
@@ -32,7 +36,7 @@ public class RoomGenerator : MonoBehaviour
     public GameObject furniturePrefab;
     public GameObject mainTowerPrefab;
     public GameObject enemySpawnerPrefab;
-    public GameObject defenseTowerPrefab;
+    public GameObject defenseTowerLocationPrefab;
     
     // Private fields
     private GridSystem gridSystem;
@@ -44,6 +48,7 @@ public class RoomGenerator : MonoBehaviour
 
     SubCell mainTowerCell;
     SubCell[] enemySpawnerCells;
+    SubCell[] defenceTowerCells;
     
     void Start()
     {
@@ -76,6 +81,9 @@ public class RoomGenerator : MonoBehaviour
 
         // Step 6: Place furniture (on walkable active cells)
         PlaceFurniture();
+
+        //Step: Place Defence Tower Locations
+        PlaceDefenceTowerLocations();
     }
     
     void DetermineRoomDimensions()
@@ -126,7 +134,7 @@ public class RoomGenerator : MonoBehaviour
         Debug.Log("Neighbors and border states set up for all cells");
     }
     
-    // ============================ CORNER METHODS ============================
+// ============================ CORNER METHODS ============================
     void ProcessCorners()
     {
         // Define the four corners of the room
@@ -195,7 +203,7 @@ public class RoomGenerator : MonoBehaviour
         }
     }
     
-    // ============================ WALL METHODS ============================
+// ============================ WALL METHODS ============================
     void PlaceWalls()
     {
         foreach (LargeCell cell in grid)
@@ -255,7 +263,7 @@ public class RoomGenerator : MonoBehaviour
         wall.transform.SetParent(transform);
     }
     
-    // ============================ GAMEPLAY ELEMENT METHODS ============================
+// ============================ GAMEPLAY ELEMENT METHODS ============================
     void PlaceGameplayElements()
     {
         LargeCell centerCell = grid[Mathf.RoundToInt(roomWidth/2), Mathf.RoundToInt(roomLength/2)];
@@ -295,7 +303,7 @@ public class RoomGenerator : MonoBehaviour
             validSubCells.RemoveAt(index); // Remove to avoid duplicates
         }
          
-        Debug.Log($"Successfully placed {spawnerCount - validSubCells.Count} spawners");
+        Debug.Log($"Successfully placed {spawnerCount} spawners");
     }
 
     List<SubCell> GetValidSpawnerSubCells()
@@ -334,7 +342,105 @@ public class RoomGenerator : MonoBehaviour
         return validSubCells;
     }  
     
-    // ============================ FURNITURE METHODS ============================
+    void PlaceDefenceTowerLocations()
+    {
+        int defenceCount = Random.Range(minDefenceCount, maxDefenceCount + 1); // Random number between min and max (inclusive)
+        defenceTowerCells = new SubCell[defenceCount];
+        List<SubCell> validSubCells = GetValidDefenceSubCells();
+         
+        Debug.Log($"Attempting to place {defenceCount} defence towers from {validSubCells.Count} valid positions");
+         
+        for (int i = 0; i < defenceCount && validSubCells.Count > 0; i++)
+        {
+            // Pick a random valid position
+            int index = Random.Range(0, validSubCells.Count);
+            
+            Vector3 worldPos = validSubCells[index].worldPosition + Vector3.up * 0.1f;  //offset by 0.1 in up direction so its not inside the mesh
+            GameObject defenceTower = Instantiate(defenseTowerLocationPrefab, worldPos, Quaternion.identity);
+            defenceTower.transform.SetParent(transform);
+
+            validSubCells[index].state = CellState.DefenseTower;
+            validSubCells[index].parentCell.state = CellState.DefenseTower;     //but wha if its a enemy path? now it has lost that tag...?
+            defenceTowerCells[i] = validSubCells[index];
+            validSubCells.RemoveAt(index); // Remove to avoid duplicates
+        }
+         
+        Debug.Log($"Successfully placed {defenceCount} spawners");
+    }
+
+    List<SubCell> GetValidDefenceSubCells()
+    {
+        List<SubCell> validSubCells = new List<SubCell>();
+        
+        // Check all large cells for empty or enemy path cells
+        for (int x = 0; x < roomWidth; x++)
+        {
+            for (int z = 0; z < roomLength; z++)
+            {
+                LargeCell cell = grid[x, z];
+                
+                // Skip invalid tiles (removed corners)
+                if (cell.state == CellState.Removed) continue;
+                
+                // Check if this large cell is on the border
+                if (cell.state == CellState.Floor || cell.state == CellState.EnemyPath)
+                {
+                    // For floor cells, check if at least one neighbor has enemy path (so the defence towers arent too far away from enemy paths)
+                    bool hasEnemyPathNeighbor = false;
+                    if (cell.state == CellState.Floor)
+                    {
+                        LargeCell[] neighbors = { cell.north, cell.south, cell.east, cell.west, 
+                                                cell.northEast, cell.southEast, cell.southWest, cell.northWest };
+                        foreach (LargeCell neighbor in neighbors)
+                        {
+                            if (neighbor != null && neighbor.state == CellState.EnemyPath)
+                            {
+                                hasEnemyPathNeighbor = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        hasEnemyPathNeighbor = true; // Cell itself is enemy path
+                    }
+
+                    if (hasEnemyPathNeighbor)
+                    {
+                        // Add all sub-cells of this cell that are not enemy path cells as valid defence tower positions
+                        for (int sx = 0; sx < subCellsPerLargeCell; sx++)
+                        {
+                            for (int sz = 0; sz < subCellsPerLargeCell; sz++)
+                            {
+                                SubCell subCell = cell.subCells[sx, sz];
+                                if (subCell != null && subCell.state == CellState.Floor)    //can only be placed on floor (aka not enemypath cells)
+                                {
+                                    validSubCells.Add(subCell);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return validSubCells;
+    } 
+
+// ============================ ENEMY PATH METHODS ============================
+    void GenerateEnemyPaths()
+    {
+        // Initialize path generator
+        pathGenerator = GetComponent<PathGenerator>() ?? gameObject.AddComponent<PathGenerator>();
+        pathGenerator.Initialize(grid, roomWidth, roomLength, subCellsPerLargeCell);
+        
+        // Generate paths from all spawners to the main tower using stored references
+        pathGenerator.GenerateEnemyPaths(mainTowerCell, enemySpawnerCells);
+        
+        Debug.Log("Enemy paths generated successfully");
+    }
+
+// ============================ FURNITURE METHODS ============================
     void PlaceFurniture()
     {
         int maxFurnitureAmount = Mathf.RoundToInt(maxFurniturePercent * (roomLength * roomWidth));
@@ -360,22 +466,8 @@ public class RoomGenerator : MonoBehaviour
         }
     }
 
-    // ============================ ENEMY PATH METHODS ============================
-    void GenerateEnemyPaths()
-    {
-        // Initialize path generator
-        pathGenerator = GetComponent<PathGenerator>() ?? gameObject.AddComponent<PathGenerator>();
-        pathGenerator.Initialize(grid, roomWidth, roomLength, subCellsPerLargeCell);
-        
-        // Generate paths from all spawners to the main tower using stored references
-        pathGenerator.GenerateEnemyPaths(mainTowerCell, enemySpawnerCells);
-        
-        Debug.Log("Enemy paths generated successfully");
-    }
 
-//----------------------------------------------------------------------------------------------------------------------------
-//                                           METHODS NOT IN USE
-/*
+/* ============================ UNUSED/OLD METHODS ============================
 
     void InitializeGridSystem()
     {
@@ -556,7 +648,7 @@ public class RoomGenerator : MonoBehaviour
         return false;
     }
 
----------------------------------------------------------------------------------------------------------------------------------------
-    */
+
+*/
 }
 
