@@ -4,13 +4,13 @@ using TMPro;
 
 public class ObjectUIManager : MonoBehaviour
 {
-    public Image healthFillImage; // Assign this in the Inspector
+    public Slider healthFillImage; // Assign this in the Inspector
     public TextMeshProUGUI nameText;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        healthFillImage.value = 1;
     }
 
     // Update is called once per frame
@@ -23,7 +23,7 @@ public class ObjectUIManager : MonoBehaviour
     {
         if (healthFillImage != null)
         {
-            healthFillImage.fillAmount = currentHealth / maxHealth;
+            healthFillImage.value = currentHealth / maxHealth;
         }
     }
 }

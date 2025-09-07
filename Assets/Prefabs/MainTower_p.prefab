@@ -183,6 +183,7 @@ MonoBehaviour:
   attack: {fileID: 0}
   objectUiPrefab: {fileID: 5764671174055410852, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
   objectTag: MainTower
+  cost: 10
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -317,6 +318,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3615677415130827035, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3615677415130827035, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
@@ -324,9 +329,25 @@ PrefabInstance:
       propertyPath: m_PresetInfoIsWorld
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4618925643961610663, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4618925643961610663, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4618925643961610663, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 90
+      objectReference: {fileID: 0}
     - target: {fileID: 5764671174055410852, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_Name
       value: ObjectUI
+      objectReference: {fileID: 0}
+    - target: {fileID: 8339931104300802194, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+      propertyPath: m_Value
+      value: 0.087
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
