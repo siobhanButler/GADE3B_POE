@@ -18,7 +18,14 @@ public class Attack : MonoBehaviour
     public float attackDamage = 2f;
     public float rangeRadius = 30f;
     public float attackSpeed = 1f;
-    public List<string> attackableTags; 
+    public List<string> attackableTags;
+    
+    [Header("Attack Visuals")]
+    public GameObject projectilePrefab;     //Must have collider and rigidbody
+    public Transform firePoint;     //epty game object fire point
+    public float projectileSpeed = 800f;
+    public float rotationSpeed = 5f;
+    public float maxProjectileLifetime = 10f; // Safety net - maximum time projectiles can exist 
 
     [Header("Attack State")]
     public bool isAttacking = false;
@@ -103,6 +110,11 @@ public class Attack : MonoBehaviour
     void RangeAttack(Collider other)
     {
         Debug.Log(this.name + " is attacking " + other.name);
+        
+        // Handle attack visuals (rotation and projectile)
+        AttackVisuals();
+        
+        // Apply damage
         Health otherHealth = other.GetComponent<Health>();
         if (otherHealth != null)
         {        
@@ -190,5 +202,123 @@ public class Attack : MonoBehaviour
         }
 
         return bestTarget;
+    }
+
+    private void AttackVisuals()
+    {
+        if (currentTarget == null) return;
+        
+        // Rotate towards target
+        RotateTowardsTarget();
+        
+        // Spawn and launch projectile
+        SpawnProjectile();
+    }
+    
+    private void RotateTowardsTarget()
+    {
+        if (currentTarget == null) return;
+        
+        // Calculate direction to target
+        Vector3 direction = (currentTarget.transform.position - transform.position).normalized;
+        
+        // Calculate rotation to look at target
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        
+        // Smoothly rotate towards target
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+    }
+    
+    private void SpawnProjectile()
+    {
+        if (projectilePrefab == null || currentTarget == null) return;
+        
+        // Determine spawn position
+        Vector3 spawnPosition = firePoint != null ? firePoint.position : transform.position;
+        
+        // Instantiate projectile
+        GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
+        
+        // Calculate direction to target
+        Vector3 direction = (currentTarget.transform.position - spawnPosition).normalized;
+        
+        // Set projectile rotation to face target
+        projectile.transform.rotation = Quaternion.LookRotation(direction);
+        
+        // Calculate travel time based on distance and speed
+        float distanceToTarget = Vector3.Distance(spawnPosition, currentTarget.transform.position);
+        float travelTime = distanceToTarget / projectileSpeed;
+        
+        // Use the smaller of calculated travel time or max lifetime as safety net
+        float actualLifetime = Mathf.Min(travelTime, maxProjectileLifetime);
+        
+        // Add velocity to projectile (assuming it has a Rigidbody)
+        Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
+        if (projectileRb != null)
+        {
+            projectileRb.linearVelocity = direction * projectileSpeed;
+            // Start coroutine to destroy projectile when it reaches target or after calculated travel time
+            StartCoroutine(DestroyProjectileOnReach(projectile, currentTarget.transform.position, actualLifetime));
+        }
+        else
+        {
+            // If no Rigidbody, use a script to move the projectile
+            //StartCoroutine(MoveProjectile(projectile, direction, currentTarget.transform.position, actualLifetime));
+        }
+    }
+/*    
+    private IEnumerator MoveProjectile(GameObject projectile, Vector3 direction, Vector3 targetPosition, float travelTime)
+    {
+        float elapsedTime = 0f;
+        Vector3 startPosition = projectile.transform.position;
+        
+        while (projectile != null && elapsedTime < travelTime)
+        {
+            // Move projectile
+            projectile.transform.Translate(direction * projectileSpeed * Time.deltaTime, Space.World);
+            
+            // Check if projectile has reached target (within 0.5 units)
+            float currentDistance = Vector3.Distance(projectile.transform.position, targetPosition);
+            if (currentDistance < 0.5f)
+            {
+                Destroy(projectile);
+                yield break;
+            }
+            
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        
+        // Destroy projectile if travel time exceeded
+        if (projectile != null)
+        {
+            Destroy(projectile);
+        }
+    }
+ */   
+    private IEnumerator DestroyProjectileOnReach(GameObject projectile, Vector3 targetPosition, float travelTime)
+    {
+        float elapsedTime = 0f;
+        Vector3 startPosition = projectile.transform.position;
+        
+        while (projectile != null && elapsedTime < travelTime)
+        {
+            // Check if projectile has reached target (within 0.5 units)
+            float currentDistance = Vector3.Distance(projectile.transform.position, targetPosition);
+            if (currentDistance < 0.5f)
+            {
+                Destroy(projectile);
+                yield break;
+            }
+            
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        
+        // Destroy projectile if travel time exceeded
+        if (projectile != null)
+        {
+            Destroy(projectile);
+        }
     }
 }
