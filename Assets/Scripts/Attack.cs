@@ -37,7 +37,11 @@ public class Attack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(!IsTargetValid(currentTarget))   //if target is invalid
+        {
+            StopAttack();
+            StartAttack();
+        }
     }
 
     public void Setup(Rigidbody p_rigidBody, BoxCollider p_boxCollider, SphereCollider p_sphereCollider)
@@ -57,12 +61,7 @@ public class Attack : MonoBehaviour
         {
             targetsInRange.Add(other);  //add as a target
 
-            if(isAttacking == false)    //start attacking if not already
-            {
-                currentTarget = targetsInRange[0];
-                attackRoutine = StartCoroutine(AttackLoop());
-                isAttacking = true;
-            }
+            StartAttack();
         }   
     }
 
@@ -74,18 +73,31 @@ public class Attack : MonoBehaviour
 
             if (other == currentTarget)     //is the target the one exiting --> Stop attacking
             {
-                StopCoroutine(attackRoutine);   //stop attacking
-                isAttacking = false;
-                currentTarget = null;           //clear current target  
-
-                if (targetsInRange.Count > 0)   //if there are still targets in range --> start attacking new target
-                {
-                    currentTarget = targetsInRange[0];  //set new target
-                    attackRoutine = StartCoroutine(AttackLoop()); //start attacking new target
-                    isAttacking = true;
-                }
+                StopAttack();
             }       
         }
+    }
+
+    void StartAttack()
+    {
+            if(isAttacking == false && targetsInRange.Count > 0)    //start attacking if not already
+            {
+                currentTarget = GetBestTarget();
+                attackRoutine = StartCoroutine(AttackLoop());
+                isAttacking = true;
+            }
+    }
+
+    void StopAttack()
+    {
+        if (attackRoutine != null)
+        {
+            StopCoroutine(attackRoutine);   //stop attacking
+        }
+        isAttacking = false;
+        currentTarget = null;           //clear current target  
+
+        StartAttack();
     }
 
     void RangeAttack(Collider other)
@@ -104,6 +116,15 @@ public class Attack : MonoBehaviour
         {
             RangeAttack(currentTarget);
             yield return new WaitForSeconds(attackSpeed);
+        }
+
+        //If currentTarget is null (aka dead) so coroutine will stop --> stop attacking and pick new target if available
+        isAttacking = false;
+
+        if (targetsInRange.Count > 0)   //if there are still targets in range --> start attacking new target
+        {
+            currentTarget = targetsInRange[0];  //set new target (no longer null, so coroutine will continue)
+            isAttacking = true;
         }
     }
 
@@ -124,5 +145,50 @@ public class Attack : MonoBehaviour
         
         // Check if the range collider bounds intersect with the target's hitbox bounds
         return rangeCollider.bounds.Intersects(targetHitbox.bounds);
+    }
+
+    // Check if a target is still valid (alive and in range)
+    bool IsTargetValid(Collider target)
+    {
+        if (target == null)
+            return false;
+
+        // Check if target still exists and has health
+        Health targetHealth = target.GetComponent<Health>();
+        if (targetHealth == null || targetHealth.currentHealth <= 0)
+            return false;
+
+        // Check if target is still in range
+        if (!IsRangeIntersectingWithHitbox(target))
+            return false;
+
+        return true;
+    }
+
+    Collider GetBestTarget()
+    {
+        if (targetsInRange.Count == 0)
+            return null;
+
+        Collider bestTarget = null;
+        float closestDistance = float.MaxValue;
+
+        // Remove invalid targets first
+        targetsInRange.RemoveAll(target => !IsTargetValid(target));
+
+        foreach (Collider target in targetsInRange)
+        {
+            if (IsTargetValid(target))
+            {
+                float distance = Vector3.Distance(transform.position, target.transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    bestTarget = target;
+                }
+            }
+        }
+
+        return bestTarget;
     }
 }

@@ -52,6 +52,16 @@ public class TowerLocationManager : MonoBehaviour, IClickable
         Vector3 spawnPos = transform.position;
         spawnPos.y += 3f;
         tower = Instantiate(towerPrefab, spawnPos, Quaternion.identity);
+        
         isOccupied = true;
+    }
+
+    void OnDestroy()
+    {
+        // Clean up when the tower location is destroyed
+        if (tower != null)
+        {
+            Destroy(tower);
+        }
     }
 }

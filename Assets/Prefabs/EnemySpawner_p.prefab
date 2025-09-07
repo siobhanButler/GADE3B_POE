@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 1029667435088295891}
   - component: {fileID: 4364622917671368786}
   - component: {fileID: 7217186140674796791}
-  - component: {fileID: 3385788401062315833}
   - component: {fileID: 3999862555742870448}
   m_Layer: 0
   m_Name: EnemySpawner_p
@@ -88,27 +87,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &3385788401062315833
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3698806880055105173}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3999862555742870448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,10 +100,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 8641729460655824074, guid: 52896ee9db52e8047875dd59742519e8, type: 3}
-  spawnInterval: 7
-  waveInterval: 25
-  minEnemies: 5
-  maxEnemies: 20
+  spawnInterval: 2
+  waveInterval: 5
+  minEnemies: 1
+  maxEnemies: 1
   enemiesToSpawn: 0
-  numberOfWaves: 3
+  numberOfWaves: 1
   wavesCompleted: 0

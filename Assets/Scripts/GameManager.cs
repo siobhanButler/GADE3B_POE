@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -24,14 +25,10 @@ public class GameManager : MonoBehaviour
     public MeshGenerator meshGenerator;
     public PathGenerator pathGenerator;
 
-    public List<GameObject> Enemies;
+    public List<GameObject> enemies;
     public List<SpawnerManager> spawnerManagers;
 
-    void Awake()
-    {
-        Enemies = Enemies ?? new List<GameObject>();
-        spawnerManagers = spawnerManagers ?? new List<SpawnerManager>();
-    }
+    private bool spawnersDone = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -42,11 +39,16 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(spawnersDone)    //after spawners are done, start checking if all enemies are dead
+        {
+            WinGame();
+        }
     }
 
     void StartGame()
     {
+        Time.timeScale = 1.0f;
+        
         player = GameObject.FindWithTag("Player");
         if (player == null)
         {
@@ -66,24 +68,36 @@ public class GameManager : MonoBehaviour
         if (uiManager != null)
         {
             uiManager.Setup(this);
-            uiManager.GetComponent<Canvas>().worldCamera = player.GetComponent<PlayerCameraController>().cam;
+            
+            // Ensure UI renders properly on top
+            Canvas canvas = uiManager.GetComponent<Canvas>();
+            if (canvas != null)
+            {
+                canvas.worldCamera = player.GetComponent<PlayerCameraController>().cam;
+                canvas.sortingOrder = 100; // Ensure UI renders on top
+            }
         }
 
-        proceduralGenerator = GameObject.FindWithTag("ProceduralGenerator");
-        if (proceduralGenerator == null)
-        {
-            Debug.Log("GameManager StartGame(): No proceduralGenerator found, instantiating procedural generator");
-            proceduralGenerator = Instantiate(proceduralGeneratorPrefab, new Vector3(0,0,0), Quaternion.identity);
-        }
+        // Always create a new procedural generator to avoid finding old ones (during next level)
+        Debug.Log("GameManager StartGame(): Creating new procedural generator");
+        proceduralGenerator = Instantiate(proceduralGeneratorPrefab, new Vector3(0,0,0), Quaternion.identity);
+        Debug.Log("GameManager StartGame(): Created procedural generator " + proceduralGenerator.name);
         roomGenerator = proceduralGenerator.GetComponent<RoomGenerator>();
         roomGenerator.Setup(currentLevel);  //impliment properly later using difficulty scaler
         meshGenerator = proceduralGenerator.GetComponent<MeshGenerator>();
         pathGenerator = proceduralGenerator.GetComponent<PathGenerator>();
+
+        enemies = new List<GameObject>();
+        spawnerManagers = new List<SpawnerManager>();
     }
 
     public void StartNextLevel()
     {
+        // Reset game state for next level
+        gameState = GameState.Playing;
+        spawnersDone = false;
         currentLevel++;
+        
         if (playerManager != null)
         {
             playerManager.coins += levelReward;
@@ -94,23 +108,27 @@ public class GameManager : MonoBehaviour
 
     public void RestartGame()
     {
-        Destroy(player);
-        NewLevel();
+        // reload current scene
+        Time.timeScale = 1f; // Make sure time scale is reset
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void NewLevel()
     {
+        // Reset spawners done flag
+        spawnersDone = false;
+        
         // Clean up enemies list and objects
-        if (Enemies != null)
+        if (enemies != null)
         {
-            for (int i = Enemies.Count - 1; i >= 0; i--)
+            for (int i = enemies.Count - 1; i >= 0; i--)
             {
-                if (Enemies[i] != null)
+                if (enemies[i] != null)
                 {
-                    Destroy(Enemies[i]);
+                    Destroy(enemies[i]);
                 }
             }
-            Enemies.Clear();
+            enemies.Clear();
         }
 
         // Reset spawner list
@@ -119,7 +137,13 @@ public class GameManager : MonoBehaviour
             spawnerManagers.Clear();
         }
 
-        Destroy(proceduralGenerator);
+        // Only destroy proceduralGenerator if it exists (not already destroyed)
+        if (proceduralGenerator != null)
+        {
+            Destroy(proceduralGenerator);
+            proceduralGenerator = null;
+        }
+        
         StartGame();
     }
 
@@ -132,7 +156,8 @@ public class GameManager : MonoBehaviour
 
     public void WinGame()
     {
-        bool spawnersDone = false;
+        Debug.Log("win: checking win");
+        spawnersDone = false;
 
         foreach (SpawnerManager spawner in spawnerManagers)
         {
@@ -143,11 +168,16 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                 spawnersDone = true;
+                spawnersDone = true;
             }
         }
+        
+        // Remove dead enemies
+        enemies.RemoveAll(enemy => enemy == null);
 
-        if (spawnersDone && Enemies.Count == 0)     //if all spawners are done and there are no enemies left
+        Debug.Log("win" + enemies.Count + "enemies left");
+
+        if (spawnersDone && enemies.Count == 0)     //if all spawners are done and there are no enemies left
         {
             Pause(true);    //pause the game
             gameState = GameState.Win;

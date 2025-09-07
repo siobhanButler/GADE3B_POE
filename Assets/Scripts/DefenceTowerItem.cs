@@ -77,5 +77,6 @@ public class DefenceTowerItem : MonoBehaviour
         }
 
         uiManager.towerLocationManager.PurchaseTower(towerPrefab);
+        uiManager.EnableMenuPanel(false);
     }
 }

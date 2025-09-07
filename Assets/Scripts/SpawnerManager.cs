@@ -103,7 +103,10 @@ public class SpawnerManager : MonoBehaviour
         GameManager gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager != null)
         {
-            gameManager.Enemies.Add(enemy);
+            gameManager.enemies.Add(enemy);
+        }
+        else{
+            Debug.Log("win: game manager invalid in spawner manager");
         }
     } 
 }

@@ -183,6 +183,7 @@ MonoBehaviour:
   attack: {fileID: 7564483025522920281}
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
+  cost: 80
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,9 +199,9 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
-  attackDamage: 4
+  attackDamage: 2
   rangeRadius: 3
-  attackSpeed: 0.5
+  attackSpeed: 2
   attackableTags:
   - Enemy
   isAttacking: 0
@@ -216,7 +217,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 836f7aa9109816d49aca171b6534eeaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 50
   currentHealth: 0
   isDead: 0
   healthBarUIManager: {fileID: 0}

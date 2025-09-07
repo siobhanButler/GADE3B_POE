@@ -120,12 +120,31 @@ public class UIManager : MonoBehaviour
         }
 
         menuPanel.gameObject.SetActive(enable);
+        if(towerLocationPanel.gameObject.activeInHierarchy) //if its enabled
+        {
+            EnableTowerLocationPanel(false, null);
+        }
     }
 
     public void EnableTowerLocationPanel(bool enable, TowerLocationManager caller)
     {
         towerLocationPanel.gameObject.SetActive(enable);
         towerLocationManager = caller;
+        
+        // Ensure tower location panel renders on top
+        if (enable)
+        {
+            Canvas panelCanvas = towerLocationPanel.GetComponent<Canvas>();
+            if (panelCanvas == null)
+            {
+                panelCanvas = towerLocationPanel.GetComponentInParent<Canvas>();
+            }
+            
+            if (panelCanvas != null)
+            {
+                panelCanvas.sortingOrder = 200; // Higher than main UI
+            }
+        }
     }
 
     void OnPauseButtonClick()
@@ -136,6 +155,7 @@ public class UIManager : MonoBehaviour
     void OnResumeButtonClick()
     {
         gameManager.Pause(false);
+        EnableMenuPanel(false);
     }
 
     void OnExitButtonClick()
@@ -157,6 +177,7 @@ public class UIManager : MonoBehaviour
                 gameManager.StartNextLevel();
                 break;
         }
+        EnableMenuPanel(false);
     }
 
     void OnExitTowerLocationButtonClick()
