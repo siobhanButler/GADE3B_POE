@@ -1,42 +1,29 @@
 using UnityEngine;
 
-public class TowerManager : MonoBehaviour
+public class TowerManager : ObjectManager
 {
-    [Header("Tower Components")]
-    public Rigidbody rigidBody;
-    public BoxCollider hitBox;
-    public SphereCollider rangeCollider;
-    public Canvas towerUI;
-    public ObjectUIManager UIManager;
-    public Health health;
-    public Attack attack;
-
-    public Canvas canvasPrefab;  //assign in inspector
-
-    public string towerType = "Tower";
-
+    public int cost = 10;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //Get or add required components
-        rigidBody = GetComponent<Rigidbody>() ?? gameObject.AddComponent<Rigidbody>();
-        hitBox = GetComponent<BoxCollider>() ?? gameObject.AddComponent<BoxCollider>();
-        rangeCollider = GetComponent<SphereCollider>() ?? gameObject.AddComponent<SphereCollider>();
-
-        towerUI = GetComponentInChildren<Canvas>() ?? Instantiate(canvasPrefab, transform);
-        UIManager = towerUI.GetComponent<ObjectUIManager>();
-
-        health = GetComponent<Health>() ?? gameObject.AddComponent<Health>();
-        health.Setup(UIManager);
-        attack = GetComponent<Attack>() ?? gameObject.AddComponent<Attack>();
-        attack.Setup(rigidBody, hitBox, rangeCollider);
-
-        this.tag = towerType;  //set tag to tower
+        Setup();
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+    public override void OnDeath()
+    {
+        if (this.tag == "MainTower")
+        {
+            // Find the GameManager and trigger game over
+            GameManager gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.GameOver();
+            }
+        }
     }
 }

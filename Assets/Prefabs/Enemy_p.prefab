@@ -35,8 +35,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 42.73616, y: 0, z: 29.69885}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7414306222099171271}
   m_Father: {fileID: 0}
@@ -109,13 +109,13 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
-  towerUI: {fileID: 0}
-  UIManager: {fileID: 0}
+  objectUI: {fileID: 4293779183714617216}
+  uiManager: {fileID: 0}
   health: {fileID: 0}
   attack: {fileID: 0}
+  objectUiPrefab: {fileID: 0}
+  objectTag: Enemy
   movement: {fileID: 0}
-  canvasPrefab: {fileID: 4929489544935956522, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
-  enemyType: Enemy
 --- !u!114 &-914249002432701815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,6 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 2
+  speedWhenAttacking: 0.3
   target: {fileID: 0}
 --- !u!54 &5464121699189145045
 Rigidbody:
@@ -231,11 +232,11 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1
+  m_Radius: 8
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &7752569114488961828
 PrefabInstance:
@@ -358,6 +359,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+--- !u!1 &4293779183714617216 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5764671174055410852, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+  m_PrefabInstance: {fileID: 7752569114488961828}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &7414306222099171271 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}

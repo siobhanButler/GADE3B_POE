@@ -129,11 +129,11 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.50000006
+  m_Radius: 5
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &2241444040307235550
 Rigidbody:
@@ -160,7 +160,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 32
   m_CollisionDetection: 0
 --- !u!114 &1813358772858288331
 MonoBehaviour:
@@ -177,12 +177,12 @@ MonoBehaviour:
   rigidBody: {fileID: 0}
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
-  towerUI: {fileID: 0}
-  UIManager: {fileID: 0}
-  health: {fileID: 0}
-  attack: {fileID: 0}
-  canvasPrefab: {fileID: 4929489544935956522, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
-  towerType: DefenceTower
+  objectUI: {fileID: 3094916705883050836}
+  uiManager: {fileID: 0}
+  health: {fileID: 9083771151248980207}
+  attack: {fileID: 7564483025522920281}
+  objectUiPrefab: {fileID: 0}
+  objectTag: DefenceTower
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,7 +199,7 @@ MonoBehaviour:
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
   attackDamage: 4
-  rangeRadius: 1
+  rangeRadius: 3
   attackSpeed: 0.5
   attackableTags:
   - Enemy
@@ -333,6 +333,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+--- !u!1 &3094916705883050836 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5764671174055410852, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
+  m_PrefabInstance: {fileID: 8859534547970519024}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &8611202489756324627 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}

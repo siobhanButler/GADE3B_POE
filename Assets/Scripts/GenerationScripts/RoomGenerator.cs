@@ -25,6 +25,7 @@ public class RoomGenerator : MonoBehaviour
      [Header("Spawner Settings")]
      public int minSpawnerCount = 2;
      public int maxSpawnerCount = 5;
+    public int spawnerCount = 0;
 
      [Header("Defence Tower Settings")]
      public int minDefenceCount = 10;
@@ -55,8 +56,36 @@ public class RoomGenerator : MonoBehaviour
         largeCellSize = subCellsPerLargeCell * subCellSize;
         GenerateRoom();
     }
-    
-    public void GenerateRoom()
+
+    public void Setup(int level)     //impliment later using difficulty scaler
+    {
+        /*
+        // Room
+        minRoomWidth = minRoomW;
+        maxRoomWidth = maxRoomW;
+        minRoomLength = minRoomL;
+        maxRoomLength = maxRoomL;
+
+        // Cells
+        subCellsPerLargeCell = subCellsPerLarge;
+        largeCellSize = largeCellS;
+
+        // Generation
+        cornerRemovalChance = Mathf.Clamp01(cornerChance);
+        furniturePlacementChance = Mathf.Clamp01(furnitureChance);
+        maxFurniturePercent = Mathf.Clamp01(maxFurniture);
+
+        // Spawners
+        minSpawnerCount = minSpawner;
+        maxSpawnerCount = maxSpawner;
+
+        // Defence Towers
+        minDefenceCount = minDefence;
+        maxDefenceCount = maxDefence;
+        */
+    }
+
+public void GenerateRoom()
     {
         // Step 1: Determine room dimensions
         DetermineRoomDimensions();
@@ -269,6 +298,7 @@ public class RoomGenerator : MonoBehaviour
         LargeCell centerCell = grid[Mathf.RoundToInt(roomWidth/2), Mathf.RoundToInt(roomLength/2)];
         SubCell centerSubCell = centerCell.subCells[Mathf.RoundToInt(subCellsPerLargeCell/2), Mathf.RoundToInt(subCellsPerLargeCell/2)];
         Vector3 centerPos = centerSubCell.worldPosition;
+        centerPos.y += 3f;      //POE later: change when custom modle sare imported
 
         GameObject mainTower = Instantiate(mainTowerPrefab, centerPos, Quaternion.identity);
         mainTower.transform.SetParent(transform);
@@ -282,7 +312,9 @@ public class RoomGenerator : MonoBehaviour
     
     void PlaceEnemySpawners()
     {
-        int spawnerCount = Random.Range(minSpawnerCount, maxSpawnerCount + 1); // Random number between min and max (inclusive)
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+
+        spawnerCount = Random.Range(minSpawnerCount, maxSpawnerCount + 1); // Random number between min and max (inclusive)
         enemySpawnerCells = new SubCell[spawnerCount];
         List<SubCell> validSubCells = GetValidSpawnerSubCells();
          
@@ -302,6 +334,11 @@ public class RoomGenerator : MonoBehaviour
             validSubCells[index].parentCell.state = CellState.EnemySpawner;
             enemySpawnerCells[i] = validSubCells[index];
             validSubCells.RemoveAt(index); // Remove to avoid duplicates
+
+            if (gameManager != null)
+            {
+                gameManager.spawnerManagers.Add(spawner.GetComponent<SpawnerManager>());
+            }
         }
          
         Debug.Log($"Successfully placed {spawnerCount} spawners");

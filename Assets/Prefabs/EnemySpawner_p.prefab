@@ -122,9 +122,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 8641729460655824074, guid: 52896ee9db52e8047875dd59742519e8, type: 3}
-  spawnInterval: 5
-  waveInterval: 10
+  spawnInterval: 7
+  waveInterval: 25
   minEnemies: 5
   maxEnemies: 20
   enemiesToSpawn: 0
   numberOfWaves: 3
+  wavesCompleted: 0

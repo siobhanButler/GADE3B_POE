@@ -7,11 +7,12 @@ public class SpawnerManager : MonoBehaviour
     [Header("Spawner Settings")]
     public GameObject enemyPrefab;      // Assign in inspector
     public float spawnInterval = 4f;    // Time in seconds between spawns
-    public float waveInterval = 10f;   // Time in seconds between waves
+    public float waveInterval = 20f;   // Time in seconds between waves
     public int minEnemies = 5;          // Minimum number of enemies to spawn
     public int maxEnemies = 20;         // Maximum number of enemies to spawn
     public int enemiesToSpawn;          // Number of enemies to spawn
     public int numberOfWaves = 3;       // Total number of waves
+    public bool wavesCompleted = false;
 
     private Coroutine spawnCoroutine;
     private int currentWave = 0;
@@ -73,7 +74,12 @@ public class SpawnerManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("All waves completed!");
+            wavesCompleted = true;
+            GameManager gameManager = FindFirstObjectByType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.WinGame();
+            }
         }
     }
 
@@ -87,8 +93,17 @@ public class SpawnerManager : MonoBehaviour
         
         List<SubCell> path = pathGenerator.GetPathForSpawner(parentCell);
 
-        GameObject enemy = Instantiate(enemyPrefab, transform.position + Vector3.up * 2f, Quaternion.identity);
+        Vector3 spawnPos = transform.position;
+        spawnPos.y += 3f;
+        GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
         enemy.GetComponent<EnemyManager>().pathFromSpawner = path;
         enemiesToSpawn--;
+
+        //Add spawned enemy to GameManager's enemy list
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.Enemies.Add(enemy);
+        }
     } 
 }

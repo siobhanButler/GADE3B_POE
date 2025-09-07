@@ -1,48 +1,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyManager : MonoBehaviour
+public class EnemyManager : ObjectManager
 {
-    [Header("Enemy Components")]
-    public Rigidbody rigidBody;
-    public BoxCollider hitBox;
-    public SphereCollider rangeCollider;
-    public Canvas towerUI;
-    public ObjectUIManager UIManager;
-    public Health health;
-    public Attack attack;
+    [Header("Enemy Properties")]
     public EnemyMovement movement;
-
-    public Canvas canvasPrefab;  //assign in inspector
-
-    public string enemyType = "Enemy";
-
     public List<SubCell> pathFromSpawner;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //Get or add required components
-        rigidBody = GetComponent<Rigidbody>() ?? gameObject.AddComponent<Rigidbody>();
-        hitBox = GetComponent<BoxCollider>() ?? gameObject.AddComponent<BoxCollider>();
-        rangeCollider = GetComponent<SphereCollider>() ?? gameObject.AddComponent<SphereCollider>();
-
-        towerUI = GetComponentInChildren<Canvas>() ?? Instantiate(canvasPrefab, transform);
-        UIManager = towerUI.GetComponent<ObjectUIManager>();
-
-        health = GetComponent<Health>() ?? gameObject.AddComponent<Health>();
-        health.Setup(UIManager);
-        attack = GetComponent<Attack>() ?? gameObject.AddComponent<Attack>();
-        attack.Setup(rigidBody, hitBox, rangeCollider);
+        Setup();
         movement = GetComponent<EnemyMovement>() ?? gameObject.AddComponent<EnemyMovement>();
         movement.Setup();
-
-        this.tag = enemyType;  //set tag to tower
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    public override void OnDeath()
+    {
+        // Find the PlayerManager and add coins
+        PlayerManager playerManager = FindFirstObjectByType<PlayerManager>();
+        if (playerManager != null)
+        {
+                // Add coins when enemy dies (you can adjust the amount as needed)
+                 playerManager.coins += 10;
+        }
     }
 }

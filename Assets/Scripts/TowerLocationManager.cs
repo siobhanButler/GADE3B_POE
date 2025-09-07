@@ -1,10 +1,10 @@
 using UnityEngine;
 
-public class TowerLocationManager : MonoBehaviour
+public class TowerLocationManager : MonoBehaviour, IClickable
 {
-    public GameObject towerPrefab;
-    public int cost = 30;
     public GameManager gameManager;
+    public GameObject tower;
+    public bool isOccupied = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -22,11 +22,36 @@ public class TowerLocationManager : MonoBehaviour
     void OnMouseDown()
     {
         Debug.Log("OnMouseDown called!");
-        if (gameManager.playerMoney < cost) //can't afford :(
+        
+    }
+
+    public void OnClick()
+    {
+        Debug.Log($"{name} was clicked!");
+        GameManager gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.uiManager.EnableTowerLocationPanel(true, this);
+        }
+    }
+
+    public void PurchaseTower(GameObject towerPrefab)
+    {
+        int cost = towerPrefab.GetComponent<TowerManager>().cost;
+        if (isOccupied)
+        {
+            Debug.Log("Location already occupied");
+            return;
+        }
+
+        if (gameManager.playerManager.coins < cost) //can't afford :(
         {
             return;
         }
-        gameManager.playerMoney -= cost;
-        Instantiate(towerPrefab, transform.position, Quaternion.identity);
+        gameManager.playerManager.coins -= cost;
+        Vector3 spawnPos = transform.position;
+        spawnPos.y += 3f;
+        tower = Instantiate(towerPrefab, spawnPos, Quaternion.identity);
+        isOccupied = true;
     }
 }
