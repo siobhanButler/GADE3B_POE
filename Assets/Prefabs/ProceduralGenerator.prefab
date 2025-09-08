@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3d2fe42d3aeef72498166b496ccda7ba, type: 2}
+  - {fileID: 2100000, guid: a3d343ef0f9a5fe439bb74727e078826, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30c4bc4e78200f2459535c237b020733, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jitterAmount: 0.3
+  jitterAmount: 0.6
   jitterFrequency: 0.5
   maxPathAttempts: 3
   pathPrefab: {fileID: 7504565514096408905, guid: 28e577ffdf1f0b14a9163c0c54e7df40, type: 3}

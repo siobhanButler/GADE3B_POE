@@ -151,6 +151,19 @@ public class MeshGenerator : MonoBehaviour
         mesh.vertices = allVertices.ToArray();
         mesh.triangles = allTriangles.ToArray();
 
+        // Generate UVs based on world XZ so textures can tile/repeat across the whole floor
+        // This maps 1 UV unit per 1 world unit, enabling a texture set to 1x1 tiling to visibly repeat per large-cell
+        if (allVertices != null && allVertices.Count > 0)
+        {
+            Vector2[] generatedUVs = new Vector2[allVertices.Count];
+            for (int i = 0; i < allVertices.Count; i++)
+            {
+                Vector3 v = allVertices[i];
+                generatedUVs[i] = new Vector2(v.x, v.z);    //create vector2 based on the vertice's x and y coordinates
+            }
+            mesh.uv = generatedUVs;
+        }
+
         mesh.RecalculateNormals();  //Recalculate the normals of the mesh
         mesh.RecalculateBounds();   //for mesh collider
 
