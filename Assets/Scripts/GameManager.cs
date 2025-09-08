@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }    //Singleton Pattern
     [Header("Prefabs")]
     public GameObject playerPrefab;
     public GameObject proceduralGeneratorPrefab;
@@ -14,9 +15,13 @@ public class GameManager : MonoBehaviour
     public GameState gameState = GameState.Playing;
     public int currentLevel = 1;
     public int levelReward = 100;   //how many coins gained per level
+    public List<GameObject> enemies;
+    public List<SpawnerManager> spawnerManagers;
+    public bool spawnersDone = false;
 
     public GameObject player;   //Player instance
     public PlayerManager playerManager;
+    public int startingCoins = 100;     //how many coins at the beginning of the game, later how many from previous level
     public GameObject ui;       //UI instance
     public UIManager uiManager;
 
@@ -25,21 +30,31 @@ public class GameManager : MonoBehaviour
     public MeshGenerator meshGenerator;
     public PathGenerator pathGenerator;
 
-    public List<GameObject> enemies;
-    public List<SpawnerManager> spawnerManagers;
 
-    private bool spawnersDone = false;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Awake()
     {
-        StartGame();
+        //SingletonPattern
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(this.gameObject); // Persist GameManager across scenes
+        SceneManager.sceneLoaded += OnSceneLoaded;  //Because Start only ever plays once
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)     //replaces the Start() function for scene loads
     {
-        if(spawnersDone)    //after spawners are done, start checking if all enemies are dead
+        Debug.Log("Scene loaded: " + scene.name);
+
+        StartGame();
+    }
+ 
+    void Update()      // Update is called once per frame
+    {
+        if (spawnersDone && gameState != GameState.Win)    //after spawners are done, start checking if all enemies are dead, gameState.Win to prevent multiple calls
         {
             WinGame();
         }
@@ -47,63 +62,72 @@ public class GameManager : MonoBehaviour
 
     void StartGame()
     {
+        Debug.Log("GameManager StartGame() Running");
         Time.timeScale = 1.0f;
-        
-        player = GameObject.FindWithTag("Player");
-        if (player == null)
+
+        if(player != null || proceduralGenerator != null || ui != null)
         {
-            Debug.Log("GameManager StartGame(): No player found, instantiating Player");
-            player = Instantiate(playerPrefab, transform.position, Quaternion.identity);
+            Debug.LogError("GameManager StartGame() One or more Classes are not null.");
+            return;
         }
+
+        //CREATING PLAYER
+        player = Instantiate(playerPrefab, transform.position, Quaternion.identity);
         playerManager = player.GetComponent<PlayerManager>();
-        //playerManager.Setup();
+        playerManager.Setup(startingCoins);
+        Debug.Log("GameManager StartGame() Created Player: " + player.name);
 
-        ui = GameObject.FindWithTag("PlayerUI");
-        if (ui == null)
-        {
-            Debug.Log("GameManager StartGame(): No ui found, instantiating UI");
-            ui = Instantiate(playerUIPrefab, transform.position, Quaternion.identity);
-        }
+        //CREATING UI
+        ui = Instantiate(playerUIPrefab, transform.position, Quaternion.identity);
         uiManager = ui.GetComponent<UIManager>();
-        if (uiManager != null)
-        {
-            uiManager.Setup(this);
-            
-            // Ensure UI renders properly on top
-            Canvas canvas = uiManager.GetComponent<Canvas>();
-            if (canvas != null)
-            {
-                canvas.worldCamera = player.GetComponent<PlayerCameraController>().cam;
-                canvas.sortingOrder = 100; // Ensure UI renders on top
-            }
-        }
+        uiManager.Setup(this);
+        Debug.Log("GameManager StartGame() Created ui: " + ui.name);
 
-        // Always create a new procedural generator to avoid finding old ones (during next level)
-        Debug.Log("GameManager StartGame(): Creating new procedural generator");
+        //CREATING PROCEDURAL GENERATOR
         proceduralGenerator = Instantiate(proceduralGeneratorPrefab, new Vector3(0,0,0), Quaternion.identity);
-        Debug.Log("GameManager StartGame(): Created procedural generator " + proceduralGenerator.name);
         roomGenerator = proceduralGenerator.GetComponent<RoomGenerator>();
-        roomGenerator.Setup(currentLevel);  //impliment properly later using difficulty scaler
+        roomGenerator.Setup(currentLevel);  //POE next: impliment properly later using difficulty scaler
         meshGenerator = proceduralGenerator.GetComponent<MeshGenerator>();
         pathGenerator = proceduralGenerator.GetComponent<PathGenerator>();
+        Debug.Log("GameManager StartGame() Created proceduralGenerator " + proceduralGenerator.name);
 
-        enemies = new List<GameObject>();
-        spawnerManagers = new List<SpawnerManager>();
+        //CREATING enemies and spawnerManagers if they don't already exist
+        if (enemies == null && spawnerManagers == null)
+        {
+            enemies = new List<GameObject>();
+            spawnerManagers = new List<SpawnerManager>();
+            Debug.Log("GameManager StartGame() Creating enemies and spawnerManagers list");
+        }  
     }
 
     public void StartNextLevel()
     {
-        // Reset game state for next level
-        gameState = GameState.Playing;
-        spawnersDone = false;
-        currentLevel++;
-        
-        if (playerManager != null)
-        {
-            playerManager.coins += levelReward;
-        }
+        //Resetting to default level
+        gameState = GameState.Playing;         //Reset to play
+        currentLevel++;                        //incriment by 1
+        levelReward = Mathf.RoundToInt(levelReward * 1.2f);    //each level gives 20% more coins upon completion
+        enemies.Clear();                       //clear the enemies, as they should all be destroyed upon game win/next level
+        spawnerManagers.Clear();               //clear the spawnerManagers
+        spawnersDone = false;                  //reset spawners done
+        startingCoins += playerManager.coins;  //how many coins at the beginning of the game = player's coins from last level
 
-        NewLevel();
+        //Destroying and setting all classes to null
+            Destroy(player);
+            player = null;
+            playerManager = null;
+            Destroy(ui);
+            ui = null;
+            uiManager = null;
+
+            Destroy(proceduralGenerator);
+            proceduralGenerator = null;
+            roomGenerator = null;
+            meshGenerator = null;
+            pathGenerator = null;
+
+        //Reloading Scene (with this game object being set to DontDestroyOnLoad() in awake)
+        Time.timeScale = 1f;       // Make sure time scale is reset
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void RestartGame()
@@ -111,40 +135,7 @@ public class GameManager : MonoBehaviour
         // reload current scene
         Time.timeScale = 1f; // Make sure time scale is reset
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    public void NewLevel()
-    {
-        // Reset spawners done flag
-        spawnersDone = false;
-        
-        // Clean up enemies list and objects
-        if (enemies != null)
-        {
-            for (int i = enemies.Count - 1; i >= 0; i--)
-            {
-                if (enemies[i] != null)
-                {
-                    Destroy(enemies[i]);
-                }
-            }
-            enemies.Clear();
-        }
-
-        // Reset spawner list
-        if (spawnerManagers != null)
-        {
-            spawnerManagers.Clear();
-        }
-
-        // Only destroy proceduralGenerator if it exists (not already destroyed)
-        if (proceduralGenerator != null)
-        {
-            Destroy(proceduralGenerator);
-            proceduralGenerator = null;
-        }
-        
-        StartGame();
+        Destroy(this.gameObject); // Destroy current GameManager (because it is set to DontDestroyOnLoad), new one will be created with scene load
     }
 
     public void GameOver()
@@ -179,9 +170,16 @@ public class GameManager : MonoBehaviour
 
         if (spawnersDone && enemies.Count == 0)     //if all spawners are done and there are no enemies left
         {
+            //GAME HAS BEEN WON LOGIC
             Pause(true);    //pause the game
             gameState = GameState.Win;
             uiManager.EnableMenuPanel(true);
+
+            if (playerManager != null)
+            {
+                playerManager.coins += levelReward;
+                startingCoins = playerManager.coins; // Carry over coins to next level
+            }
         } 
     }
 

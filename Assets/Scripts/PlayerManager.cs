@@ -15,6 +15,16 @@ public class PlayerManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        UpdateHealth();
+    }
+
+    public void Setup(int pCoins)
+    {
+        coins = pCoins;
+    }
+
+    public void UpdateHealth()
+    {
         //Update player/ main tower health
         if (mainTowerHealth == null)
         {
@@ -32,15 +42,5 @@ public class PlayerManager : MonoBehaviour
         {
             health = mainTowerHealth.currentHealth;
         }
-    }
-
-    public void Setup()
-    {
-
-    }
-
-    public void UpdateHealth()
-    {
-        
     }
 }

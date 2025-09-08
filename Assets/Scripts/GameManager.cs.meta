@@ -1,2 +1,22 @@
 fileFormatVersion: 2
 guid: 08dc5bf6eec733c4dbbed5ad42006569
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - playerPrefab: {fileID: 7717837678108110070, guid: 68fad7dc16fd6d54a85541381096c1d6, type: 3}
+  - proceduralGeneratorPrefab: {fileID: 4602251828508579577, guid: 30ad1484f81d11443be319fbca0f2377, type: 3}
+  - playerUIPrefab: {fileID: 953127948630163790, guid: 8dd36b2e9c2b44e4ca3f1e7a2bc19ffb, type: 3}
+  - player: {instanceID: 0}
+  - playerManager: {instanceID: 0}
+  - ui: {instanceID: 0}
+  - uiManager: {instanceID: 0}
+  - proceduralGenerator: {instanceID: 0}
+  - roomGenerator: {instanceID: 0}
+  - meshGenerator: {instanceID: 0}
+  - pathGenerator: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

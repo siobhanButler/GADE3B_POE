@@ -159,7 +159,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 32
   m_CollisionDetection: 0
@@ -207,8 +207,9 @@ MonoBehaviour:
   - Enemy
   projectilePrefab: {fileID: 1696814602365286989, guid: aa09ffa1c93ec6f45a66c6ab3da660e0, type: 3}
   firePoint: {fileID: 3583849549998299417}
-  projectileSpeed: 10
-  rotationSpeed: 5
+  projectileSpeed: 100
+  rotationSpeed: 20
+  maxProjectileLifetime: 10
   isAttacking: 0
 --- !u!114 &9083771151248980207
 MonoBehaviour:
@@ -222,7 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 836f7aa9109816d49aca171b6534eeaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 50
+  maxHealth: 30
   currentHealth: 0
   isDead: 0
   healthBarUIManager: {fileID: 0}

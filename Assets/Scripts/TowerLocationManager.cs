@@ -19,12 +19,6 @@ public class TowerLocationManager : MonoBehaviour, IClickable
         
     }
 
-    void OnMouseDown()
-    {
-        Debug.Log("OnMouseDown called!");
-        
-    }
-
     public void OnClick()
     {
         Debug.Log($"{name} was clicked!");
@@ -40,8 +34,17 @@ public class TowerLocationManager : MonoBehaviour, IClickable
         int cost = towerPrefab.GetComponent<TowerManager>().cost;
         if (isOccupied)
         {
-            Debug.Log("Location already occupied");
-            return;
+            if(!isTowerDead())  //if tower is not dead (check here so it doesnt need to be run in update and the tower doesnt have to communicate back)
+            {
+                Debug.Log("Location already occupied");
+                return;
+            }
+            else
+            {
+                tower = null;
+                isOccupied = false;
+            }
+            
         }
 
         if (gameManager.playerManager.coins < cost) //can't afford :(
@@ -62,6 +65,17 @@ public class TowerLocationManager : MonoBehaviour, IClickable
         if (tower != null)
         {
             Destroy(tower);
+        }
+    }
+
+    bool isTowerDead(){
+        if(tower != null && tower)
+        {
+            return tower.GetComponent<Health>().isDead;
+        }
+        else
+        {
+            return true;        //tower was destroyed, so its dead
         }
     }
 }

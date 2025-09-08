@@ -135,6 +135,7 @@ MonoBehaviour:
   maxFurniturePercent: 0.3
   minSpawnerCount: 2
   maxSpawnerCount: 5
+  spawnerCount: 0
   minDefenceCount: 10
   maxDefenceCount: 30
   wallPrefab: {fileID: 1324545293484928417, guid: a8e9b9372c3c29d46909e1f0288c29a0, type: 3}

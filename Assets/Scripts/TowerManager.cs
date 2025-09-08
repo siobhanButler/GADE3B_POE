@@ -25,5 +25,21 @@ public class TowerManager : ObjectManager
                 gameManager.GameOver();
             }
         }
+        else if(this.tag == "DefenceTower")
+        {
+            TowerLocationManager towerLocationManager = GetComponentInParent<TowerLocationManager>();
+            if (towerLocationManager != null)
+            {
+                towerLocationManager.isOccupied = false;
+                if (towerLocationManager.tower == this.gameObject)
+                {
+                    towerLocationManager.tower = null;
+                }
+            }
+            else{
+                Debug.Log("TowerManager OnDeath(): TowerLoactionManager is null");
+            }
+            Destroy(gameObject);
+        }
     }
 }
