@@ -6,6 +6,7 @@ public class EnemyManager : ObjectManager
     [Header("Enemy Properties")]
     public EnemyMovement movement;
     public List<SubCell> pathFromSpawner;
+    public int coinReward = 10;     //coins rewarded upon death
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -28,7 +29,7 @@ public class EnemyManager : ObjectManager
         if (playerManager != null)
         {
                 // Add coins when enemy dies (you can adjust the amount as needed)
-                 playerManager.coins += 10;
+                 playerManager.coins += coinReward;
         }
     }
 }

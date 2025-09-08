@@ -248,16 +248,18 @@ MonoBehaviour:
   gameState: 0
   currentLevel: 1
   levelReward: 100
+  enemies: []
+  spawnerManagers: []
+  spawnersDone: 0
   player: {fileID: 0}
   playerManager: {fileID: 0}
+  startingCoins: 50
   ui: {fileID: 0}
   uiManager: {fileID: 0}
   proceduralGenerator: {fileID: 0}
   roomGenerator: {fileID: 0}
   meshGenerator: {fileID: 0}
   pathGenerator: {fileID: 0}
-  enemies: []
-  spawnerManagers: []
 --- !u!1 &1741370971
 GameObject:
   m_ObjectHideFlags: 0

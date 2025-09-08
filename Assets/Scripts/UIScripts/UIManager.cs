@@ -10,9 +10,11 @@ public class UIManager : MonoBehaviour
     [Header("Pause Button")]
     public Button pauseButton;
 
-    [Header("Resources Panel")]
-    public RectTransform resourcesPanel;
+    [Header("Gameplay Panel")]
+    public RectTransform GameplayPanel;
     public TextMeshProUGUI coinAmountText;
+    public TextMeshProUGUI levelText;
+    public Slider playerHealthBar;
 
     [Header("Menu Panel")]
     public RectTransform menuPanel;
@@ -41,6 +43,7 @@ public class UIManager : MonoBehaviour
         if (Application.isPlaying && gameManager != null && gameManager.playerManager != null && coinAmountText != null)
         {
             coinAmountText.text = gameManager.playerManager.coins.ToString();
+            playerHealthBar.value = gameManager.playerManager.mainTowerHealth.currentHealth/ gameManager.playerManager.mainTowerHealth.maxHealth;
         }
     }
 
@@ -82,6 +85,8 @@ public class UIManager : MonoBehaviour
 
         EnableMenuPanel(false);
         EnableTowerLocationPanel(false, null);
+
+        levelText.text = gameManager.currentLevel.ToString();
     }
 
     public void EnableMenuPanel(bool enable)

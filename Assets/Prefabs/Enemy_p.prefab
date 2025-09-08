@@ -148,6 +148,7 @@ MonoBehaviour:
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
   movement: {fileID: 0}
+  coinReward: 5
 --- !u!114 &-914249002432701815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,6 +190,7 @@ MonoBehaviour:
   firePoint: {fileID: 3688213678365803346}
   projectileSpeed: 10
   rotationSpeed: 5
+  maxProjectileLifetime: 10
   isAttacking: 0
 --- !u!114 &5346264311578462723
 MonoBehaviour:

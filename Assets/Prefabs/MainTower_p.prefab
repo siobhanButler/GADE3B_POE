@@ -192,7 +192,7 @@ Rigidbody:
   m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
-  m_Constraints: 14
+  m_Constraints: 126
   m_CollisionDetection: 0
 --- !u!114 &1813358772858288331
 MonoBehaviour:
@@ -232,7 +232,7 @@ MonoBehaviour:
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
   attackDamage: 4
-  rangeRadius: 3.5
+  rangeRadius: 3
   attackSpeed: 1
   attackableTags:
   - Enemy

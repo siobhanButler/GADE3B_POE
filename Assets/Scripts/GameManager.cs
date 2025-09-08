@@ -202,6 +202,11 @@ public class GameManager : MonoBehaviour
     public void ExitGame()
     {
         Application.Quit();
+
+        // For editor testing, stop play mode if running in editor
+            #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+            #endif
     }
 
 }
