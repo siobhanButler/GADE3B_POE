@@ -4,9 +4,9 @@ using System.Collections.Generic;
 public class RoomGenerator : MonoBehaviour
 {
     [Header("Room Settings")]
-    public int minRoomWidth = 5;
+    public int minRoomWidth = 5;        //x
     public int maxRoomWidth = 12;
-    public int minRoomLength = 5;
+    public int minRoomLength = 5;       //z
     public int maxRoomLength = 12;
     
     [Header("Cell Settings")]
