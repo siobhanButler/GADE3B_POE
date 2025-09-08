@@ -51,6 +51,12 @@ public class GameManager : MonoBehaviour
 
         StartGame();
     }
+
+    void Start()
+    {
+        gameState = GameState.Playing;
+        StartGame();
+    }
  
     void Update()      // Update is called once per frame
     {
@@ -63,11 +69,12 @@ public class GameManager : MonoBehaviour
     void StartGame()
     {
         Debug.Log("GameManager StartGame() Running");
+        gameState = GameState.Playing;
         Time.timeScale = 1.0f;
 
         if(player != null || proceduralGenerator != null || ui != null)
         {
-            Debug.LogError("GameManager StartGame() One or more Classes are not null.");
+            Debug.Log("GameManager StartGame() One or more Classes are not null.");
             return;
         }
 
