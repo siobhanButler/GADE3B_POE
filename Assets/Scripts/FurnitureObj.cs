@@ -18,7 +18,18 @@ public class FurnitureObj : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        takenSmallCellGrid = new bool[(subCellsPerAxis * subCellsPerAxis) * (length * width)];
+        int expected = (subCellsPerAxis * subCellsPerAxis) * (length * width);
+        if (takenSmallCellGrid == null)
+        {
+            takenSmallCellGrid = new bool[expected];
+        }
+        else if (takenSmallCellGrid.Length != expected)
+        {
+            bool[] resized = new bool[expected];
+            int copyLength = Mathf.Min(takenSmallCellGrid.Length, resized.Length);
+            System.Array.Copy(takenSmallCellGrid, resized, copyLength);
+            takenSmallCellGrid = resized;
+        }
 
         //finding the average of the cells (built for square/rectangular furiture)
         float x = width / (width* length);
@@ -94,10 +105,27 @@ public class FurnitureObj : MonoBehaviour
 
     public LargeCell[,] SetGridState(LargeCell[,] grid, LargeCell sourceCell)
     {
-        for (int x = sourceCell.x; x <= width + sourceCell.x; x++)  //x = sourceCell.x so we start on source cell
+        if (occupiedIndexes == null || occupiedIndexes.Count == 0)
         {
-            for (int z = sourceCell.y; z <= length + sourceCell.y; z++)
+            if (takenSmallCellGrid2D != null)
             {
+                ConvertTakenGrid2DToOccupiedIndexes();
+            }
+            else if (takenSmallCellGrid != null)
+            {
+                ConvertTakenGridToOccupiedIndexes();
+            }
+        }
+        int gridWidth = grid.GetLength(0);
+        int gridLength = grid.GetLength(1);
+
+        for (int x = sourceCell.x; x < sourceCell.x + width; x++)  //x = sourceCell.x so we start on source cell
+        {
+            if (x < 0 || x >= gridWidth) { continue; }
+
+            for (int z = sourceCell.y; z < sourceCell.y + length; z++)
+            {
+                if (z < 0 || z >= gridLength) { continue; }
                 if(type == FurnitureType.Solid)   //if furniture takes up whole big cell, big cell can be tagged Furniture
                 {
                     grid[x, z].state = CellState.Furniture;

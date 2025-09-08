@@ -35,6 +35,7 @@ public class RoomGenerator : MonoBehaviour
     public GameObject wallPrefab;
     public GameObject doorPrefab;
     public GameObject furniturePrefab;
+    public GameObject chairPrefab;
     public GameObject mainTowerPrefab;
     public GameObject enemySpawnerPrefab;
     public GameObject defenseTowerLocationPrefab;
@@ -102,16 +103,16 @@ public void GenerateRoom()
         // Step 5: Place walls (on border and removed cells)
         PlaceWalls();
         
-        // Step 7: Place gameplay elements (main tower and enemy spawners)
+        // Step 6: Place gameplay elements (main tower and enemy spawners)
         PlaceGameplayElements();
+
+        // Step 7: Place furniture (on walkable active cells)
+        PlaceFurniture();
 
         // Step 8: Generate enemy paths (from enemy spawners to main tower)
         GenerateEnemyPaths();
 
-        // Step 6: Place furniture (on walkable active cells)
-        PlaceFurniture();
-
-        //Step: Place Defence Tower Locations
+        //Step 9: Place Defence Tower Locations
         PlaceDefenceTowerLocations();
     }
     
@@ -494,10 +495,48 @@ public void GenerateRoom()
                 {
                     if (Random.value < furniturePlacementChance && furnitureAmount < maxFurnitureAmount)
                     {
-                        cell.state = CellState.Furniture;
-                        GameObject furniture = Instantiate(furniturePrefab, cell.worldPosition, Quaternion.identity);
+                        FurnitureObj furnitureObj = chairPrefab.GetComponent<FurnitureObj>();
+                        grid = furnitureObj.SetGridState(grid, cell);
+                        Vector3 furniturePos = cell.worldPosition + furnitureObj.spawnOffset;
+                        GameObject furniture = Instantiate(chairPrefab, furniturePos, Quaternion.identity);
                         furniture.transform.SetParent(transform);
                         furnitureAmount++;
+                    }
+                }
+            }
+        }
+        DebugPlaceFurnitureSubCells();
+    }
+
+    void DebugPlaceFurnitureSubCells()
+    {
+        if (furniturePrefab == null)
+        {
+            Debug.LogWarning("Furniture: furniturePrefab is not assigned.");
+            return;
+        }
+
+        for (int x = 0; x < roomWidth; x++)
+        {
+            for (int z = 0; z < roomLength; z++)
+            {
+                LargeCell cell = grid[x, z];
+                if (cell == null || cell.subCells == null)
+                {
+                    continue;
+                }
+
+                for (int sx = 0; sx < subCellsPerLargeCell; sx++)
+                {
+                    for (int sz = 0; sz < subCellsPerLargeCell; sz++)
+                    {
+                        SubCell subCell = cell.subCells[sx, sz];
+                        if (subCell != null && subCell.state == CellState.Furniture)
+                        {
+                            Vector3 worldPos = subCell.worldPosition;
+                            GameObject instance = Instantiate(furniturePrefab, worldPos, Quaternion.identity);
+                            instance.transform.SetParent(transform);
+                        }
                     }
                 }
             }
