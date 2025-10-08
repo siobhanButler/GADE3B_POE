@@ -31,11 +31,7 @@ public class UIManager : MonoBehaviour
     //public RectTransform content;
     public Button exitTowerLocationButton;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-
-    }
+    // Start method removed - initialization handled in Setup()
 
     // Update is called once per frame
     void Update()

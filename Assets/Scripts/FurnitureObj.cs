@@ -39,11 +39,7 @@ public class FurnitureObj : MonoBehaviour
         prefab = this.gameObject;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Update method removed - no per-frame logic needed
 
     public void ConvertTakenGridToOccupiedIndexes()
     {
@@ -175,7 +171,7 @@ public class FurnitureObj : MonoBehaviour
 [System.Serializable]
 public enum FurnitureType
 {
-    Solid,      //cant have items placed underneath --> large cell will become furniture cell
+    Solid,      //can't have items placed underneath --> large cell will become furniture cell
     Walkable,
 }
 

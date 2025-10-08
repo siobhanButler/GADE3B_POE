@@ -9,17 +9,7 @@ public class Health : MonoBehaviour
 
     public ObjectUIManager healthBarUIManager;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Start and Update methods removed - initialization handled in Setup()
 
     public void Setup(ObjectUIManager p_healthBarUIManager)
     {

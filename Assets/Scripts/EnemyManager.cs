@@ -16,11 +16,7 @@ public class EnemyManager : ObjectManager
         movement.Setup();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Update method removed - movement handled by EnemyMovement component
 
     public override void OnDeath()
     {

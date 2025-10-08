@@ -3,6 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Main game controller managing:
+/// - Game state and level progression
+/// - Player resources and health
+/// - Procedural room generation
+/// - Enemy and spawner management
+/// - Win/lose conditions
+/// Uses singleton pattern for global access.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }    //Singleton Pattern
@@ -48,7 +57,6 @@ public class GameManager : MonoBehaviour
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)     //replaces the Start() function for scene loads
     {
         Debug.Log("Scene loaded: " + scene.name);
-
         StartGame();
     }
 
@@ -74,7 +82,7 @@ public class GameManager : MonoBehaviour
 
         if(player != null || proceduralGenerator != null || ui != null)
         {
-            Debug.Log("GameManager StartGame() One or more Classes are not null.");
+            Debug.LogWarning("GameManager StartGame(): One or more classes are not null during initialization");
             return;
         }
 
@@ -93,7 +101,7 @@ public class GameManager : MonoBehaviour
         //CREATING PROCEDURAL GENERATOR
         proceduralGenerator = Instantiate(proceduralGeneratorPrefab, new Vector3(0,0,0), Quaternion.identity);
         roomGenerator = proceduralGenerator.GetComponent<RoomGenerator>();
-        roomGenerator.Setup(currentLevel);  //POE next: impliment properly later using difficulty scaler
+        roomGenerator.Setup(currentLevel);  //POE next: implement properly later using difficulty scaler
         meshGenerator = proceduralGenerator.GetComponent<MeshGenerator>();
         pathGenerator = proceduralGenerator.GetComponent<PathGenerator>();
         Debug.Log("GameManager StartGame() Created proceduralGenerator " + proceduralGenerator.name);
@@ -154,7 +162,7 @@ public class GameManager : MonoBehaviour
 
     public void WinGame()
     {
-        Debug.Log("win: checking win");
+        Debug.Log("GameManager WinGame(): checking win");
         spawnersDone = false;
 
         foreach (SpawnerManager spawner in spawnerManagers)
@@ -173,8 +181,7 @@ public class GameManager : MonoBehaviour
         // Remove dead enemies
         enemies.RemoveAll(enemy => enemy == null);
 
-        Debug.Log("win" + enemies.Count + "enemies left");
-
+        // Checking remaining enemies
         if (spawnersDone && enemies.Count == 0)     //if all spawners are done and there are no enemies left
         {
             //GAME HAS BEEN WON LOGIC

@@ -11,27 +11,35 @@ public class TowerLocationManager : MonoBehaviour, IClickable
     {
         Debug.Log("TowerLocationManager is active: " + gameObject.activeInHierarchy);
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+            if (gameManager == null) Debug.LogError("TowerLocationManager Start(): GameManager component missing on 'GameManager' object");
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Update method removed - no per-frame logic needed
 
     public void OnClick()
     {
         Debug.Log($"{name} was clicked!");
-        GameManager gameManager = FindFirstObjectByType<GameManager>();
-        if (gameManager != null)
+        if (gameManager != null && gameManager.uiManager != null)
         {
             gameManager.uiManager.EnableTowerLocationPanel(true, this);
+        }
+        else Debug.LogWarning("TowerLocationManager OnClick(): GameManager or UIManager not available");
+        {
+            
         }
     }
 
     public void PurchaseTower(GameObject towerPrefab)
     {
-        int cost = towerPrefab.GetComponent<TowerManager>().cost;
+        TowerManager towerManager = towerPrefab.GetComponent<TowerManager>();
+
+        if (towerPrefab == null || towerManager == null || gameManager == null || gameManager.playerManager == null)
+        {
+            Debug.LogError("TowerLocationManager PurchaseTower(): towerPrefab is null, towerManager is null, gameManager is null, or gameManager.playerManager is null");
+            return;
+        }
+
+        int cost = towerManager.cost;
         if (isOccupied)
         {
             if(!isTowerDead())  //if tower is not dead (check here so it doesnt need to be run in update and the tower doesnt have to communicate back)
@@ -71,7 +79,12 @@ public class TowerLocationManager : MonoBehaviour, IClickable
     bool isTowerDead(){
         if(tower != null && tower)
         {
-            return tower.GetComponent<Health>().isDead;
+            Health health = tower.GetComponent<Health>();
+            if (health == null)
+            {   Debug.LogError("TowerLocationManager isTowerDead(): Health component missing on tower"); 
+                return true; 
+            }
+            return health.isDead;
         }
         else
         {

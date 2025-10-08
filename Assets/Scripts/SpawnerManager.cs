@@ -26,11 +26,7 @@ public class SpawnerManager : MonoBehaviour
         StartWave();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Update method removed - spawning handled by coroutines
 
     public void Setup(SubCell parent)
     {
@@ -52,6 +48,19 @@ public class SpawnerManager : MonoBehaviour
 
     public void StartWave()
     {
+        if (enemyPrefab == null)
+        {
+            Debug.LogError("SpawnerManager StartWave(): enemyPrefab is not assigned");
+            return;
+        }
+
+        if (minEnemies < 0 || maxEnemies < minEnemies)
+        {
+            Debug.LogWarning("SpawnerManager StartWave(): Invalid enemy count range; correcting values");
+            minEnemies = Mathf.Max(0, minEnemies);
+            maxEnemies = Mathf.Max(minEnemies, maxEnemies);
+        }
+
         enemiesToSpawn = Random.Range(minEnemies, maxEnemies + 1);  //randomly assign how many enemies to spawn
         spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
@@ -92,11 +101,14 @@ public class SpawnerManager : MonoBehaviour
         }
         
         List<SubCell> path = pathGenerator.GetPathForSpawner(parentCell);
+        if (path == null || path.Count == 0) Debug.LogWarning("SpawnerManager SpawnEnemy(): Path is null or empty; enemy will still spawn but may not move");
 
         Vector3 spawnPos = transform.position;
         spawnPos.y += 3f;
         GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-        enemy.GetComponent<EnemyManager>().pathFromSpawner = path;
+        EnemyManager enemyManager = enemy.GetComponent<EnemyManager>();
+        if (enemyManager != null) enemyManager.pathFromSpawner = path;
+        else Debug.LogWarning("SpawnerManager SpawnEnemy(): EnemyManager component missing on enemy prefab");
         enemiesToSpawn--;
 
         //Add spawned enemy to GameManager's enemy list
@@ -106,7 +118,7 @@ public class SpawnerManager : MonoBehaviour
             gameManager.enemies.Add(enemy);
         }
         else{
-            Debug.Log("win: game manager invalid in spawner manager");
+            Debug.LogWarning("SpawnerManager SpawnEnemy(): GameManager is null, cannot add enemy to list");
         }
     } 
 }

@@ -1,6 +1,15 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// Handles procedural generation of tower defense rooms including:
+/// - Room layout with configurable dimensions
+/// - Corner removal for varied layouts
+/// - Wall placement based on borders and removed areas
+/// - Gameplay element placement (main tower, spawners, defense towers)
+/// - Furniture placement with collision avoidance
+/// - Enemy path generation
+/// </summary>
 public class RoomGenerator : MonoBehaviour
 {
     [Header("Room Settings")]
@@ -58,7 +67,12 @@ public class RoomGenerator : MonoBehaviour
         GenerateRoom();
     }
 
-    public void Setup(int level)     //impliment later using difficulty scaler
+    /// <summary>
+    /// Setup room generation parameters based on level difficulty.
+    /// Currently uses default values but can be expanded for difficulty scaling.
+    /// </summary>
+    /// <param name="level">Current level for difficulty scaling</param>
+    public void Setup(int level)
     {
         /*
         // Room
@@ -84,9 +98,23 @@ public class RoomGenerator : MonoBehaviour
         minDefenceCount = minDefence;
         maxDefenceCount = maxDefence;
         */
+
+        // TODO: Implement difficulty scaling based on level
+        // For now, using default inspector values
+        
+        // Example of how difficulty scaling could work:
+        // float difficultyMultiplier = 1f + (level - 1) * 0.1f;
+        // maxRoomWidth = Mathf.Min(maxRoomWidth, (int)(maxRoomWidth * difficultyMultiplier));
+        // furniturePlacementChance = Mathf.Clamp01(furniturePlacementChance * difficultyMultiplier);
+        
+        Debug.Log($"RoomGenerator Setup(): Using default parameters for level {level}");
     }
 
-public void GenerateRoom()
+/// <summary>
+/// Main room generation pipeline that creates a complete tower defense room.
+/// Executes all generation steps in the correct order.
+/// </summary>
+    public void GenerateRoom()
     {
         // Step 1: Determine room dimensions
         DetermineRoomDimensions();
@@ -121,7 +149,7 @@ public void GenerateRoom()
         roomWidth = Random.Range(minRoomWidth, maxRoomWidth + 1);
         roomLength = Random.Range(minRoomLength, maxRoomLength + 1);
         
-        Debug.Log($"Generated room: {roomWidth}x{roomLength} large cells");
+        Debug.Log($"RoomGenerator DetermineRoomDimensions(): Generated room: {roomWidth}x{roomLength} large cells");
     }
     
     void GenerateFloorMesh()
@@ -161,7 +189,7 @@ public void GenerateRoom()
             }
         }
         
-        Debug.Log("Neighbors and border states set up for all cells");
+        Debug.Log("RoomGenerator SetupNeighborsAndBorderStates(): Neighbors and border states set up for all cells");
     }
     
 // ============================ CORNER METHODS ============================
@@ -182,7 +210,7 @@ public void GenerateRoom()
             {
                 int removalSize = Random.Range(1, 5);   // 1=1x1, 2=1x2, 3=2x1, 4=2x2 (skip 0)
                 RemoveCornerCells(corner, removalSize);
-                Debug.Log($"Removing corner at ({corner.x}, {corner.y}) with size {removalSize}");
+                Debug.Log($"RoomGenerator ProcessCorners(): Removing corner at ({corner.x}, {corner.y}) with size {removalSize}");
             }
         }
     }
@@ -226,7 +254,7 @@ public void GenerateRoom()
                     {
                         grid[cellX, cellY].state = CellState.Removed;
                         grid[cellX, cellY].bActive = false;
-                        Debug.Log($"Removed cell at ({cellX}, {cellY})");
+                        Debug.Log($"RoomGenerator RemoveCornerCells(): Removed cell at ({cellX}, {cellY})");
                     }
                 }
             }
@@ -319,8 +347,6 @@ public void GenerateRoom()
         enemySpawnerCells = new SubCell[spawnerCount];
         List<SubCell> validSubCells = GetValidSpawnerSubCells();
          
-        Debug.Log($"Attempting to place {spawnerCount} spawners from {validSubCells.Count} valid positions");
-         
         for (int i = 0; i < spawnerCount && validSubCells.Count > 0; i++)
         {
             // Pick a random valid position
@@ -342,7 +368,7 @@ public void GenerateRoom()
             }
         }
          
-        Debug.Log($"Successfully placed {spawnerCount} spawners");
+        Debug.Log($"RoomGenerator PlaceEnemySpawners(): Successfully placed {spawnerCount} spawners");
     }
 
     List<SubCell> GetValidSpawnerSubCells()
@@ -387,7 +413,7 @@ public void GenerateRoom()
         defenceTowerCells = new SubCell[defenceCount];
         List<SubCell> validSubCells = GetValidDefenceSubCells();
          
-        Debug.Log($"Attempting to place {defenceCount} defence towers from {validSubCells.Count} valid positions");
+        // Placing defence tower locations
          
         for (int i = 0; i < defenceCount && validSubCells.Count > 0; i++)
         {
@@ -399,12 +425,12 @@ public void GenerateRoom()
             defenceTower.transform.SetParent(transform);
 
             validSubCells[index].state = CellState.DefenseTower;
-            validSubCells[index].parentCell.state = CellState.DefenseTower;     //but wha if its a enemy path? now it has lost that tag...?
+            validSubCells[index].parentCell.state = CellState.DefenseTower;     //but what if its an enemy path? now it has lost that tag...?
             defenceTowerCells[i] = validSubCells[index];
             validSubCells.RemoveAt(index); // Remove to avoid duplicates
         }
          
-        Debug.Log($"Successfully placed {defenceCount} spawners");
+        Debug.Log($"RoomGenerator PlaceDefenceTowerLocations(): Successfully placed {defenceCount} spawners");
     }
 
     List<SubCell> GetValidDefenceSubCells()
@@ -424,7 +450,7 @@ public void GenerateRoom()
                 // Check if this large cell is on the border
                 if (cell.state == CellState.Floor || cell.state == CellState.EnemyPath)
                 {
-                    // For floor cells, check if at least one neighbor has enemy path (so the defence towers arent too far away from enemy paths)
+                    // For floor cells, check if at least one neighbor has enemy path (so the defence towers aren't too far away from enemy paths)
                     bool hasEnemyPathNeighbor = false;
                     if (cell.state == CellState.Floor)
                     {
@@ -476,14 +502,14 @@ public void GenerateRoom()
         // Generate paths from all spawners to the main tower using stored references
         pathGenerator.GenerateEnemyPaths(mainTowerCell, enemySpawnerCells);
         
-        Debug.Log("Enemy paths generated successfully");
+        Debug.Log("RoomGenerator GenerateEnemyPaths(): Enemy paths generated successfully");
     }
 
 // ============================ FURNITURE METHODS ============================
     void PlaceFurniture()
     {
         int maxFurnitureAmount = Mathf.RoundToInt(maxFurniturePercent * (roomLength * roomWidth));
-        Debug.Log("Max furniture is " + maxFurnitureAmount);
+        Debug.Log("RoomGenerator PlaceFurniture(): Max furniture is " + maxFurnitureAmount);
         int furnitureAmount = 0;
         // Place furniture, based on random value, on walkable active cells 
         for (int x = 1; x < roomWidth; x++)
@@ -508,33 +534,50 @@ public void GenerateRoom()
         DebugPlaceFurnitureSubCells();
     }
 
+    /// <summary>
+    /// Debug method that places furniture prefabs on all sub-cells that have been marked with CellState.Furniture.
+    /// This method is called after the main furniture placement logic to ensure all furniture-marked sub-cells
+    /// have corresponding visual furniture objects in the scene.
+    /// </summary>
     void DebugPlaceFurnitureSubCells()
     {
+        // Check if furniture prefab is assigned to avoid null reference errors
         if (furniturePrefab == null)
         {
-            Debug.LogWarning("Furniture: furniturePrefab is not assigned.");
+            Debug.LogWarning("RoomGenerator DebugPlaceFurnitureSubCells(): Furniture: furniturePrefab is not assigned.");
             return;
         }
 
+        // Iterate through all large cells in the grid
         for (int x = 0; x < roomWidth; x++)
         {
             for (int z = 0; z < roomLength; z++)
             {
                 LargeCell cell = grid[x, z];
+                
+                // Skip cells that are null or don't have sub-cells initialized
                 if (cell == null || cell.subCells == null)
                 {
                     continue;
                 }
 
+                // Iterate through all sub-cells within the current large cell
                 for (int sx = 0; sx < subCellsPerLargeCell; sx++)
                 {
                     for (int sz = 0; sz < subCellsPerLargeCell; sz++)
                     {
                         SubCell subCell = cell.subCells[sx, sz];
+                        
+                        // Check if sub-cell exists and has been marked for furniture placement
                         if (subCell != null && subCell.state == CellState.Furniture)
                         {
+                            // Get the world position of the sub-cell
                             Vector3 worldPos = subCell.worldPosition;
+                            
+                            // Instantiate furniture prefab at the sub-cell's position
                             GameObject instance = Instantiate(furniturePrefab, worldPos, Quaternion.identity);
+                            
+                            // Parent the furniture to this room generator for organization
                             instance.transform.SetParent(transform);
                         }
                     }
@@ -542,7 +585,7 @@ public void GenerateRoom()
             }
         }
     }
-
+}
 
 /* ============================ UNUSED/OLD METHODS ============================
 
@@ -727,5 +770,3 @@ public void GenerateRoom()
 
 
 */
-}
-

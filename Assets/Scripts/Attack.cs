@@ -22,7 +22,7 @@ public class Attack : MonoBehaviour
     
     [Header("Attack Visuals")]
     public GameObject projectilePrefab;     //Must have collider and rigidbody
-    public Transform firePoint;     //epty game object fire point
+    public Transform firePoint;             //empty game object fire point
     public float projectileSpeed = 800f;
     public float rotationSpeed = 5f;
     public float maxProjectileLifetime = 10f; // Safety net - maximum time projectiles can exist 
@@ -35,11 +35,7 @@ public class Attack : MonoBehaviour
     private Coroutine attackRoutine; 
     
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    // Start method removed - initialization handled in Setup()
 
     // Update is called once per frame
     void Update()

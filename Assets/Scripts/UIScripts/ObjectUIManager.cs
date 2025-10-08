@@ -13,11 +13,7 @@ public class ObjectUIManager : MonoBehaviour
         healthFillImage.value = 1;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Update method removed - UI updates handled by external calls
 
     public void UpdateHealthBar(float currentHealth, float maxHealth)
     {

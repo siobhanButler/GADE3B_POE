@@ -62,11 +62,7 @@ public class DefenceTowerItem : MonoBehaviour
         towerCost.text = cost.ToString();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Update method removed - no per-frame logic needed
 
      void OnTowerPurchaseButtonClick()
     {

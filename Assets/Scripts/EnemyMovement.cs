@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
+/// <summary>
+/// Handles enemy movement along generated paths with smart pathfinding.
+/// Features intelligent path recovery when enemies are knocked off their intended route.
+/// </summary>
 public class EnemyMovement : MonoBehaviour
 {
     List<SubCell> pathFromSpawner;
@@ -11,12 +14,9 @@ public class EnemyMovement : MonoBehaviour
     public float speed = 2f;
     public float speedWhenAttacking = 0.3f;
     public Transform target;
+    public float pathRecoveryDistance = 2.0f;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    // Start method removed - initialization handled in Setup()
 
     // Update is called once per frame
     void Update()
@@ -27,6 +27,10 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
+    /// <summary>
+/// Initializes enemy movement with path data from spawner.
+/// Sets up initial position and begins movement along the assigned path.
+/// </summary>
     public void Setup()
     {
         pathFromSpawner = GetComponent<EnemyManager>().pathFromSpawner;
@@ -39,6 +43,11 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
+    /// <summary>
+/// Handles per-frame movement along the assigned path.
+/// Includes smart pathfinding to recover from being knocked off path.
+/// Adjusts speed based on attack state.
+/// </summary>
     public void MoveAlongPath()
     {
         // Check if enemy has reached the end of the path
@@ -48,8 +57,8 @@ public class EnemyMovement : MonoBehaviour
             return;
         }
 
-        // Get the current target position
-        Vector3 targetPosition = pathFromSpawner[currentPathIndex].worldPosition;
+        // Get the current target position (with smart pathfinding)
+        Vector3 targetPosition = GetTargetPosition();
         
         // Check if enemy is attacking and adjust speed accordingly
         Attack attackComponent = GetComponent<Attack>();
@@ -73,6 +82,56 @@ public class EnemyMovement : MonoBehaviour
             // Move to the next path point
             currentPathIndex++;
         }
+    }
+
+    // Smart pathfinding to avoid backtracking
+    private Vector3 GetTargetPosition()
+    {
+        // Check if we have a valid path and current index
+        if (pathFromSpawner == null || pathFromSpawner.Count == 0 || currentPathIndex >= pathFromSpawner.Count)
+        {
+            return transform.position; // Return current position if no valid path
+        }
+
+        // Get the current target position (default behavior)
+        Vector3 currentTargetPosition = pathFromSpawner[currentPathIndex].worldPosition;
+        float currentTargetDistance = Vector3.Distance(transform.position, currentTargetPosition);
+
+        if(currentTargetDistance < pathRecoveryDistance)    //if the enemy is within the path recovery distance, return the current target position
+        {
+            return currentTargetPosition;
+        }
+        
+        // Find the closest path subcell that's ahead of current path index
+        Vector3 closestPosition = currentTargetPosition;
+        float closestDistance = currentTargetDistance;
+        int closestIndex = currentPathIndex;
+        
+        // Search through path points ahead of current index
+        for (int i = currentPathIndex; i < pathFromSpawner.Count; i++)
+        {
+            Vector3 pathPosition = pathFromSpawner[i].worldPosition;
+            float pathDistance = Vector3.Distance(transform.position, pathPosition);
+            
+            // Check if this path point is closer than our current closest
+            if (pathDistance < closestDistance)
+            {
+                closestPosition = pathPosition;
+                closestDistance = pathDistance;
+                closestIndex = i;
+            }
+        }
+        
+        // If the closest position is less than 2 times the current target's distance, use it
+        if (closestDistance < (2f * currentTargetDistance))
+        {
+            // Update currentPathIndex to the closest valid index to avoid walking backwards
+            currentPathIndex = closestIndex;
+            return closestPosition;
+        }
+        
+        // Otherwise, return the current target position
+        return currentTargetPosition;
     }
 
 }

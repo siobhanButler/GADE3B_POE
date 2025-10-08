@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class ObjectManager : MonoBehaviour
@@ -18,21 +17,11 @@ public abstract class ObjectManager : MonoBehaviour
 
     public string objectTag;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Start and Update methods removed - functionality handled in derived classes
 
     public void Setup()
     {
-        Debug.Log($"ObjectManager Start() called for {gameObject.name}");
+        Debug.Log($"ObjectManager Setup() called for {gameObject.name}");
 
         // Acquire or create object UI safely
         if (objectUI == null)
@@ -52,7 +41,7 @@ public abstract class ObjectManager : MonoBehaviour
         uiManager = objectUI.GetComponent<ObjectUIManager>();
         if(uiManager == null)
         {
-            Debug.LogError("ObjectUIManager component not found on the instantiated objectUI for " + name);
+            Debug.LogError("ObjectManager Setup(): ObjectUIManager component not found on the instantiated objectUI for " + name);
         }
         uiManager.nameText.text = objectTag;
         uiManager.UpdateHealthBar(1, 1); // Initialize health bar to full

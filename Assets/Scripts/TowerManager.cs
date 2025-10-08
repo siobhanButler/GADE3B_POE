@@ -9,11 +9,8 @@ public class TowerManager : ObjectManager
         Setup();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // Update method removed - no per-frame logic needed
+    
     public override void OnDeath()
     {
         if (this.tag == "MainTower")
@@ -37,7 +34,7 @@ public class TowerManager : ObjectManager
                 }
             }
             else{
-                Debug.Log("TowerManager OnDeath(): TowerLoactionManager is null");
+                Debug.LogWarning("TowerManager OnDeath(): TowerLocationManager is null during tower death");
             }
             Destroy(gameObject);
         }
