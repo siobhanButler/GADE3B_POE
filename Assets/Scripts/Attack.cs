@@ -83,12 +83,14 @@ public class Attack : MonoBehaviour
 
     void StartAttack()
     {
-            if(isAttacking == false && targetsInRange.Count > 0)    //start attacking if not already
-            {
-                currentTarget = GetBestTarget();
-                attackRoutine = StartCoroutine(AttackLoop());
-                isAttacking = true;
-            }
+        if (isAttacking == false && targetsInRange.Count > 0)    //start attacking if not already
+        {
+            currentTarget = GetBestTarget();
+            attackRoutine = StartCoroutine(AttackLoop());
+            isAttacking = true;
+
+            Debug.Log("Attack StartAttack(): " + this.name + " is starting to attack " );
+        }
     }
 
     void StopAttack()
@@ -96,6 +98,7 @@ public class Attack : MonoBehaviour
         if (attackRoutine != null)
         {
             StopCoroutine(attackRoutine);   //stop attacking
+            Debug.Log("Attack StartAttack(): " + this.name + " is stopping its attack");
         }
         isAttacking = false;
         currentTarget = null;           //clear current target  
@@ -105,8 +108,6 @@ public class Attack : MonoBehaviour
 
     void RangeAttack(Collider other)
     {
-        Debug.Log(this.name + " is attacking " + other.name);
-        
         // Handle attack visuals (rotation and projectile)
         AttackVisuals();
         
@@ -215,14 +216,21 @@ public class Attack : MonoBehaviour
     {
         if (currentTarget == null) return;
         
-        // Calculate direction to target
-        Vector3 direction = (currentTarget.transform.position - transform.position).normalized;
+        // Calculate direction to target (ignore Y component for 2D-style rotation)
+        Vector3 direction = (currentTarget.transform.position - transform.position);
+        direction.y = 0; // Remove Y component to prevent pitch rotation
+        direction = direction.normalized;
         
-        // Calculate rotation to look at target
+        // Calculate rotation to look at target (Y-axis only)
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         
-        // Smoothly rotate towards target
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        // Preserve current X and Z rotations, only change Y rotation
+        Vector3 currentEuler = transform.rotation.eulerAngles;
+        Vector3 targetEuler = targetRotation.eulerAngles;
+        Vector3 newEuler = new Vector3(currentEuler.x, targetEuler.y, currentEuler.z);
+        
+        // Smoothly rotate towards target (Y-axis only)
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(newEuler), rotationSpeed * Time.deltaTime);
     }
     
     private void SpawnProjectile()

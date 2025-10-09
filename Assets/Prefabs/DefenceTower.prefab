@@ -34,7 +34,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 1, y: 4, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8611202489756324627}
@@ -48,7 +48,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4481481441890430569}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 5608771404437207644, guid: 627e07ca05da1fd49a378dc15bb74b8d, type: 3}
 --- !u!23 &1481394894103930080
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -113,7 +113,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1, y: 4, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!135 &-6139288050314450791
 SphereCollider:
@@ -134,7 +134,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 5
+  m_Radius: 12
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &2241444040307235550
 Rigidbody:
@@ -201,7 +201,7 @@ MonoBehaviour:
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
   attackDamage: 2
-  rangeRadius: 3
+  rangeRadius: 12
   attackSpeed: 2
   attackableTags:
   - Enemy
@@ -312,7 +312,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.00811
+      value: -0.01
       objectReference: {fileID: 0}
     - target: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -336,7 +336,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.606
+      value: 2.25
       objectReference: {fileID: 0}
     - target: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
