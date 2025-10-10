@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class ObjectManager : MonoBehaviour
@@ -12,6 +13,9 @@ public abstract class ObjectManager : MonoBehaviour
     public ObjectUIManager uiManager;
     public Health health;
     public Attack attack;
+
+    public List<StatusEffect> currentStatusEffects;
+    private Coroutine statusEffectsCoroutine;
 
     public GameObject objectUiPrefab;  //assign in inspector
 
@@ -57,7 +61,82 @@ public abstract class ObjectManager : MonoBehaviour
         attack.Setup(rigidBody, hitBox, rangeCollider);
 
         this.tag = objectTag;  //set tag to tower
+
+        currentStatusEffects = new List<StatusEffect>();
     }
 
     public abstract void OnDeath();
+
+    public void AddStatus(StatusEffectType newStatusType, float newDuration, float newEffectStrength)    //called by external classes
+    {
+        //if statuseffect of that type already eists, just refresh the duration
+        foreach(StatusEffect status in currentStatusEffects)
+        {
+            if(status.type == newStatusType)
+            {
+                status.duration = newDuration;
+                return;
+            }
+        }
+        //If no status effects of this type were found, add the new status effect
+        StatusEffect newStatusEffect = new StatusEffect(newStatusType, newDuration, newEffectStrength, this);
+        currentStatusEffects.Add(newStatusEffect);
+
+        //start coroutine if not already started
+        if (currentStatusEffects == null || currentStatusEffects.Count == 0) return;
+        if (statusEffectsCoroutine == null) statusEffectsCoroutine = StartCoroutine(StatusEffectsTickLoop()); 
+    }
+
+    void ApplyStatusEffects()   //called every 1 sec
+    {
+        // Iterate backwards to allow safe removal during iteration (instead of foreach)
+        for (int i = currentStatusEffects.Count - 1; i >= 0; i--)
+        {
+            StatusEffect status = currentStatusEffects[i];
+            if (status.duration > 0f)
+            {
+                status.ApplyEffect();
+                status.duration -= 1f;   // reduce duration by 1 sec
+            }
+            else
+            {
+                status.RemoveStatus();
+                currentStatusEffects.RemoveAt(i); // drop reference so GC can collect
+            }
+        }
+
+        // Stop ticking if no effects remain
+        if (currentStatusEffects.Count == 0 && statusEffectsCoroutine != null)
+        {
+            StopCoroutine(statusEffectsCoroutine);
+            statusEffectsCoroutine = null;
+        }
+    }
+
+    void EnsureStatusTicking()  //start coroutine if not already ticking
+    {
+        
+    }
+
+    System.Collections.IEnumerator StatusEffectsTickLoop()
+    {
+        var wait = new WaitForSeconds(1f);
+        while (currentStatusEffects != null && currentStatusEffects.Count > 0)
+        {
+            ApplyStatusEffects();
+            yield return wait;
+        }
+        statusEffectsCoroutine = null;
+    }
+
+    void OnDisable()
+    {
+        if (statusEffectsCoroutine != null)
+        {
+            StopCoroutine(statusEffectsCoroutine);
+            statusEffectsCoroutine = null;
+        }
+    }
 }
+
+
