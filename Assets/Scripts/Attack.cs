@@ -116,7 +116,15 @@ public class Attack : MonoBehaviour
         if (otherHealth != null)
         {        
             otherHealth.TakeDamage(attackDamage);
-        }
+            Debug.Log("Attack RangeAttack(): " + this.name + " attacked " + other.name + " for " + attackDamage + " damage. Remaining Health: " + otherHealth.currentHealth);
+
+            // Execute custom behaviour if attached
+            CustomBehaviour customBehaviour = GetComponent<CustomBehaviour>();
+            if (customBehaviour != null)
+            {
+                customBehaviour.ExecuteCustomBehaviour(other.GetComponent<ObjectManager>(), attackDamage);
+            }
+        } 
     }
 
     IEnumerator AttackLoop()
