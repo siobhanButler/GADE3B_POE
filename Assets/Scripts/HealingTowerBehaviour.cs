@@ -71,7 +71,7 @@ public class HealingTowerBehaviour : CustomBehaviour
         if(SetHealableTargets() == null) return;
 
         Debug.Log($"HealingTowerBehaviour AttackBehaviour(): {this.name} is healing target {healableTargets[0].gameObject.name} for {damage * healAmount} health.");
-        healableTargets[0].currentHealth += (damage * healAmount);  //heal lowest-health target for a percentage of the damage dealt
+        healableTargets[0].Heal(damage * healAmount);  //heal lowest-health target for a percentage of the damage dealt
     }
 
     protected override void DamageBehaviour(ObjectManager target, float damage)

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class Health : MonoBehaviour
 {
@@ -8,6 +9,9 @@ public class Health : MonoBehaviour
     public bool isDead = false;     // Is the entity dead
 
     public ObjectUIManager healthBarUIManager;
+
+    // Raised whenever this entity takes damage. Args: (damageTaken, currentHealth, maxHealth)
+    public event Action<float, Health> OnDamageTaken;
 
     // Start and Update methods removed - initialization handled in Setup()
 
@@ -22,13 +26,39 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        currentHealth -= damage;    //reduce currentHealth
-        healthBarUIManager.UpdateHealthBar(currentHealth, maxHealth);  //update health bar UI
+        if (OnDamageTaken != null)
+        {
+            // Let listeners handle damage routing (shielding, transfers, etc.)
+            OnDamageTaken.Invoke(damage, this);
+        }
+        else
+        {
+            // No listeners: apply default damage
+            ApplyRawDamage(damage);
+        }
+    }
 
-        if (currentHealth <= 0)
+    // Apply damage without raising events (used by systems that already handle routing)
+    public void ApplyRawDamage(float damage)
+    {
+        if (isDead) return;
+        currentHealth -= damage;
+        if (currentHealth < 0f) currentHealth = 0f;
+        healthBarUIManager.UpdateHealthBar(currentHealth, maxHealth);
+        if (currentHealth <= 0f)
         {
             Die();
         }
+    }
+
+    public void Heal(float amount)
+    {
+        if (isDead) return; // Cannot heal if dead
+
+        currentHealth += amount;
+        if (currentHealth > maxHealth)
+            currentHealth = maxHealth;
+        healthBarUIManager.UpdateHealthBar(currentHealth, maxHealth);  //update health bar UI
     }
 
     void Die()

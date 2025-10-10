@@ -5,7 +5,7 @@ using UnityEngine;
 public class SpawnerManager : MonoBehaviour
 {
     [Header("Spawner Settings")]
-    public GameObject enemyPrefab;      // Assign in inspector
+    public GameObject[] enemyPrefabs;      // Assign in inspector
     public float spawnInterval = 4f;    // Time in seconds between spawns
     public float waveInterval = 20f;   // Time in seconds between waves
     public int minEnemies = 5;          // Minimum number of enemies to spawn
@@ -48,7 +48,7 @@ public class SpawnerManager : MonoBehaviour
 
     public void StartWave()
     {
-        if (enemyPrefab == null)
+        if (enemyPrefabs == null)
         {
             Debug.LogError("SpawnerManager StartWave(): enemyPrefab is not assigned");
             return;
@@ -70,7 +70,7 @@ public class SpawnerManager : MonoBehaviour
         // Spawn all enemies for this wave
         while (enemiesToSpawn > 0)
         {
-            SpawnEnemy();
+            SpawnEnemy(Random.Range(0, enemyPrefabs.Length));   //choose random enemy type to spawn
             yield return new WaitForSeconds(spawnInterval);
         }
         
@@ -92,7 +92,7 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
-    public void SpawnEnemy()
+    public void SpawnEnemy(int index)
     {
         if (pathGenerator == null)
         {
@@ -105,7 +105,7 @@ public class SpawnerManager : MonoBehaviour
 
         Vector3 spawnPos = transform.position;
         spawnPos.y += 3f;
-        GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        GameObject enemy = Instantiate(enemyPrefabs[index], spawnPos, Quaternion.identity);
         EnemyManager enemyManager = enemy.GetComponent<EnemyManager>();
         if (enemyManager != null) enemyManager.pathFromSpawner = path;
         else Debug.LogWarning("SpawnerManager SpawnEnemy(): EnemyManager component missing on enemy prefab");
