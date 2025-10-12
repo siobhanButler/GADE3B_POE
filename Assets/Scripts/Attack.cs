@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 //Required Components
 [RequireComponent(typeof(Rigidbody))]
@@ -40,10 +41,18 @@ public class Attack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        /* Dont check in update, as it is checked in the coroutine
         if(!IsTargetValid(currentTarget))   //if target is invalid
         {
             StopAttack();
             StartAttack();
+        }
+        */
+
+        //if not attacking, keep tring to find targets
+        if (!isAttacking)
+        {
+            RefreshAttack();
         }
     }
 
@@ -60,6 +69,7 @@ public class Attack : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Attack OnTriggerEnter(): " + this.name + " detected " + other.name);
         if (attackableTags.Contains(other.tag) && IsRangeIntersectingWithHitbox(other))  //is it a valid target
         {
             targetsInRange.Add(other);  //add as a target
@@ -77,15 +87,38 @@ public class Attack : MonoBehaviour
             if (other == currentTarget)     //is the target the one exiting --> Stop attacking
             {
                 StopAttack();
+                StartAttack();
             }       
         }
     }
 
-    void StartAttack()
+    public void RefreshAttack()  //refresh list of targets in range
+    {
+        Debug.Log("Attack RefreshAttack(): " + this.name + " is refreshing its attack");
+        targetsInRange.Clear();   //clear current list of targets
+        Collider[] colliders = Physics.OverlapSphere(transform.position, rangeRadius);
+        foreach (Collider other in colliders)
+        {
+            if (attackableTags.Contains(other.tag) && IsRangeIntersectingWithHitbox(other))  //is it a valid target
+            {
+                targetsInRange.Add(other);  //add as a target
+            }
+        }
+
+        if(targetsInRange.Count != 0)
+            StartAttack();   //start the attack with the new list
+    }
+
+    void StartAttack()  //get new target and start attacking (if not already attacking)
     {
         if (isAttacking == false && targetsInRange.Count > 0)    //start attacking if not already
         {
             currentTarget = GetBestTarget();
+            if (currentTarget == null)
+            {
+                isAttacking = false;
+                return;
+            }
             attackRoutine = StartCoroutine(AttackLoop());
             isAttacking = true;
 
@@ -93,17 +126,17 @@ public class Attack : MonoBehaviour
         }
     }
 
-    void StopAttack()
+    public void StopAttack()       //stop the attack
     {
         if (attackRoutine != null)
         {
             StopCoroutine(attackRoutine);   //stop attacking
-            Debug.Log("Attack StartAttack(): " + this.name + " is stopping its attack");
+            Debug.Log("Attack StopAttack(): " + this.name + " is stopping its attack");
         }
         isAttacking = false;
         currentTarget = null;           //clear current target  
 
-        StartAttack();
+        //StartAttack();
     }
 
     void RangeAttack(Collider other)
@@ -129,13 +162,31 @@ public class Attack : MonoBehaviour
 
     IEnumerator AttackLoop()
     {
-        while (currentTarget != null)
+        while (IsTargetValid(currentTarget))    //while the target is valid, continue
         {
             RangeAttack(currentTarget);
             yield return new WaitForSeconds(attackSpeed);
         }
 
-        //If currentTarget is null (aka dead) so coroutine will stop --> stop attacking and pick new target if available
+        // Attempt to switch to another valid target if available, keep attacking state if possible
+        currentTarget = null;
+        // Clean up any invalid/stale colliders
+        targetsInRange.RemoveAll(target => !IsTargetValid(target));
+
+        Collider nextTarget = GetBestTarget();
+        if (nextTarget != null)
+        {
+            currentTarget = nextTarget;
+            // Keep isAttacking true and immediately continue attacking
+            attackRoutine = StartCoroutine(AttackLoop());
+        }
+        else
+        {
+            // No targets available, fully stop
+            StopAttack();
+        }
+
+        /*
         isAttacking = false;
 
         if (targetsInRange.Count > 0)   //if there are still targets in range --> start attacking new target
@@ -143,6 +194,7 @@ public class Attack : MonoBehaviour
             currentTarget = targetsInRange[0];  //set new target (no longer null, so coroutine will continue)
             isAttacking = true;
         }
+        */
     }
 
     bool IsRangeIntersectingWithHitbox(Collider target)
@@ -164,10 +216,13 @@ public class Attack : MonoBehaviour
         return rangeCollider.bounds.Intersects(targetHitbox.bounds);
     }
 
-    // Check if a target is still valid (alive and in range)
+    // Check if a target is still valid (correct tag, alive and in range)
     bool IsTargetValid(Collider target)
     {
-        if (target == null)
+        if (target == null) //dead target
+            return false;
+
+        if (attackableTags.Contains(target.tag) == false) //wrong tag
             return false;
 
         // Check if target still exists and has health

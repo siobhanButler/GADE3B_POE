@@ -26,7 +26,7 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if (OnDamageTaken != null)
+        if (OnDamageTaken != null)  //if there are listeners 
         {
             // Let listeners handle damage routing (shielding, transfers, etc.)
             OnDamageTaken.Invoke(damage, this);
