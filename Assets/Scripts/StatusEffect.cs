@@ -33,7 +33,17 @@ public class StatusEffect
                     enemyMovement.speed = originalSpeed * effectStrength; // apply slow once
                     isApplied = true;
                 }
-                break;
+                else    //it would then presumably be a tower
+                {
+                    Attack attack = target != null ? target.GetComponent<Attack>() : null;
+                    if (attack != null)
+                    {
+                        originalSpeed = attack.attackSpeed; // cache original once
+                        attack.attackSpeed = originalSpeed / effectStrength; // apply slow once NEED TO TEST THIS
+                        isApplied = true;
+                    }
+                }
+                    break;
             // Add cases for other status effects as needed
             default:
                 Debug.LogWarning("StatusEffect ApplyStatus(): Unrecognized status effect.");

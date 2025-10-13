@@ -23,7 +23,7 @@ public class HealingTowerBehaviour : CustomBehaviour
 
     // Update not needed for this behaviour
 
-    List<Health> SetHealableTargets()
+    public List<Health> SetHealableTargets()
     {
         healableTargets.Clear();
 
@@ -59,7 +59,9 @@ public class HealingTowerBehaviour : CustomBehaviour
 		// sort from lowest to highest current health
 		healableTargets.Sort((a, b) => a.currentHealth.CompareTo(b.currentHealth));
 
-		if (healableTargets.Count == 0)
+        healableTargets.Remove(this.GetComponent<Health>()); //remove self from healable targets
+
+        if (healableTargets.Count == 0)
 			return null;
 
 		return healableTargets;

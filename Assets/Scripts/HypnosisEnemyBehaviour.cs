@@ -11,6 +11,7 @@ public class HypnosisEnemyBehaviour : CustomBehaviour
     private string originalTag;                                            //the original tag of the target before being hypnotized
     private List<string> originalAttackableTags;                           //the original attackable tags of the target before being hypnotized
     private Color originalColor;                                            //the original color of the target before being hypnotized
+    private List<string> originalHealableTags;                           //the original healable tags of the target before being hypnotized
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -47,6 +48,15 @@ public class HypnosisEnemyBehaviour : CustomBehaviour
             hypnotizedTarget.GetComponent<BoxCollider>().enabled = true;
 
             hypnotizedTarget.GetComponent<MeshRenderer>().material.color = Color.red; //change color to magenta to indicate hypnosis
+
+            HealingTowerBehaviour healingBehaviour = hypnotizedTarget.GetComponent<HealingTowerBehaviour>();
+            if (healingBehaviour != null)
+            {
+                originalHealableTags = healingBehaviour.healableTags;           //store original healable tags
+                healingBehaviour.healableTags.Clear();                          //clear healable tags
+                healingBehaviour.healableTags = new List<string> { "Enemy" };   //set healable tags to only enemy, so that it heals other enemies
+                healingBehaviour.SetHealableTargets();                          //refresh healable targets
+            }
         }
     }
 
@@ -66,6 +76,15 @@ public class HypnosisEnemyBehaviour : CustomBehaviour
             hypnotizedTarget.attack.RefreshAttack();                                 //refresh attackable targets
             hypnotizedTarget.GetComponent<BoxCollider>().enabled = false;
             hypnotizedTarget.GetComponent<BoxCollider>().enabled = true;
+
+            HealingTowerBehaviour healingBehaviour = hypnotizedTarget.GetComponent<HealingTowerBehaviour>();
+            if (healingBehaviour != null)
+            {
+                healingBehaviour.healableTags.Clear(); //clear healable tags
+                healingBehaviour.healableTags = originalHealableTags; //set healable tags to only enemy, so that it heals other enemies
+                healingBehaviour.SetHealableTargets(); //refresh healable targets
+            }
+
             Debug.Log($"{gameObject.name} is un-hypnotizing {hypnotizedTarget.gameObject.name} due to destruction");
         }
     }
