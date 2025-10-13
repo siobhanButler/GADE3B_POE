@@ -19,7 +19,7 @@ public class PathGenerator : MonoBehaviour
     private int roomLength;
     private int subCellsPerLargeCell;
 
-    private Dictionary<SubCell, List<SubCell>> spawnerPaths = new Dictionary<SubCell, List<SubCell>>();
+    private Dictionary<SubCell, PathManager> spawnerPaths = new Dictionary<SubCell, PathManager>();
     
     public void Initialize(LargeCell[,] grid, int roomWidth, int roomLength, int subCellsPerLargeCell)
     {
@@ -47,7 +47,7 @@ public class PathGenerator : MonoBehaviour
         }
     }
     
-    private List<SubCell> GeneratePathFromSpawnerToTower(SubCell start, SubCell goal)   // Generate path from spawner to tower
+    private PathManager GeneratePathFromSpawnerToTower(SubCell start, SubCell goal)   // Generate path from spawner to tower
     {
         List<SubCell> path = FindPathWithJitter(start, goal);
         
@@ -64,7 +64,9 @@ public class PathGenerator : MonoBehaviour
             }
             
             CreatePathVisualization(path);
-            return path;
+            PathManager pathManager = new PathManager();
+            pathManager.path = path;
+            return pathManager;
         }
         else
         {
@@ -270,7 +272,7 @@ public class PathGenerator : MonoBehaviour
         // For example, random rotation, scaling, etc.
     }
 
-    public List<SubCell> GetPathForSpawner(SubCell spawner)
+    public PathManager GetPathForSpawner(SubCell spawner)
     {
         return spawnerPaths.ContainsKey(spawner) ? spawnerPaths[spawner] : null;
     }

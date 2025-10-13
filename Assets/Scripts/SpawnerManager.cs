@@ -19,6 +19,7 @@ public class SpawnerManager : MonoBehaviour
 
     private SubCell parentCell;
     private PathGenerator pathGenerator;
+    private PathManager pathManager;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -38,12 +39,13 @@ public class SpawnerManager : MonoBehaviour
         if (pathGenerator == null)
         {
             pathGenerator = GetComponentInParent<PathGenerator>();
+            if (pathGenerator == null)
+            {
+                Debug.LogError("PathGenerator not found! SpawnerManager needs a PathGenerator to function properly.");
+                return;
+            }
         }
-        
-        if (pathGenerator == null)
-        {
-            Debug.LogError("PathGenerator not found! SpawnerManager needs a PathGenerator to function properly.");
-        }
+        pathManager = pathGenerator.GetPathForSpawner(parentCell);
     }
 
     public void StartWave()
@@ -100,14 +102,14 @@ public class SpawnerManager : MonoBehaviour
             return;
         }
         
-        List<SubCell> path = pathGenerator.GetPathForSpawner(parentCell);
-        if (path == null || path.Count == 0) Debug.LogWarning("SpawnerManager SpawnEnemy(): Path is null or empty; enemy will still spawn but may not move");
+        PathManager pathManager = pathGenerator.GetPathForSpawner(parentCell);
+        if (pathManager == null || pathManager.path.Count == 0) Debug.LogWarning("SpawnerManager SpawnEnemy(): Path is null or empty; enemy will still spawn but may not move");
 
         Vector3 spawnPos = transform.position;
         spawnPos.y += 3f;
         GameObject enemy = Instantiate(enemyPrefabs[index], spawnPos, Quaternion.identity);
         EnemyManager enemyManager = enemy.GetComponent<EnemyManager>();
-        if (enemyManager != null) enemyManager.pathFromSpawner = path;
+        if (enemyManager != null) enemyManager.pathManager = pathManager;
         else Debug.LogWarning("SpawnerManager SpawnEnemy(): EnemyManager component missing on enemy prefab");
         enemiesToSpawn--;
 
