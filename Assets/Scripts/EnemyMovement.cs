@@ -7,8 +7,7 @@ using UnityEngine;
 /// </summary>
 public class EnemyMovement : MonoBehaviour
 {
-    PathManager pathManager;
-    List<SubCell> pathFromSpawner => pathManager?.path;
+    List<SubCell> pathFromSpawner;
     private int currentPathIndex = 0;
     private bool isMoving = false;
 
@@ -34,13 +33,13 @@ public class EnemyMovement : MonoBehaviour
 /// </summary>
     public void Setup()
     {
-        pathManager = GetComponent<EnemyManager>().pathManager;
-        if (pathManager != null && pathManager.path != null && pathManager.path.Count > 0)
+        pathFromSpawner = GetComponent<EnemyManager>().pathFromSpawner;
+        if (pathFromSpawner != null && pathFromSpawner.Count > 0)
         {
             currentPathIndex = 0;
             isMoving = true;
             // Set initial position to first path point
-            transform.position = pathManager.path[0].worldPosition;
+            transform.position = pathFromSpawner[0].worldPosition;
         }
     }
 
@@ -52,7 +51,7 @@ public class EnemyMovement : MonoBehaviour
     public void MoveAlongPath()
     {
         // Check if enemy has reached the end of the path
-        if (currentPathIndex >= pathManager.path.Count)
+        if (currentPathIndex >= pathFromSpawner.Count)
         {
             isMoving = false;
             return;
@@ -89,13 +88,13 @@ public class EnemyMovement : MonoBehaviour
     private Vector3 GetTargetPosition()
     {
         // Check if we have a valid path and current index
-        if (pathManager == null || pathManager.path == null || pathManager.path.Count == 0 || currentPathIndex >= pathManager.path.Count)
+        if (pathFromSpawner == null || pathFromSpawner.Count == 0 || currentPathIndex >= pathFromSpawner.Count)
         {
             return transform.position; // Return current position if no valid path
         }
 
         // Get the current target position (default behavior)
-        Vector3 currentTargetPosition = pathManager.path[currentPathIndex].worldPosition;
+        Vector3 currentTargetPosition = pathFromSpawner[currentPathIndex].worldPosition;
         float currentTargetDistance = Vector3.Distance(transform.position, currentTargetPosition);
 
         if(currentTargetDistance < pathRecoveryDistance)    //if the enemy is within the path recovery distance, return the current target position
@@ -109,9 +108,9 @@ public class EnemyMovement : MonoBehaviour
         int closestIndex = currentPathIndex;
         
         // Search through path points ahead of current index
-        for (int i = currentPathIndex; i < pathManager.path.Count; i++)
+        for (int i = currentPathIndex; i < pathFromSpawner.Count; i++)
         {
-            Vector3 pathPosition = pathManager.path[i].worldPosition;
+            Vector3 pathPosition = pathFromSpawner[i].worldPosition;
             float pathDistance = Vector3.Distance(transform.position, pathPosition);
             
             // Check if this path point is closer than our current closest
