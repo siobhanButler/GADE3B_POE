@@ -14,6 +14,11 @@ public abstract class ObjectManager : MonoBehaviour
     public Health health;
     public Attack attack;
 
+    public float maxHealth;
+    public float attackDamage = 2f;
+    public float attackRadius = 30f;
+    public float attackSpeed = 1f;
+
     public List<StatusEffect> currentStatusEffects;
     private Coroutine statusEffectsCoroutine;
 
@@ -21,7 +26,24 @@ public abstract class ObjectManager : MonoBehaviour
 
     public string objectTag;
 
+    [Header("Economy")]
+    [Min(0)]
+    public int cost; // unified value for enemy reward and tower purchase cost (serialized for prefabs)
+    public float specialityModifier;
+
     // Start and Update methods removed - functionality handled in derived classes
+
+    private void Awake()
+    {
+        //cost = Mathf.RoundToInt(((attackDamage * attackSpeed * attackRadius) + maxHealth) * specialityModifier +1);
+    }
+
+    // Keep prefab and scene instances updated in the editor
+    private void OnValidate()
+    {
+        cost = Mathf.RoundToInt(((attackDamage * attackSpeed * attackRadius) + maxHealth) * (specialityModifier + 1));
+        if (cost < 0) cost = 0;
+    }
 
     public void Setup()
     {
@@ -56,9 +78,9 @@ public abstract class ObjectManager : MonoBehaviour
         rangeCollider = GetComponent<SphereCollider>() ?? gameObject.AddComponent<SphereCollider>();
 
         health = GetComponent<Health>() ?? gameObject.AddComponent<Health>();
-        health.Setup(uiManager);
+        health.Setup(uiManager, maxHealth);
         attack = GetComponent<Attack>() ?? gameObject.AddComponent<Attack>();
-        attack.Setup(rigidBody, hitBox, rangeCollider);
+        attack.Setup(rigidBody, hitBox, rangeCollider, attackDamage, attackSpeed, attackRadius);
 
         this.tag = objectTag;  //set tag to tower
 

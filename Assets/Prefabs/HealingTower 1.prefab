@@ -184,9 +184,14 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   health: {fileID: 9083771151248980207}
   attack: {fileID: 7564483025522920281}
+  maxHealth: 25
+  attackDamage: 2
+  attackRadius: 12
+  attackSpeed: 2
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
-  cost: 20
+  cost: 102
+  specialityModifier: 0.4
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -242,7 +247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   behaviourType: 1
-  healRange: 24
+  healRange: 15
   healAmount: 0.5
   healCollider: {fileID: -7792270922626200406}
   healableTags:

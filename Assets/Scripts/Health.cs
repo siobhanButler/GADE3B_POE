@@ -15,8 +15,9 @@ public class Health : MonoBehaviour
 
     // Start and Update methods removed - initialization handled in Setup()
 
-    public void Setup(ObjectUIManager p_healthBarUIManager)
+    public void Setup(ObjectUIManager p_healthBarUIManager, float pMaxHealth)
     {
+        maxHealth = pMaxHealth;
         //Default settings
         currentHealth = maxHealth;
         isDead = false;

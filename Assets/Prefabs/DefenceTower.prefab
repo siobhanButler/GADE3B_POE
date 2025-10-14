@@ -182,6 +182,10 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   health: {fileID: 9083771151248980207}
   attack: {fileID: 7564483025522920281}
+  maxHealth: 30
+  attackDamage: 2
+  attackRadius: 12
+  attackSpeed: 2
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
   cost: 20

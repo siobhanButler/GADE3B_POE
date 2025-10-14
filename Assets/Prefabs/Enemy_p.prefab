@@ -145,10 +145,14 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   health: {fileID: 0}
   attack: {fileID: 0}
+  maxHealth: 8
+  attackDamage: 0.5
+  attackRadius: 5
+  attackSpeed: 1
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
+  cost: 0
   movement: {fileID: 0}
-  coinReward: 5
 --- !u!114 &-914249002432701815
 MonoBehaviour:
   m_ObjectHideFlags: 0

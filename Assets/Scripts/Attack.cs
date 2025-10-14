@@ -56,7 +56,7 @@ public class Attack : MonoBehaviour
         }
     }
 
-    public void Setup(Rigidbody p_rigidBody, BoxCollider p_boxCollider, SphereCollider p_sphereCollider)
+    public void Setup(Rigidbody p_rigidBody, BoxCollider p_boxCollider, SphereCollider p_sphereCollider, float pAttackDamage, float pAttackSpeed, float pAttackRadius)
     {
         rigidBody = p_rigidBody;  //rigidbody is required for onTriggerEnter to work
 

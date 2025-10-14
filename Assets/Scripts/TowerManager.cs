@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class TowerManager : ObjectManager
 {
-    public int cost = 10;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

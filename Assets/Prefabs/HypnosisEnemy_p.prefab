@@ -146,10 +146,15 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   health: {fileID: 0}
   attack: {fileID: 0}
+  maxHealth: 12
+  attackDamage: 0.5
+  attackRadius: 5
+  attackSpeed: 1
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
+  cost: 25
+  specialityModifier: 0.7
   movement: {fileID: 0}
-  coinReward: 5
 --- !u!114 &-914249002432701815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 836f7aa9109816d49aca171b6534eeaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 50
+  maxHealth: 12
   currentHealth: 0
   isDead: 0
   healthBarUIManager: {fileID: 0}
