@@ -10,7 +10,7 @@ public class SpawnerManager : MonoBehaviour
     public float waveInterval = 20f;   // Time in seconds between waves
     public int minEnemies = 5;          // Minimum number of enemies to spawn
     public int maxEnemies = 20;         // Maximum number of enemies to spawn
-    public int enemiesToSpawn;          // Number of enemies to spawn
+    public int enemyQuantityToSpawn;          // Number of enemies to spawn
     public int numberOfWaves = 3;       // Total number of waves
     public bool wavesCompleted = false;
 
@@ -20,9 +20,13 @@ public class SpawnerManager : MonoBehaviour
     private SubCell parentCell;
     private PathGenerator pathGenerator;
 
+    public int enemyBudget = 100;
+    public List<GameObject> enemiesToSpawn = new List<GameObject>();
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        if (enemyPrefabs[0].GetComponent<ObjectManager>() == null) Debug.LogError("nope");
         StartWave();
     }
 
@@ -61,16 +65,18 @@ public class SpawnerManager : MonoBehaviour
             maxEnemies = Mathf.Max(minEnemies, maxEnemies);
         }
 
-        enemiesToSpawn = Random.Range(minEnemies, maxEnemies + 1);  //randomly assign how many enemies to spawn
+        enemyQuantityToSpawn = Random.Range(minEnemies, maxEnemies + 1);  //randomly assign how many enemies to spawn
+
+        SetEnemiesToSpawn();
         spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
 
     IEnumerator SpawnRoutine()
     {
         // Spawn all enemies for this wave
-        while (enemiesToSpawn > 0)
+        while (enemiesToSpawn.Count > 0)
         {
-            SpawnEnemy(Random.Range(0, enemyPrefabs.Length));   //choose random enemy type to spawn
+            SpawnEnemy(0);   //choose random enemy type to spawn
             yield return new WaitForSeconds(spawnInterval);
         }
         
@@ -105,11 +111,11 @@ public class SpawnerManager : MonoBehaviour
 
         Vector3 spawnPos = transform.position;
         spawnPos.y += 3f;
-        GameObject enemy = Instantiate(enemyPrefabs[index], spawnPos, Quaternion.identity);
+        GameObject enemy = Instantiate(enemiesToSpawn[index], spawnPos, Quaternion.identity);
         EnemyManager enemyManager = enemy.GetComponent<EnemyManager>();
         if (enemyManager != null) enemyManager.pathFromSpawner = path;
         else Debug.LogWarning("SpawnerManager SpawnEnemy(): EnemyManager component missing on enemy prefab");
-        enemiesToSpawn--;
+        enemiesToSpawn.RemoveAt(index);
 
         //Add spawned enemy to GameManager's enemy list
         GameManager gameManager = FindFirstObjectByType<GameManager>();
@@ -121,4 +127,36 @@ public class SpawnerManager : MonoBehaviour
             Debug.LogWarning("SpawnerManager SpawnEnemy(): GameManager is null, cannot add enemy to list");
         }
     } 
+
+    void SetEnemiesToSpawn()
+    {
+        enemiesToSpawn.Clear();
+        GameObject enemy = null;
+        while (GetTotalEnemyCost(enemy) < enemyBudget)
+        {
+            enemy = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];  //select random enemy
+            enemiesToSpawn.Add(enemy);
+        }
+
+        enemyQuantityToSpawn = enemiesToSpawn.Count;
+
+        string enemyNames = "";
+        foreach (GameObject eenemy in enemiesToSpawn)
+        {
+            enemyNames += enemy.name;
+            enemyNames += " ";
+        }
+        Debug.Log($"SpawnerManager SetEnemiesToSpawn(): Actual Budget: {GetTotalEnemyCost(null)} \n Names: {enemyNames}");
+    }
+
+    int GetTotalEnemyCost(GameObject newEnemy)
+    {
+        int totalCost = 0;
+        foreach (GameObject enemy in enemiesToSpawn)
+        {
+            totalCost += enemy.GetComponent<ObjectManager>().cost;
+        }
+        if(newEnemy != null) totalCost += newEnemy.GetComponent<ObjectManager>().cost;
+        return totalCost;
+    }
 }

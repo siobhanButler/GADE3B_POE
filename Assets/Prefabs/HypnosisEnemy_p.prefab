@@ -152,8 +152,8 @@ MonoBehaviour:
   attackSpeed: 1
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
-  cost: 25
-  specialityModifier: 0.7
+  cost: 26
+  specialityModifier: 0.8
   movement: {fileID: 0}
 --- !u!114 &-914249002432701815
 MonoBehaviour:
@@ -227,7 +227,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   behaviourType: 1
-  healthThreshold: 0.8
+  healthThreshold: 0.2
 --- !u!54 &5464121699189145045
 Rigidbody:
   m_ObjectHideFlags: 0

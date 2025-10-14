@@ -26,7 +26,6 @@ public abstract class ObjectManager : MonoBehaviour
 
     public string objectTag;
 
-    [Header("Economy")]
     [Min(0)]
     public int cost; // unified value for enemy reward and tower purchase cost (serialized for prefabs)
     public float specialityModifier;
