@@ -13,13 +13,18 @@ public class PathGenerator : MonoBehaviour
     [Header("Visual Settings")]
     public GameObject pathPrefab; // Prefab to spawn on each path sub-cell
     public float pathHeight = 0.1f; // Height above floor for path visualization
+    [Header("Debug Visuals")]
+    public bool debugVisualizePathDifficulty = true;
+    public Color debugMinColor = new Color(1f, 1f, 0.6f);  // light
+    public Color debugMaxColor = new Color(0.2f, 0.2f, 0.2f); // dark
     
     private LargeCell[,] grid;
     private int roomWidth;
     private int roomLength;
     private int subCellsPerLargeCell;
 
-    private Dictionary<SubCell, List<SubCell>> spawnerPaths = new Dictionary<SubCell, List<SubCell>>();
+    private Dictionary<SubCell, PathObj> spawnerPaths = new Dictionary<SubCell, PathObj>();
+    private Dictionary<SubCell, GameObject> pathTileObjects = new Dictionary<SubCell, GameObject>();
     
     public void Initialize(LargeCell[,] grid, int roomWidth, int roomLength, int subCellsPerLargeCell)
     {
@@ -42,12 +47,12 @@ public class PathGenerator : MonoBehaviour
         {
             if (spawner != null)
             {
-                spawnerPaths[spawner] = GeneratePathFromSpawnerToTower(spawner, mainTower);
+                spawnerPaths[spawner] = GeneratePathObjFromSpawnerToTower(spawner, mainTower);
             }
         }
     }
     
-    private List<SubCell> GeneratePathFromSpawnerToTower(SubCell start, SubCell goal)   // Generate path from spawner to tower
+    private PathObj GeneratePathObjFromSpawnerToTower(SubCell start, SubCell goal)   // Generate path from spawner to tower
     {
         List<SubCell> path = FindPathWithJitter(start, goal);
         
@@ -64,12 +69,15 @@ public class PathGenerator : MonoBehaviour
             }
             
             CreatePathVisualization(path);
-            return path;
+
+            PathObj pathObj = new PathObj(path);
+            pathObj.RecalculateTotalPathDifficulty();
+            return pathObj;
         }
         else
         {
             Debug.LogWarning($"PathGenerator GeneratePathFromSpawnerToTower(): Failed to generate path from spawner to tower");
-            return null;
+            return new PathObj(null);
         }
     }
     
@@ -247,9 +255,12 @@ public class PathGenerator : MonoBehaviour
         {
             if (cell.state == CellState.EnemyPath)
             {
-                SpawnPathPrefab(cell.worldPosition, pathParent);
+                SpawnPathPrefabForSubCell(cell, pathParent);
             }
         }
+
+        // Initialize debug visuals
+        RefreshPathDebugVisuals();
     }
     
     private void SpawnPathPrefab(Vector3 position, GameObject parent)
@@ -270,8 +281,209 @@ public class PathGenerator : MonoBehaviour
         // For example, random rotation, scaling, etc.
     }
 
+    private void SpawnPathPrefabForSubCell(SubCell cell, GameObject parent)
+    {
+        if (cell == null) return;
+        SpawnPathPrefab(cell.worldPosition, parent);
+        // Last spawned is the child at end
+        var go = parent.transform.GetChild(parent.transform.childCount - 1).gameObject;
+        pathTileObjects[cell] = go;
+    }
+
     public List<SubCell> GetPathForSpawner(SubCell spawner)
     {
-        return spawnerPaths.ContainsKey(spawner) ? spawnerPaths[spawner] : null;
+        if (!spawnerPaths.ContainsKey(spawner)) return null;
+        return spawnerPaths[spawner].pathCells;
+    }
+
+    // Returns a unique list of all subcells that are part of any enemy path
+    public List<SubCell> GetAllPathSubCells()
+    {
+        HashSet<SubCell> unique = new HashSet<SubCell>();
+        foreach (var kvp in spawnerPaths)
+        {
+            var pathObj = kvp.Value;
+            var cells = pathObj.pathCells;
+            if (cells == null) continue;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                SubCell sc = cells[i];
+                if (sc != null && sc.state == CellState.EnemyPath)
+                {
+                    unique.Add(sc);
+                }
+            }
+        }
+        return new List<SubCell>(unique);
+    }
+
+    public List<PathObj> GetAllPathObjects()
+    {
+        List<PathObj> list = new List<PathObj>();
+        foreach (var kvp in spawnerPaths)
+        {
+            list.Add(kvp.Value);
+        }
+        return list;
+    }
+
+    public PathObj GetPathObjForSpawner(SubCell spawner)
+    {
+        if (spawnerPaths.ContainsKey(spawner))
+        {
+            return spawnerPaths[spawner];
+        }
+        return new PathObj(null);
+    }
+
+    // Registers a tower across all paths for overlapping subcells; returns total overlapped path subcells count
+    public int RegisterTowerOverlaps(TowerManager tower)
+    {
+        if (tower == null || tower.attack == null || tower.attack.rangeCollider == null) return 0;
+        int totalOverlapped = 0;
+        Bounds bounds = tower.attack.rangeCollider.bounds;
+
+        // We need to reassign struct after mutation
+        var keys = new List<SubCell>(spawnerPaths.Keys);
+        for (int k = 0; k < keys.Count; k++)
+        {
+            var key = keys[k];
+            PathObj obj = spawnerPaths[key];
+            var cells = obj.pathCells;
+            if (cells == null) continue;
+
+            bool addedToThisPath = false;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                SubCell cell = cells[i];
+                if (cell == null) continue;
+                if (!bounds.Contains(cell.worldPosition)) continue;
+
+                totalOverlapped++;
+                addedToThisPath = true;
+
+                // Add tower to subcell registration
+                if (cell.inRangeTowers == null)
+                {
+                    cell.inRangeTowers = new TowerManager[] { tower };
+                }
+                else
+                {
+                    bool exists = false;
+                    for (int t = 0; t < cell.inRangeTowers.Length; t++)
+                    {
+                        if (cell.inRangeTowers[t] == tower) { exists = true; break; }
+                    }
+                    if (!exists)
+                    {
+                        var newArr = new TowerManager[cell.inRangeTowers.Length + 1];
+                        for (int t = 0; t < cell.inRangeTowers.Length; t++) newArr[t] = cell.inRangeTowers[t];
+                        newArr[newArr.Length - 1] = tower;
+                        cell.inRangeTowers = newArr;
+                    }
+                }
+            }
+
+            if (addedToThisPath)
+            {
+                obj.AddTower(tower);
+                obj.RecalculateTotalPathDifficulty();
+            }
+            spawnerPaths[key] = obj; // reassign mutated struct
+        }
+
+        // Update debug visuals after registration
+        RefreshPathDebugVisuals();
+
+        return totalOverlapped;
+    }
+
+    public void RefreshPathDebugVisuals()
+    {
+        if (!debugVisualizePathDifficulty) return;
+        if (pathTileObjects == null || pathTileObjects.Count == 0) return;
+
+        // Determine max overlaps across all path subcells for normalization
+        int maxOverlap = 0;
+        foreach (var kv in pathTileObjects)
+        {
+            SubCell sc = kv.Key;
+            if (sc == null) continue;
+            int c = sc.inRangeTowers != null ? sc.inRangeTowers.Length : 0;
+            if (c > maxOverlap) maxOverlap = c;
+        }
+
+        // Avoid division by zero; if no overlaps, paint min color
+        foreach (var kv in pathTileObjects)
+        {
+            GameObject go = kv.Value;
+            if (go == null) continue;
+            Renderer r = go.GetComponentInChildren<Renderer>();
+            if (r == null) continue;
+
+            int count = kv.Key != null && kv.Key.inRangeTowers != null ? kv.Key.inRangeTowers.Length : 0;
+            float t = (maxOverlap > 0) ? Mathf.Clamp01((float)count / (float)maxOverlap) : 0f;
+            // Darker with more overlaps: lerp from light (min) to dark (max)
+            Color c = Color.Lerp(debugMinColor, debugMaxColor, t);
+
+            // Apply color; for debug it's fine to set material.color
+            if (r.material != null)
+            {
+                r.material.color = c;
+            }
+        }
+    }
+}
+
+public struct PathObj
+{
+    public List<SubCell> pathCells;
+    public List<TowerManager> towers;      // all towers intersecting this path
+    public int totalPathDifficulty;         // sum of each subcell's number of intersecting towers
+
+    public PathObj(List<SubCell> cells)
+    {
+        pathCells = cells != null ? new List<SubCell>(cells) : new List<SubCell>();
+        towers = new List<TowerManager>();
+        totalPathDifficulty = 0;
+    }
+
+    public void AddPathCell(SubCell cell)
+    {
+        if (cell == null) return;
+        if (pathCells == null) pathCells = new List<SubCell>();
+        if (!pathCells.Contains(cell)) pathCells.Add(cell);
+    }
+
+    public bool AddTower(TowerManager tower)
+    {
+        if (tower == null) return false;
+        if (towers == null) towers = new List<TowerManager>();
+        if (towers.Contains(tower)) return false;
+        towers.Add(tower);
+        return true;
+    }
+
+    public bool RemoveTower(TowerManager tower)
+    {
+        if (towers == null || tower == null) return false;
+        return towers.Remove(tower);
+    }
+
+    public int RecalculateTotalPathDifficulty()
+    {
+        int sum = 0;
+        if (pathCells != null)
+        {
+            for (int i = 0; i < pathCells.Count; i++)
+            {
+                var sc = pathCells[i];
+                if (sc == null) continue;
+                int count = sc.inRangeTowers != null ? sc.inRangeTowers.Length : 0;
+                sum += count;
+            }
+        }
+        totalPathDifficulty = sum;
+        return totalPathDifficulty;
     }
 }

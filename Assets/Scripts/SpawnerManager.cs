@@ -106,7 +106,8 @@ public class SpawnerManager : MonoBehaviour
             return;
         }
         
-        List<SubCell> path = pathGenerator.GetPathForSpawner(parentCell);
+        PathObj pathObj = pathGenerator.GetPathObjForSpawner(parentCell);
+        List<SubCell> path = pathObj.pathCells;
         if (path == null || path.Count == 0) Debug.LogWarning("SpawnerManager SpawnEnemy(): Path is null or empty; enemy will still spawn but may not move");
 
         Vector3 spawnPos = transform.position;

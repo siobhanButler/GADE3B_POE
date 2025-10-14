@@ -61,7 +61,12 @@ public class Attack : MonoBehaviour
         rigidBody = p_rigidBody;  //rigidbody is required for onTriggerEnter to work
 
         hitBox = p_boxCollider;
-        
+
+        // Apply incoming configuration
+        attackDamage = pAttackDamage;
+        attackSpeed = pAttackSpeed;
+        rangeRadius = pAttackRadius;
+
         rangeCollider = p_sphereCollider;
         rangeCollider.radius = rangeRadius;
         rangeCollider.isTrigger = true;

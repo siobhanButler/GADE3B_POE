@@ -186,12 +186,13 @@ MonoBehaviour:
   attack: {fileID: 7564483025522920281}
   maxHealth: 25
   attackDamage: 2
-  attackRadius: 12
+  attackRadius: 8
   attackSpeed: 2
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
-  cost: 29
-  specialityModifier: 0.4
+  cost: 103
+  specialityModifier: 0.8
+  pathCellsInRange: 0
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -208,7 +209,7 @@ MonoBehaviour:
   hitBox: {fileID: 0}
   rangeCollider: {fileID: 0}
   attackDamage: 2
-  rangeRadius: 6
+  rangeRadius: 8
   attackSpeed: 2
   attackableTags:
   - Enemy
@@ -272,7 +273,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 24
+  m_Radius: 14
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6468974241732476346
 GameObject:

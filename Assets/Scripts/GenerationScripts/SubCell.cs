@@ -7,6 +7,7 @@ public class SubCell
     public CellState state;
     public CellBorderState borderState;
     public LargeCell parentCell;
+    public TowerManager[] inRangeTowers;    //if it is a path, this will be populated. Determines the path difficulty (can make this a list)
     
     // Neighbors (inside the same LargeCell)
     public SubCell north;
