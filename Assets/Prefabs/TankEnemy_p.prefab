@@ -149,11 +149,11 @@ MonoBehaviour:
   attack: {fileID: 0}
   maxHealth: 20
   attackDamage: 0.5
-  attackRadius: 5
+  attackRadius: 7
   attackSpeed: 1
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
-  cost: 0
+  cost: 28
   specialityModifier: 0.2
   movement: {fileID: 0}
 --- !u!114 &-914249002432701815
@@ -301,7 +301,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 5
+  m_Radius: 7
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!135 &-4700614505450337928
 SphereCollider:

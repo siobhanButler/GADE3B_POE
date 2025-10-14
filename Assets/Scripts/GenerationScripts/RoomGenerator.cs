@@ -39,6 +39,7 @@ public class RoomGenerator : MonoBehaviour
      [Header("Defence Tower Settings")]
      public int minDefenceCount = 10;
      public int maxDefenceCount = 30;
+     public int maxLocationDistance = 5; // max subcell steps from an EnemyPath
     
     [Header("Prefabs")]
     public GameObject wallPrefab;
@@ -411,7 +412,7 @@ public class RoomGenerator : MonoBehaviour
     {
         int defenceCount = Random.Range(minDefenceCount, maxDefenceCount + 1); // Random number between min and max (inclusive)
         defenceTowerCells = new SubCell[defenceCount];
-        List<SubCell> validSubCells = GetValidDefenceSubCells();
+        List<SubCell> validSubCells = GetValidLocationSubCells();
          
         // Placing defence tower locations
          
@@ -433,64 +434,121 @@ public class RoomGenerator : MonoBehaviour
         Debug.Log($"RoomGenerator PlaceDefenceTowerLocations(): Successfully placed {defenceCount} spawners");
     }
 
-    List<SubCell> GetValidDefenceSubCells()
+    List<SubCell> GetValidLocationSubCells()
     {
         List<SubCell> validSubCells = new List<SubCell>();
-        
-        // Check all large cells for empty or enemy path cells
+
+        // Build a distance map from all EnemyPath sub-cells using multi-source BFS
+        Dictionary<SubCell, int> distanceFromPath = ComputeSubCellDistancesFromPaths();
+
+        // Any floor subcell with distance in [1, maxLocationDistance] is valid
         for (int x = 0; x < roomWidth; x++)
         {
             for (int z = 0; z < roomLength; z++)
             {
                 LargeCell cell = grid[x, z];
-                
-                // Skip invalid tiles (removed corners)
-                if (cell.state == CellState.Removed) continue;
-                
-                // Check if this large cell is on the border
-                if (cell.state == CellState.Floor || cell.state == CellState.EnemyPath)
-                {
-                    // For floor cells, check if at least one neighbor has enemy path (so the defence towers aren't too far away from enemy paths)
-                    bool hasEnemyPathNeighbor = false;
-                    if (cell.state == CellState.Floor)
-                    {
-                        LargeCell[] neighbors = { cell.north, cell.south, cell.east, cell.west, 
-                                                cell.northEast, cell.southEast, cell.southWest, cell.northWest };
-                        foreach (LargeCell neighbor in neighbors)
-                        {
-                            if (neighbor != null && neighbor.state == CellState.EnemyPath)
-                            {
-                                hasEnemyPathNeighbor = true;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        hasEnemyPathNeighbor = true; // Cell itself is enemy path
-                    }
+                if (cell == null || cell.state == CellState.Removed) continue;
 
-                    if (hasEnemyPathNeighbor)
+                for (int sx = 0; sx < subCellsPerLargeCell; sx++)
+                {
+                    for (int sz = 0; sz < subCellsPerLargeCell; sz++)
                     {
-                        // Add all sub-cells of this cell that are not enemy path cells as valid defence tower positions
-                        for (int sx = 0; sx < subCellsPerLargeCell; sx++)
+                        SubCell subCell = cell.subCells[sx, sz];
+                        if (subCell == null) continue;
+                        if (subCell.state != CellState.Floor) continue; // only place on floor
+
+                        int dist;
+                        if (distanceFromPath != null && distanceFromPath.TryGetValue(subCell, out dist))
                         {
-                            for (int sz = 0; sz < subCellsPerLargeCell; sz++)
+                            if (dist >= 1 && dist <= maxLocationDistance)
                             {
-                                SubCell subCell = cell.subCells[sx, sz];
-                                if (subCell != null && subCell.state == CellState.Floor)    //can only be placed on floor (aka not enemypath cells)
-                                {
-                                    validSubCells.Add(subCell);
-                                }
+                                validSubCells.Add(subCell);
                             }
                         }
                     }
                 }
             }
         }
-        
+
         return validSubCells;
     } 
+
+    // Compute minimum subcell-distance (8-directional) from all EnemyPath subcells up to maxLocationDistance
+    Dictionary<SubCell, int> ComputeSubCellDistancesFromPaths()
+    {
+        Queue<SubCell> queue = new Queue<SubCell>();
+        Dictionary<SubCell, int> distances = new Dictionary<SubCell, int>();
+
+        // Seed the queue with all EnemyPath subcells at distance 0
+        for (int x = 0; x < roomWidth; x++)
+        {
+            for (int z = 0; z < roomLength; z++)
+            {
+                LargeCell cell = grid[x, z];
+                if (cell == null || cell.subCells == null) continue;
+
+                for (int sx = 0; sx < subCellsPerLargeCell; sx++)
+                {
+                    for (int sz = 0; sz < subCellsPerLargeCell; sz++)
+                    {
+                        SubCell sc = cell.subCells[sx, sz];
+                        if (sc != null && sc.state == CellState.EnemyPath)
+                        {
+                            if (!distances.ContainsKey(sc))
+                            {
+                                distances[sc] = 0;
+                                queue.Enqueue(sc);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // If no paths exist, nothing is valid
+        if (queue.Count == 0)
+        {
+            return distances;
+        }
+
+        // BFS with cutoff at maxLocationDistance to fill distances
+        while (queue.Count > 0)
+        {
+            SubCell current = queue.Dequeue();
+            int currentDist = distances[current];
+            if (currentDist >= maxLocationDistance) continue; // don't expand further
+
+            SubCell[] neighbors = GetSubCellNeighbors(current);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                SubCell n = neighbors[i];
+                if (n == null) continue;
+                if (n.state == CellState.Removed || n.state == CellState.Wall) continue;
+                if (distances.ContainsKey(n)) continue;
+
+                distances[n] = currentDist + 1;
+                queue.Enqueue(n);
+            }
+        }
+
+        return distances;
+    }
+
+    // 8-directional neighbors for subcells
+    SubCell[] GetSubCellNeighbors(SubCell cell)
+    {
+        return new SubCell[]
+        {
+            cell.north,
+            cell.south,
+            cell.east,
+            cell.west,
+            cell.northEast,
+            cell.southEast,
+            cell.southWest,
+            cell.northWest
+        };
+    }
 
 // ============================ ENEMY PATH METHODS ============================
     void GenerateEnemyPaths()
