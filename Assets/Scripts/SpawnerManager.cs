@@ -59,6 +59,15 @@ public class SpawnerManager : MonoBehaviour
         }
 
         pathObj = pathGenerator.GetPathObjForSpawner(parentCell);
+
+        gameManager = FindFirstObjectByType<GameManager>();
+        // Sync wave count from GameManager (rounded from float-based progression)
+        if (gameManager != null)
+        {
+            numberOfWaves = Mathf.Max(1, Mathf.RoundToInt(gameManager.wavesAmount));
+            Debug.Log($"SpawnerManager: Starting wave {currentWave + 1}/{numberOfWaves} (wavesAmount={gameManager.wavesAmount:F2})");
+        }
+        else Debug.Log($"SpawnerManager: Starting wave {currentWave + 1}/{numberOfWaves} (GameManager null)");
     }
 
     public void StartWave()
@@ -75,6 +84,8 @@ public class SpawnerManager : MonoBehaviour
             minEnemies = Mathf.Max(0, minEnemies);
             maxEnemies = Mathf.Max(minEnemies, maxEnemies);
         }
+
+        
 
         enemyQuantityToSpawn = Random.Range(minEnemies, maxEnemies + 1);  //randomly assign how many enemies to spawn
 
@@ -131,6 +142,14 @@ public class SpawnerManager : MonoBehaviour
             if (gameManager != null)
             {
                 gameManager.WinGame();
+                // Increase waves amount for future levels based on player performance (health fraction)
+                if (gameManager.playerManager != null && gameManager.playerManager.mainTowerHealth != null)
+                {
+                    float maxH = Mathf.Max(0.0001f, gameManager.playerManager.mainTowerHealth.maxHealth);
+                    float frac = Mathf.Clamp01(gameManager.playerManager.mainTowerHealth.currentHealth / maxH);
+                    gameManager.wavesAmount += frac;
+                    Debug.Log($"SpawnerManager: Adjusted GameManager.wavesAmount by performance {frac:F2}. New wavesAmount={gameManager.wavesAmount:F2}");
+                }
             }
         }
     }
@@ -302,7 +321,7 @@ public class SpawnerManager : MonoBehaviour
             {
                 waveCompletionTime = Mathf.Max(0f, Time.time - waveStartTime);
                 int denom = Mathf.Max(1, enemyQuantityToSpawn);
-                spawnInterval = waveCompletionTime / denom;
+                spawnInterval = (waveCompletionTime / denom) / GetPlayerHealth();
                 Debug.Log($"SpawnerManager: Wave {currentWave} complete. waveCompletionTime={waveCompletionTime:F2}s, enemies={denom}, next spawnInterval={spawnInterval:F2}s");
                 yield break;
             }

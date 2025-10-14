@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
     [Header("Game Properties")]
     public GameState gameState = GameState.Playing;
     public int currentLevel = 1;
+    public float wavesAmount = 3f; // base float wave count that increases over levels and performance
     public int levelReward = 100;   //how many coins gained per level
     public List<GameObject> enemies;
     public List<SpawnerManager> spawnerManagers;
@@ -120,6 +121,8 @@ public class GameManager : MonoBehaviour
         //Resetting to default level
         gameState = GameState.Playing;         //Reset to play
         currentLevel++;                        //incriment by 1
+        wavesAmount += 1f;                     // baseline: increase total waves each level
+        Debug.Log($"GameManager: Level up to {currentLevel}. wavesAmount now {wavesAmount:F2}");
         levelReward = Mathf.RoundToInt(levelReward * 1.2f);    //each level gives 20% more coins upon completion
         enemies.Clear();                       //clear the enemies, as they should all be destroyed upon game win/next level
         spawnerManagers.Clear();               //clear the spawnerManagers
