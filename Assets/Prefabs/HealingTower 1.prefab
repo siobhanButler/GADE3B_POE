@@ -190,7 +190,7 @@ MonoBehaviour:
   attackSpeed: 2
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
-  cost: 102
+  cost: 29
   specialityModifier: 0.4
 --- !u!114 &7564483025522920281
 MonoBehaviour:

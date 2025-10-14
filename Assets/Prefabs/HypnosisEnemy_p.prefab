@@ -152,8 +152,8 @@ MonoBehaviour:
   attackSpeed: 1
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
-  cost: 26
-  specialityModifier: 0.8
+  cost: 29
+  specialityModifier: 2
   movement: {fileID: 0}
 --- !u!114 &-914249002432701815
 MonoBehaviour:
