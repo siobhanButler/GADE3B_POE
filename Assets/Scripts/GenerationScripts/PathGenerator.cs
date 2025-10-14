@@ -398,6 +398,68 @@ public class PathGenerator : MonoBehaviour
         return totalOverlapped;
     }
 
+    // Removes a tower from all subcells and path objects, and refreshes debug visuals
+    public void UnregisterTowerOverlaps(TowerManager tower)
+    {
+        if (tower == null) return;
+
+        var keys = new List<SubCell>(spawnerPaths.Keys);
+        for (int k = 0; k < keys.Count; k++)
+        {
+            var key = keys[k];
+            PathObj obj = spawnerPaths[key];
+            var cells = obj.pathCells;
+            bool removedFromAnyCell = false;
+
+            if (cells != null)
+            {
+                for (int i = 0; i < cells.Count; i++)
+                {
+                    SubCell cell = cells[i];
+                    if (cell == null || cell.inRangeTowers == null || cell.inRangeTowers.Length == 0) continue;
+
+                    int keepCount = 0;
+                    for (int t = 0; t < cell.inRangeTowers.Length; t++)
+                    {
+                        if (cell.inRangeTowers[t] != tower) keepCount++;
+                    }
+
+                    if (keepCount != cell.inRangeTowers.Length)
+                    {
+                        removedFromAnyCell = true;
+                        if (keepCount == 0)
+                        {
+                            cell.inRangeTowers = null;
+                        }
+                        else
+                        {
+                            var newArr = new TowerManager[keepCount];
+                            int idx = 0;
+                            for (int t = 0; t < cell.inRangeTowers.Length; t++)
+                            {
+                                var tw = cell.inRangeTowers[t];
+                                if (tw != tower)
+                                {
+                                    newArr[idx++] = tw;
+                                }
+                            }
+                            cell.inRangeTowers = newArr;
+                        }
+                    }
+                }
+            }
+
+            if (removedFromAnyCell)
+            {
+                obj.RemoveTower(tower);
+                obj.RecalculateTotalPathDifficulty();
+            }
+            spawnerPaths[key] = obj;
+        }
+
+        RefreshPathDebugVisuals();
+    }
+
     public void RefreshPathDebugVisuals()
     {
         if (!debugVisualizePathDifficulty) return;

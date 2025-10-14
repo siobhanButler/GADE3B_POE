@@ -38,6 +38,13 @@ public class TowerManager : ObjectManager
             else{
                 Debug.LogWarning("TowerManager OnDeath(): TowerLocationManager is null during tower death");
             }
+            // Unregister this tower from path overlaps and refresh visuals before destruction
+            PathGenerator pathGenerator = FindFirstObjectByType<PathGenerator>();
+            if (pathGenerator != null)
+            {
+                pathGenerator.UnregisterTowerOverlaps(this);
+            }
+
             Destroy(gameObject);
         }
     }
