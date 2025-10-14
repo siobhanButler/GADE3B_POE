@@ -341,7 +341,11 @@ public class PathGenerator : MonoBehaviour
     {
         if (tower == null || tower.attack == null || tower.attack.rangeCollider == null) return 0;
         int totalOverlapped = 0;
-        Bounds bounds = tower.attack.rangeCollider.bounds;
+        // Compute accurate world-space sphere center and radius
+        var sphere = tower.attack.rangeCollider;
+        Vector3 center = sphere.transform.TransformPoint(sphere.center);
+        float worldRadius = sphere.radius * Mathf.Max(Mathf.Abs(sphere.transform.lossyScale.x), Mathf.Abs(sphere.transform.lossyScale.y), Mathf.Abs(sphere.transform.lossyScale.z));
+        float worldRadiusSqr = worldRadius * worldRadius;
 
         // We need to reassign struct after mutation
         var keys = new List<SubCell>(spawnerPaths.Keys);
@@ -357,7 +361,8 @@ public class PathGenerator : MonoBehaviour
             {
                 SubCell cell = cells[i];
                 if (cell == null) continue;
-                if (!bounds.Contains(cell.worldPosition)) continue;
+                Vector3 toPoint = cell.worldPosition - center;
+                if (toPoint.sqrMagnitude > worldRadiusSqr) continue;
 
                 totalOverlapped++;
                 addedToThisPath = true;

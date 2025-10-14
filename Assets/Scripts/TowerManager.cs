@@ -61,4 +61,11 @@ public class TowerManager : ObjectManager
         // Delegate overlap registration to path system (which also updates path difficulty)
         pathCellsInRange = pathGenerator.RegisterTowerOverlaps(this);
     }
+
+    public int RecalculateCost()
+    {
+        cost = Mathf.RoundToInt(((attackDamage * attackSpeed * attackRadius) + health.currentHealth) * (specialityModifier + 1));
+        if (cost < 0) cost = 0;
+        return cost;
+    }
 }

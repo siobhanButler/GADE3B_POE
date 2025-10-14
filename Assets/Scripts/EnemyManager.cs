@@ -24,7 +24,7 @@ public class EnemyManager : ObjectManager
         if (playerManager != null)
         {
                 // Add coins when enemy dies (you can adjust the amount as needed)
-                 playerManager.coins += cost;
+                 playerManager.coins += Mathf.RoundToInt(cost * 0.5f);
         }
     }
 }
