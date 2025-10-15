@@ -183,12 +183,15 @@ MonoBehaviour:
   health: {fileID: 9083771151248980207}
   attack: {fileID: 7564483025522920281}
   maxHealth: 30
-  attackDamage: 2
+  attackDamage: 3
   attackRadius: 12
   attackSpeed: 2
+  spawnLikelihood: 1
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
-  cost: 20
+  cost: 102
+  specialityModifier: 0
+  pathCellsInRange: 0
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0

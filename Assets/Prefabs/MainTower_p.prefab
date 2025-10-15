@@ -214,12 +214,15 @@ MonoBehaviour:
   health: {fileID: 0}
   attack: {fileID: 0}
   maxHealth: 100
-  attackDamage: 4
+  attackDamage: 5
   attackRadius: 18
   attackSpeed: 1
+  spawnLikelihood: 1
   objectUiPrefab: {fileID: 5764671174055410852, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
   objectTag: MainTower
+  cost: 190
   specialityModifier: 0
+  pathCellsInRange: 0
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0

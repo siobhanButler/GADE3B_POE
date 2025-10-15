@@ -33,7 +33,7 @@ public class EnemyManager : ObjectManager
         if (playerManager != null)
         {
                 // Add coins when enemy dies (you can adjust the amount as needed)
-                 playerManager.coins += Mathf.RoundToInt(cost * 0.5f);
+                 playerManager.coins += Mathf.RoundToInt(cost * 0.75f);
         }
 
         OnEnemyDeath?.Invoke(movement != null ? movement.currentPathIndex : 0);

@@ -146,14 +146,15 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   health: {fileID: 0}
   attack: {fileID: 0}
-  maxHealth: 12
+  maxHealth: 8
   attackDamage: 0.5
   attackRadius: 7
   attackSpeed: 1
+  spawnLikelihood: 0.2
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
-  cost: 46
-  specialityModifier: 2
+  cost: 69
+  specialityModifier: 5
   movement: {fileID: 0}
 --- !u!114 &-914249002432701815
 MonoBehaviour:
@@ -210,6 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99f715f11fc2f27488e8763aca6e92da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentPathIndex: 0
   speed: 2
   speedWhenAttacking: 0.3
   target: {fileID: 0}
@@ -227,7 +229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   behaviourType: 1
-  healthThreshold: 0.2
+  healthThreshold: 0.15
 --- !u!54 &5464121699189145045
 Rigidbody:
   m_ObjectHideFlags: 0

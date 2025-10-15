@@ -123,11 +123,11 @@ public class GameManager : MonoBehaviour
         currentLevel++;                        //incriment by 1
         wavesAmount += 1f;                     // baseline: increase total waves each level
         Debug.Log($"GameManager: Level up to {currentLevel}. wavesAmount now {wavesAmount:F2}");
-        levelReward = Mathf.RoundToInt(levelReward * 1.2f);    //each level gives 20% more coins upon completion
+        //levelReward = Mathf.RoundToInt(levelReward * 1.2f);    //each level gives 20% more coins upon completion
         enemies.Clear();                       //clear the enemies, as they should all be destroyed upon game win/next level
         spawnerManagers.Clear();               //clear the spawnerManagers
         spawnersDone = false;                  //reset spawners done
-        startingCoins += playerManager.coins;  //how many coins at the beginning of the game = player's coins from last level
+        startingCoins = playerManager.coins;  //how many coins at the beginning of the game = player's coins from last level
 
         //Destroying and setting all classes to null
             Destroy(player);

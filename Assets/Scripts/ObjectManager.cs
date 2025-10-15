@@ -49,7 +49,7 @@ public abstract class ObjectManager : MonoBehaviour
 
     public void Setup()
     {
-        Debug.Log($"ObjectManager Setup() called for {gameObject.name}");
+        //Debug.Log($"ObjectManager Setup() called for {gameObject.name}");
 
         // Acquire or create object UI safely
         if (objectUI == null)
