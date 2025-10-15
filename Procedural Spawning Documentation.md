@@ -30,11 +30,9 @@ After each wave finishes, the system also derives pacing variables for the next 
 ```
 waveCompletionTime = wall-clock seconds to clear the wave
 spawnInterval = (waveCompletionTime / enemyQuantityToSpawn) × 0.3
-
-// Time between waves now matches estimated traversal time of the path
+// Time between waves uses a configured base interval that is tweaked once at startup
 pathLen = pathObj.pathCells.Count
-tilesPerSecond = 1.5 × speedModifier   // tuned effective tiles/sec for average enemy movement
-waveInterval = pathLen / tilesPerSecond
+waveInterval = baseWaveInterval + (0.1 × pathLen)   // not recomputed per wave; pacing is further controlled by next-wave triggers below
 ```
 
 Next-wave trigger logic (done):
@@ -65,7 +63,9 @@ else:
   multiplier = -exp(1.1 × (x - 0.2)^5) + 1         // <1 when significant damage taken
   wavesUndamaged = 0
 
-playerSkill = multiplier + wavesUndamaged
+// Two usages in code:
+// - For budget: GetPlayerHealth() returns (multiplier + wavesUndamaged/2)
+// - For speed tuning: an internal playerSkill field is set to (multiplier + wavesUndamaged)
 ```
 
 Player health metric (implemented 60/40 weighting):
@@ -109,23 +109,22 @@ style = Defensive if totalMaxHealth > totalOffense
       = Neutral otherwise
 
 ApplyPlayerStyleWeights():
-  - Favors Neutral enemy when style = Neutral
-  - Favors Tanky enemy when style = Offensive
-  - Favors Hypnosis/control enemy when style = Defensive
-  (weights ×1.5 for the matching archetype)
+  - Favors Neutral enemy when style = Neutral → ×1.2
+  - Favors Tanky enemy when style = Offensive → ×1.2
+  - Favors Hypnosis/control enemy when style = Defensive → ×1.1
 ```
 - Enemy toughness modifiers at spawn (per-path aggregates):
 ```
-attackModifier = (totalMaxHealth > 0 && totalOffense > 0)
-                  ? (totalMaxHealth / totalOffense) : 1
+attackModifier = clamp((totalMaxHealth > 0 && totalOffense > 0)
+                  ? (totalMaxHealth / totalOffense) : 1, 0.5, 1.5)
   // If the player invests more in health than offense, enemies get higher damage
 
-healthModifier = (totalMaxHealth > 0 && totalOffense > 0)
-                  ? (totalOffense / totalMaxHealth) : 1
+healthModifier = clamp((totalMaxHealth > 0 && totalOffense > 0)
+                  ? (totalOffense / totalMaxHealth) : 1, 0.5, 1.5)
   // If the player invests more in offense than health, enemies get higher health
 
 // Additional coin-based pressure: more coins => higher enemy damage
-coinDamageMult = clamp(1 + coins / 1000, 1, 2)
+coinDamageMult = clamp(1 + coins / 1000, 1, 1.2)
 attackModifier *= coinDamageMult
 ```
 
@@ -141,7 +140,7 @@ While GetTotalEnemyCost(enemiesToSpawn + candidate) < enemyBudget:
 
 Weights:
   base = prefab.ObjectManager.spawnLikelihood
-  adjusted by ApplyPlayerStyleWeights() using detected style (×1.5 for favored archetype)
+  adjusted by ApplyPlayerStyleWeights(): typical boosts are ×1.2 (Neutral/Offensive) or ×1.1 (Defensive)
 
 Cost accounting:
   ObjectManager.cost (recomputed/validated via OnValidate):
@@ -167,7 +166,7 @@ This loop fills `enemiesToSpawn` until the budget is met or exceeded.
 ```
 spawnInterval = (waveCompletionTime / enemyQuantityToSpawn) × 0.3
 ```
-- `waveInterval`: Delay between waves.
+- `waveInterval`: Delay between waves (base configured value, increased once at startup by `0.1 × pathLen`).
 
 ### Budget computation
 - `baseBudget`:
@@ -188,11 +187,12 @@ multiplier = {
   x = 0.2 : 1
   x > 0.2 : -exp(1.1 × (x - 0.2)^5) + 1
 }
-playerSkill = multiplier + wavesUndamaged
+For budget: GetPlayerHealth() returns (multiplier + wavesUndamaged/2)
+For speed: internal playerSkill is set to (multiplier + wavesUndamaged)
 ```
 - Final budget:
 ```
-enemyBudget = max(1, round(baseBudget × difficultyFactor × playerSkill))
+enemyBudget = clamp(max(1, round(baseBudget × difficultyFactor × playerSkill)), 20, baseBudget × (currentWave + 1))
 ```
 
 ### Enemy selection
@@ -204,8 +204,7 @@ pick r ∈ [0, totalWeight)
 return first prefab where cumulativeWeight ≥ r
 
 spawnLikelihood_adjusted = baseSpawnLikelihood[i] × styleWeight
-  styleWeight = 1.5 if prefab matches detected style
-              = 1.0 otherwise
+  styleWeight ≈ 1.2 for Neutral/Offensive matches, ≈ 1.1 for Defensive, else 1.0
 ```
 
 Implementation detail (done): To avoid permanently modifying prefab data, the spawner caches `baseSpawnLikelihoods` at setup and computes `adjustedSpawnLikelihoods` each wave based on play style. Selection reads from `adjustedSpawnLikelihoods` only.
