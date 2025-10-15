@@ -18,6 +18,8 @@ public abstract class ObjectManager : MonoBehaviour
     public float attackDamage = 2f;
     public float attackRadius = 30f;
     public float attackSpeed = 1f;
+    [Min(0f)]
+    public float spawnLikelihood = 1f; // weighting for enemy spawn selection (used for enemies)
 
     public List<StatusEffect> currentStatusEffects;
     private Coroutine statusEffectsCoroutine;
@@ -42,6 +44,7 @@ public abstract class ObjectManager : MonoBehaviour
     {
         cost = Mathf.RoundToInt(((attackDamage * attackSpeed * attackRadius) + maxHealth) * (specialityModifier + 1));
         if (cost < 0) cost = 0;
+        if (spawnLikelihood < 0f) spawnLikelihood = 0f;
     }
 
     public void Setup()

@@ -16,6 +16,12 @@ public class EnemyManager : ObjectManager
     }
 
     // Update method removed - movement handled by EnemyMovement component
+    void SetupEnemy(float attackModifier, float healthModifier, float speedModifier)
+    {
+        movement.speed *= speedModifier;
+        health.maxHealth *= healthModifier;
+        attack.attackDamage *= attackModifier;
+    }
 
     public override void OnDeath()
     {

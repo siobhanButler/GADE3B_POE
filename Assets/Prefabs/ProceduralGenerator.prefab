@@ -133,11 +133,12 @@ MonoBehaviour:
   cornerRemovalChance: 0.8
   furniturePlacementChance: 0.4
   maxFurniturePercent: 0.3
-  minSpawnerCount: 2
-  maxSpawnerCount: 5
+  minSpawnerCount: 1
+  maxSpawnerCount: 1
   spawnerCount: 0
   minDefenceCount: 10
   maxDefenceCount: 30
+  maxLocationDistance: 5
   wallPrefab: {fileID: 1324545293484928417, guid: a8e9b9372c3c29d46909e1f0288c29a0, type: 3}
   doorPrefab: {fileID: 7002816945552119249, guid: f3aec781ae2fc294e821a3dd2734de5c, type: 3}
   furniturePrefab: {fileID: 4390529268743058174, guid: a87439584d63b6547b63eacf32943974, type: 3}
@@ -176,3 +177,6 @@ MonoBehaviour:
   maxPathAttempts: 3
   pathPrefab: {fileID: 7504565514096408905, guid: 28e577ffdf1f0b14a9163c0c54e7df40, type: 3}
   pathHeight: 0.1
+  debugVisualizePathDifficulty: 1
+  debugMinColor: {r: 1, g: 1, b: 0.6, a: 1}
+  debugMaxColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}

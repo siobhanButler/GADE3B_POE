@@ -29,6 +29,11 @@ public class SpawnerManager : MonoBehaviour
     public int enemyBudget = 100;
     public List<GameObject> enemiesToSpawn = new List<GameObject>();
     PathObj pathObj;
+    int wavesUndamaged = 0;
+
+    float attackModifier;
+    float healthModifier;
+    float speedModifier;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -85,8 +90,6 @@ public class SpawnerManager : MonoBehaviour
             maxEnemies = Mathf.Max(minEnemies, maxEnemies);
         }
 
-        
-
         enemyQuantityToSpawn = Random.Range(minEnemies, maxEnemies + 1);  //randomly assign how many enemies to spawn
 
         // Initialize wave tracking
@@ -96,11 +99,11 @@ public class SpawnerManager : MonoBehaviour
         if (currentWaveEnemies == null) currentWaveEnemies = new List<GameObject>();
         currentWaveEnemies.Clear();
 
-        SetEnemiesToSpawn();
-        // Begin timing coroutine
-        StartCoroutine(TrackWaveCompletion());
-        // Snapshot player health at the start of this wave for next wave's difficulty scaling
-        prevWaveStartHealth = GetCurrentPlayerHealth();
+		// Snapshot player health at the start of this wave for next wave's difficulty scaling
+		prevWaveStartHealth = GetCurrentPlayerHealth();
+		SetEnemiesToSpawn();
+		// Begin timing coroutine
+		StartCoroutine(TrackWaveCompletion());
         spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
 
@@ -199,7 +202,7 @@ public class SpawnerManager : MonoBehaviour
         GameObject enemy = null;
         while (GetTotalEnemyCost(enemy) < enemyBudget)
         {
-            enemy = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];  //select random enemy
+            enemy = ChooseEnemyWeightedByLikelihood();  // weighted random selection
             enemiesToSpawn.Add(enemy);
         }
 
@@ -223,6 +226,31 @@ public class SpawnerManager : MonoBehaviour
         }
         if(newEnemy != null) totalCost += newEnemy.GetComponent<ObjectManager>().cost;
         return totalCost;
+    }
+
+    GameObject ChooseEnemyWeightedByLikelihood()
+    {
+        // Compute total weight
+        float total = 0f;
+        for (int i = 0; i < enemyPrefabs.Length; i++)
+        {
+            var om = enemyPrefabs[i] != null ? enemyPrefabs[i].GetComponent<ObjectManager>() : null;
+            if (om != null && om.spawnLikelihood > 0f) total += om.spawnLikelihood;
+        }
+        if (total <= 0f)
+        {
+            return enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+        }
+        float r = Random.value * total;
+        float acc = 0f;
+        for (int i = 0; i < enemyPrefabs.Length; i++)
+        {
+            var om = enemyPrefabs[i] != null ? enemyPrefabs[i].GetComponent<ObjectManager>() : null;
+            if (om == null || om.spawnLikelihood <= 0f) continue;
+            acc += om.spawnLikelihood;
+            if (r <= acc) return enemyPrefabs[i];
+        }
+        return enemyPrefabs[enemyPrefabs.Length - 1];
     }
 
     int GetTotalTowerCost()
@@ -264,7 +292,24 @@ public class SpawnerManager : MonoBehaviour
             totalTowerCost += (float)fullCost / (float)pathCount;
         }
 
-        return Mathf.RoundToInt(totalTowerCost);
+		// Add player's coins contribution: coins divided by number of tower locations
+		int coinBonus = 0;
+		if (gameManager != null && gameManager.playerManager != null)
+		{
+			int locationCount = 0;
+			// Prefer tag if available; otherwise fall back to component search
+			GameObject[] tagged = null;
+			try { tagged = GameObject.FindGameObjectsWithTag("TowerLocation"); } catch { tagged = null; }
+			if (tagged != null && tagged.Length > 0) locationCount = tagged.Length;
+			else locationCount = FindObjectsByType<TowerLocationManager>(FindObjectsSortMode.None).Length;
+			if (locationCount > 0)
+			{
+				coinBonus = Mathf.RoundToInt((float)gameManager.playerManager.coins / (float)locationCount);
+			}
+		}
+
+		int finalBudget = Mathf.RoundToInt(totalTowerCost) + coinBonus;
+		return finalBudget;
     }
 
     void RefreshPathObj()
@@ -289,13 +334,62 @@ public class SpawnerManager : MonoBehaviour
         int cellCount = (pathObj.pathCells != null) ? pathObj.pathCells.Count : 0;
         if (cellCount > 0)
         {
-            difficultyFactor = (float)pathObj.totalPathDifficulty / (float)cellCount;
+            difficultyFactor = (float)pathObj.totalPathDifficulty / (float)cellCount;   //average path difficulty
             // Ensure we never zero-out the budget due to low difficulty
-            difficultyFactor = Mathf.Max(0.25f, difficultyFactor);
+            difficultyFactor = Mathf.Max(0.75f, difficultyFactor);
         }
+        // Modify likelihoods this wave based on player style for this path
+        ApplyPlayerStyleWeights();
         // Ensure enemyBudget is at least 1
-        int budget = Mathf.Max(1, Mathf.RoundToInt(baseBudget * difficultyFactor * GetPlayerHealth()));
+        float playerHealth = GetPlayerHealth();
+        int budget = Mathf.Max(1, Mathf.RoundToInt(baseBudget * difficultyFactor * playerHealth));
+        Debug.Log($"SpawnerManager GetEnemyBudget(): Enemy Budget is: {budget}, based on baseBudget {baseBudget} * {difficultyFactor} * {playerHealth}");
         return budget;
+    }
+
+    enum PlayerStyle { Neutral, Offensive, Defensive }
+
+    void ApplyPlayerStyleWeights()
+    {
+        PlayerStyle style = GetPlayerStyleForPath();
+        for (int i = 0; i < enemyPrefabs.Length; i++)
+        {
+            GameObject prefab = enemyPrefabs[i];
+            if (prefab == null) continue;
+            var om = prefab.GetComponent<ObjectManager>();
+            if (om == null) continue;
+            float baseLike = Mathf.Max(0f, om.spawnLikelihood);
+            // x mapping: 0->neutral/plain, 1->offensive/tank, 2->defensive/hypnosis
+            if (i == 0 && style == PlayerStyle.Neutral) om.spawnLikelihood = baseLike * 1.5f;
+            else if (i == 1 && style == PlayerStyle.Offensive) om.spawnLikelihood = baseLike * 1.5f;
+            else if (i == 2 && style == PlayerStyle.Defensive) om.spawnLikelihood = baseLike * 1.5f;
+            else om.spawnLikelihood = baseLike * 1f;
+        }
+    }
+
+    PlayerStyle GetPlayerStyleForPath()
+    {
+        // Sum all towers' max health and offensive power along this path
+        float totalMaxHealth = 0f;
+        float totalOffense = 0f;
+        if (pathObj.towers != null)
+        {
+            for (int i = 0; i < pathObj.towers.Count; i++)
+            {
+                var tw = pathObj.towers[i];
+                if (tw == null) continue;
+                // max health
+                if (tw.health != null) totalMaxHealth += Mathf.Max(0f, tw.health.maxHealth);
+                else totalMaxHealth += Mathf.Max(0f, tw.maxHealth);
+                // offensive power proxy
+                if (tw.attack != null) totalOffense += Mathf.Max(0f, tw.attack.attackDamage * tw.attack.attackSpeed * tw.attack.rangeRadius);
+                else totalOffense += Mathf.Max(0f, tw.attackDamage * tw.attackSpeed * tw.attackRadius);
+            }
+        }
+        // Decide style
+        if (totalMaxHealth > totalOffense) return PlayerStyle.Defensive;
+        if (totalOffense > totalMaxHealth) return PlayerStyle.Offensive;
+        return PlayerStyle.Neutral;
     }
 
     IEnumerator TrackWaveCompletion()
@@ -321,7 +415,7 @@ public class SpawnerManager : MonoBehaviour
             {
                 waveCompletionTime = Mathf.Max(0f, Time.time - waveStartTime);
                 int denom = Mathf.Max(1, enemyQuantityToSpawn);
-                spawnInterval = (waveCompletionTime / denom) / GetPlayerHealth();
+                spawnInterval = (waveCompletionTime / denom) * 0.3f;
                 Debug.Log($"SpawnerManager: Wave {currentWave} complete. waveCompletionTime={waveCompletionTime:F2}s, enemies={denom}, next spawnInterval={spawnInterval:F2}s");
                 yield break;
             }
@@ -339,14 +433,32 @@ public class SpawnerManager : MonoBehaviour
         float denom = Mathf.Max(prevWaveStartHealth, 0.0001f);
         float damageFraction = Mathf.Clamp01((prevWaveStartHealth - current) / denom);
         // Treat very small differences as no change
-        if (damageFraction <= 0.05f) return 1.85f;   // > 1 when no/little health lost
-        if (damageFraction >= 0.25f) return 0.85f;    // < 1 when lost >= 25%
-        return 1f;                                    // neutral otherwise
+        float multiplier = 1f; //Mathf.Pow(y,x) y^x Mathf.Exp(x) is e^x
+        if (damageFraction < 0.2f)
+        {
+            multiplier = -Mathf.Exp(8.04f) * Mathf.Pow(damageFraction - 0.2f, 5f) + 1f;   // > 1 when no/little health lost
+            wavesUndamaged++;
+        }
+        else wavesUndamaged = 0;
+
+        if (damageFraction == 0.2f) multiplier = 1f;
+        if (damageFraction > 0.2f) multiplier = - Mathf.Exp(1.1f) * Mathf.Pow(damageFraction - 0.2f, 5f) + 1f;    // < 1 when lost >= 25%
+        Debug.Log($"SpawnerManager GetPlayerHealth(): HealthLost: {damageFraction}, so multiplier is {multiplier} and waves undamaged is {wavesUndamaged}");
+        return multiplier + wavesUndamaged;                                    // neutral otherwise
     }
 
     float GetCurrentPlayerHealth()
     {
         if (gameManager == null || gameManager.playerManager == null || gameManager.playerManager.mainTowerHealth == null) return 0f;
         return gameManager.playerManager.mainTowerHealth.currentHealth;
+    }
+
+    void SetModifiers()
+    {
+        speedModifier = 0f;
+        attackModifier = 0f;
+        healthModifier = 0f;
+
+
     }
 }
