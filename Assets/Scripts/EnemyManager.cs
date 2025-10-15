@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class EnemyManager : ObjectManager
     [Header("Enemy Properties")]
     public EnemyMovement movement;
     public List<SubCell> pathFromSpawner;
+
+    public event Action<int> OnEnemyDeath;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -16,7 +19,7 @@ public class EnemyManager : ObjectManager
     }
 
     // Update method removed - movement handled by EnemyMovement component
-    void SetupEnemy(float attackModifier, float healthModifier, float speedModifier)
+    public void SetupEnemy(float attackModifier, float healthModifier, float speedModifier)
     {
         movement.speed *= speedModifier;
         health.maxHealth *= healthModifier;
@@ -32,5 +35,7 @@ public class EnemyManager : ObjectManager
                 // Add coins when enemy dies (you can adjust the amount as needed)
                  playerManager.coins += Mathf.RoundToInt(cost * 0.5f);
         }
+
+        OnEnemyDeath?.Invoke(movement != null ? movement.currentPathIndex : 0);
     }
 }

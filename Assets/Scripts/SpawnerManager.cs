@@ -30,7 +30,10 @@ public class SpawnerManager : MonoBehaviour
     public List<GameObject> enemiesToSpawn = new List<GameObject>();
     PathObj pathObj;
     int wavesUndamaged = 0;
+    int totalEnemyPathIndex = 0;
+	int enemiesDiedCount = 0;
 
+    float playerSkill= 0f;
     float attackModifier;
     float healthModifier;
     float speedModifier;
@@ -90,6 +93,8 @@ public class SpawnerManager : MonoBehaviour
             maxEnemies = Mathf.Max(minEnemies, maxEnemies);
         }
 
+        
+        
         enemyQuantityToSpawn = Random.Range(minEnemies, maxEnemies + 1);  //randomly assign how many enemies to spawn
 
         // Initialize wave tracking
@@ -98,6 +103,8 @@ public class SpawnerManager : MonoBehaviour
         waveSpawnFinished = false;
         if (currentWaveEnemies == null) currentWaveEnemies = new List<GameObject>();
         currentWaveEnemies.Clear();
+        totalEnemyPathIndex = 0;
+		enemiesDiedCount = 0;
 
 		// Snapshot player health at the start of this wave for next wave's difficulty scaling
 		prevWaveStartHealth = GetCurrentPlayerHealth();
@@ -105,6 +112,7 @@ public class SpawnerManager : MonoBehaviour
 		// Begin timing coroutine
 		StartCoroutine(TrackWaveCompletion());
         spawnCoroutine = StartCoroutine(SpawnRoutine());
+
     }
 
     IEnumerator StartWaveWhenReady()
@@ -178,7 +186,21 @@ public class SpawnerManager : MonoBehaviour
         spawnPos.y += 3f;
         GameObject enemy = Instantiate(enemiesToSpawn[index], spawnPos, Quaternion.identity);
         EnemyManager enemyManager = enemy.GetComponent<EnemyManager>();
-        if (enemyManager != null) enemyManager.pathFromSpawner = path;
+		if (enemyManager != null)
+        {
+			enemyManager.pathFromSpawner = path;
+			// Ensure core components (health/attack/UI) are initialized before applying modifiers
+			enemyManager.Setup();
+			// Recompute modifiers at spawn time
+			RecalculateModifiers();
+			// Ensure movement exists before applying speed modifier
+			EnemyMovement mv = enemy.GetComponent<EnemyMovement>();
+			if (mv == null) mv = enemy.AddComponent<EnemyMovement>();
+			enemyManager.movement = mv;
+			mv.Setup();
+			enemyManager.SetupEnemy(attackModifier, healthModifier, speedModifier * 0.5f);
+			enemyManager.OnEnemyDeath += OnEnemyDeath;
+        }
         else Debug.LogWarning("SpawnerManager SpawnEnemy(): EnemyManager component missing on enemy prefab");
         // Track enemy for this wave's completion timing
         if (currentWaveEnemies != null) currentWaveEnemies.Add(enemy);
@@ -334,16 +356,16 @@ public class SpawnerManager : MonoBehaviour
         int cellCount = (pathObj.pathCells != null) ? pathObj.pathCells.Count : 0;
         if (cellCount > 0)
         {
-            difficultyFactor = (float)pathObj.totalPathDifficulty / (float)cellCount;   //average path difficulty
+            difficultyFactor = (float)pathObj.totalPathDifficulty / (float)cellCount;
             // Ensure we never zero-out the budget due to low difficulty
             difficultyFactor = Mathf.Max(0.75f, difficultyFactor);
         }
         // Modify likelihoods this wave based on player style for this path
         ApplyPlayerStyleWeights();
         // Ensure enemyBudget is at least 1
-        float playerHealth = GetPlayerHealth();
-        int budget = Mathf.Max(1, Mathf.RoundToInt(baseBudget * difficultyFactor * playerHealth));
-        Debug.Log($"SpawnerManager GetEnemyBudget(): Enemy Budget is: {budget}, based on baseBudget {baseBudget} * {difficultyFactor} * {playerHealth}");
+        playerSkill = GetPlayerHealth();
+        int budget = Mathf.Max(1, Mathf.RoundToInt(baseBudget * difficultyFactor * playerSkill));
+        Debug.Log($"SpawnerManager GetEnemyBudget(): Enemy Budget is: {budget}, based on baseBudget {baseBudget} * {difficultyFactor} * {playerSkill}");
         return budget;
     }
 
@@ -365,6 +387,7 @@ public class SpawnerManager : MonoBehaviour
             else if (i == 2 && style == PlayerStyle.Defensive) om.spawnLikelihood = baseLike * 1.5f;
             else om.spawnLikelihood = baseLike * 1f;
         }
+        
     }
 
     PlayerStyle GetPlayerStyleForPath()
@@ -386,6 +409,13 @@ public class SpawnerManager : MonoBehaviour
                 else totalOffense += Mathf.Max(0f, tw.attackDamage * tw.attackSpeed * tw.attackRadius);
             }
         }
+
+		attackModifier = (totalOffense > 0f) ? (totalMaxHealth / totalOffense) : 1f;     // >1 means more health than offense so enemies get a damage boost
+		healthModifier = (totalMaxHealth > 0f) ? (totalOffense / totalMaxHealth) : 1f;     // >1 means more offense than health so enemies get a health boost
+		// Speed from average completion rate
+		float avgCompletion = GetAveragePathCompletionRate();
+		speedModifier = Mathf.Lerp(0.8f, 1.2f, avgCompletion) * Mathf.Clamp(playerSkill, 0.5f, 2.5f);
+
         // Decide style
         if (totalMaxHealth > totalOffense) return PlayerStyle.Defensive;
         if (totalOffense > totalMaxHealth) return PlayerStyle.Offensive;
@@ -444,6 +474,7 @@ public class SpawnerManager : MonoBehaviour
         if (damageFraction == 0.2f) multiplier = 1f;
         if (damageFraction > 0.2f) multiplier = - Mathf.Exp(1.1f) * Mathf.Pow(damageFraction - 0.2f, 5f) + 1f;    // < 1 when lost >= 25%
         Debug.Log($"SpawnerManager GetPlayerHealth(): HealthLost: {damageFraction}, so multiplier is {multiplier} and waves undamaged is {wavesUndamaged}");
+        playerSkill = multiplier + wavesUndamaged;
         return multiplier + wavesUndamaged;                                    // neutral otherwise
     }
 
@@ -453,12 +484,37 @@ public class SpawnerManager : MonoBehaviour
         return gameManager.playerManager.mainTowerHealth.currentHealth;
     }
 
-    void SetModifiers()
+	void OnEnemyDeath(int lastIndex)
     {
-        speedModifier = 0f;
-        attackModifier = 0f;
-        healthModifier = 0f;
-
-
+		totalEnemyPathIndex += Mathf.Max(0, lastIndex);
+		enemiesDiedCount++;
+		// Optionally refresh speed modifier mid-wave for subsequent spawns
+		RecalculateModifiers();
     }
+
+	float SetPathCompletionRate()
+    {
+		int denomEnemies = Mathf.Max(1, enemiesDiedCount);
+		int pathLen =  pathObj.pathCells.Count;
+		float pathCompletionRate = ((float)totalEnemyPathIndex / (float)denomEnemies) / (float)pathLen;
+
+        return pathCompletionRate;
+    }
+
+	float GetAveragePathCompletionRate()
+	{
+		return Mathf.Clamp01(SetPathCompletionRate());
+	}
+
+	void RecalculateModifiers()
+	{
+		// Recompute style-based modifiers and speed whenever needed
+		// This relies on GetPlayerStyleForPath totals, so reuse that computation path
+		float dummyTotalHealth = 0f; // not used directly here, but keeps logic grouped
+		PlayerStyle style = GetPlayerStyleForPath();
+		// The assignments for attackModifier/healthModifier were already computed in GetPlayerStyleForPath()
+		// We recompute speed only here
+		float avgCompletion = GetAveragePathCompletionRate();
+		speedModifier = Mathf.Lerp(0.8f, 1.2f, avgCompletion) * Mathf.Clamp(playerSkill, 0.5f, 2.5f);
+	}
 }

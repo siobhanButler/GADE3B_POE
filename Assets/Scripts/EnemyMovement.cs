@@ -8,7 +8,7 @@ using UnityEngine;
 public class EnemyMovement : MonoBehaviour
 {
     List<SubCell> pathFromSpawner;
-    private int currentPathIndex = 0;
+    public int currentPathIndex = 0;
     private bool isMoving = false;
 
     public float speed = 2f;
