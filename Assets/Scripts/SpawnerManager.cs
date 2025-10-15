@@ -417,7 +417,7 @@ public class SpawnerManager : MonoBehaviour
         // Ensure enemyBudget is at least 1
         playerSkill = GetPlayerHealth();
         int budget = Mathf.Max(1, Mathf.RoundToInt(baseBudget * difficultyFactor * playerSkill));
-        budget = Mathf.Clamp(budget, 20, 3000);     //clamp so it can afford at least 1 enemy //TODO: make this dynamic to max tower cost post possible o this map
+        budget = Mathf.Clamp(budget, 20, baseBudget*(currentWave+1));     //clamp so it can afford at least 1 enemy //TODO: make this dynamic to max tower cost post possible o this map. 
         Debug.Log($"SpawnerManager GetEnemyBudget(): Enemy Budget is: {budget}, based on baseBudget {baseBudget} * {difficultyFactor} * {playerSkill}");
         return budget;
     }
@@ -461,14 +461,14 @@ public class SpawnerManager : MonoBehaviour
             }
         }
 
-		attackModifier = (totalOffense > 0f) ? (totalMaxHealth / totalOffense) : 1f;     // >1 means more health than offense so enemies get a damage boost
-		healthModifier = (totalMaxHealth > 0f) ? (totalOffense / totalMaxHealth) : 1f;     // >1 means more offense than health so enemies get a health boost
+		attackModifier = Mathf.Clamp((totalOffense > 0f) ? (totalMaxHealth / totalOffense) : 1f, 0.5f, 1.5f);     // >1 means more health than offense so enemies get a damage boost
+		healthModifier = Mathf.Clamp((totalMaxHealth > 0f) ? (totalOffense / totalMaxHealth) : 1f, 0.5f, 1.5f);     // >1 means more offense than health so enemies get a health boost
 		// Additional damage scaling based on player's coin stash: more coins => higher enemy damage
 		if (gameManager != null && gameManager.playerManager != null)
 		{
 			float coins = gameManager.playerManager.coins;
 			// Modest, clamped boost: +0% at 0 coins up to +100% at 1000+ coins
-			float coinDamageMult = Mathf.Clamp(1f + (coins / 1000f), 1f, 2f);
+			float coinDamageMult = Mathf.Clamp(1f + (coins / 1000f), 1f, 1.2f);
 			attackModifier *= coinDamageMult;
 		}
 		// Speed from average completion rate
@@ -534,7 +534,7 @@ public class SpawnerManager : MonoBehaviour
         if (damageFraction > 0.2f) multiplier = - Mathf.Exp(1.1f) * Mathf.Pow(damageFraction - 0.2f, 5f) + 1f;    // < 1 when lost >= 25%
         Debug.Log($"SpawnerManager GetPlayerHealth(): HealthLost: {damageFraction}, so multiplier is {multiplier} and waves undamaged is {wavesUndamaged}");
         playerSkill = multiplier + wavesUndamaged;
-        return multiplier + wavesUndamaged;                                    // neutral otherwise
+        return multiplier + wavesUndamaged/2f;                                    // neutral otherwise
     }
 
     float GetCurrentPlayerHealth()

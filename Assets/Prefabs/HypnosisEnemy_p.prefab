@@ -81,7 +81,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8641729460655824074}
-  m_Mesh: {fileID: -4728807580002398413, guid: 2e638bdd900081a4f9325113dd7face0, type: 3}
+  m_Mesh: {fileID: -8642462012469238838, guid: 4222277c2abf30042bf90aea9503cabd, type: 3}
 --- !u!23 &8566168131177146703
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -150,11 +150,11 @@ MonoBehaviour:
   attackDamage: 0.5
   attackRadius: 7
   attackSpeed: 1
-  spawnLikelihood: 0.2
+  spawnLikelihood: 0.1
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
-  cost: 69
-  specialityModifier: 5
+  cost: 92
+  specialityModifier: 7
   movement: {fileID: 0}
 --- !u!114 &-914249002432701815
 MonoBehaviour:

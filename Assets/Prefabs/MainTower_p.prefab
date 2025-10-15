@@ -103,7 +103,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3d2fe42d3aeef72498166b496ccda7ba, type: 2}
+  - {fileID: 2100000, guid: 0894a8a4819fa4e49a14933e0981b970, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -216,12 +216,12 @@ MonoBehaviour:
   maxHealth: 100
   attackDamage: 5
   attackRadius: 18
-  attackSpeed: 1
+  attackSpeed: 3
   spawnLikelihood: 1
   objectUiPrefab: {fileID: 5764671174055410852, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
   objectTag: MainTower
-  cost: 190
-  specialityModifier: 0
+  cost: 185
+  specialityModifier: -0.5
   pathCellsInRange: 0
 --- !u!114 &7564483025522920281
 MonoBehaviour:
@@ -343,7 +343,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 3.51
+      value: 4.17
       objectReference: {fileID: 0}
     - target: {fileID: 968907999160040675, guid: 10f43e929a6d6e447b13232290572d6a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

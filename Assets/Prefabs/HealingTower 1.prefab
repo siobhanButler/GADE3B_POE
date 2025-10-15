@@ -50,7 +50,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4481481441890430569}
-  m_Mesh: {fileID: 5608771404437207644, guid: 627e07ca05da1fd49a378dc15bb74b8d, type: 3}
+  m_Mesh: {fileID: -8618094014426297315, guid: 6ef38ef91cb593e4db26d04b8fe0bb00, type: 3}
 --- !u!23 &1481394894103930080
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -74,7 +74,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3d2fe42d3aeef72498166b496ccda7ba, type: 2}
+  - {fileID: 2100000, guid: d59d52bdf10c2624eac196915f1c1fe2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -185,12 +185,13 @@ MonoBehaviour:
   health: {fileID: 9083771151248980207}
   attack: {fileID: 7564483025522920281}
   maxHealth: 25
-  attackDamage: 2
+  attackDamage: 3
   attackRadius: 8
   attackSpeed: 2
+  spawnLikelihood: 1
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
-  cost: 103
+  cost: 131
   specialityModifier: 0.8
   pathCellsInRange: 0
 --- !u!114 &7564483025522920281

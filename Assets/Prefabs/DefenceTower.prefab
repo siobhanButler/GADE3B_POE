@@ -72,7 +72,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3d2fe42d3aeef72498166b496ccda7ba, type: 2}
+  - {fileID: 2100000, guid: 7d197408729e87c46a980502bdfe51f5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -113,8 +113,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 4, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 1.9466698, z: 1}
+  m_Center: {x: 0, y: 0.11159408, z: 0}
 --- !u!135 &-6139288050314450791
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -189,8 +189,8 @@ MonoBehaviour:
   spawnLikelihood: 1
   objectUiPrefab: {fileID: 0}
   objectTag: DefenceTower
-  cost: 102
-  specialityModifier: 0
+  cost: 82
+  specialityModifier: -0.2
   pathCellsInRange: 0
 --- !u!114 &7564483025522920281
 MonoBehaviour:

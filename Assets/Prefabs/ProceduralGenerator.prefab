@@ -134,7 +134,7 @@ MonoBehaviour:
   furniturePlacementChance: 0.4
   maxFurniturePercent: 0.3
   minSpawnerCount: 1
-  maxSpawnerCount: 5
+  maxSpawnerCount: 3
   spawnerCount: 0
   minDefenceCount: 10
   maxDefenceCount: 30

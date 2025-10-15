@@ -247,13 +247,14 @@ MonoBehaviour:
   playerUIPrefab: {fileID: 953127948630163790, guid: 8dd36b2e9c2b44e4ca3f1e7a2bc19ffb, type: 3}
   gameState: 0
   currentLevel: 1
+  wavesAmount: 3
   levelReward: 100
   enemies: []
   spawnerManagers: []
   spawnersDone: 0
   player: {fileID: 0}
   playerManager: {fileID: 0}
-  startingCoins: 50
+  startingCoins: 100
   ui: {fileID: 0}
   uiManager: {fileID: 0}
   proceduralGenerator: {fileID: 0}
