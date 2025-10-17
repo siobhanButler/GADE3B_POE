@@ -46,13 +46,12 @@ GameObject:
   - component: {fileID: -914249002432701815}
   - component: {fileID: 2084443334652839628}
   - component: {fileID: 5346264311578462723}
-  - component: {fileID: 601668790032792630}
+  - component: {fileID: -558357810175528673}
   - component: {fileID: 5464121699189145045}
   - component: {fileID: -8118491335358680929}
   - component: {fileID: 2060095197361238173}
-  - component: {fileID: -4700614505450337928}
   m_Layer: 0
-  m_Name: TankEnemy_p
+  m_Name: HypnosisEnemy_p
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -82,7 +81,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8641729460655824074}
-  m_Mesh: {fileID: 1973893103929547111, guid: 39d8f0501eb08d34f9f149988ddfa9b9, type: 3}
+  m_Mesh: {fileID: -8642462012469238838, guid: 4222277c2abf30042bf90aea9503cabd, type: 3}
 --- !u!23 &8566168131177146703
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -106,7 +105,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4da66e8598a013244b23d15aa94b1a3a, type: 2}
+  - {fileID: 2100000, guid: 71529b88994c1a341b22bc57c038674a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -147,15 +146,15 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   health: {fileID: 0}
   attack: {fileID: 0}
-  maxHealth: 20
-  attackDamage: 0.5
-  attackRadius: 7
-  attackSpeed: 1
-  spawnLikelihood: 0.8
+  maxHealth: 10
+  attackDamage: 2
+  attackRadius: 7.5
+  attackSpeed: 2
+  spawnLikelihood: 0.1
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
-  cost: 59
-  specialityModifier: 1.5
+  cost: 60
+  specialityModifier: 2
   movement: {fileID: 0}
 --- !u!114 &-914249002432701815
 MonoBehaviour:
@@ -169,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 836f7aa9109816d49aca171b6534eeaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 20
+  maxHealth: 12
   currentHealth: 0
   isDead: 0
   healthBarUIManager: {fileID: 0}
@@ -217,7 +216,7 @@ MonoBehaviour:
   speedWhenAttacking: 0.3
   target: {fileID: 0}
   pathRecoveryDistance: 2
---- !u!114 &601668790032792630
+--- !u!114 &-558357810175528673
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -226,16 +225,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 8641729460655824074}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01fb9ed408cdf0b4ea5350d9bb1ac9cf, type: 3}
+  m_Script: {fileID: 11500000, guid: 15a56fbb8f60aeb4399f6f92b751de44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  behaviourType: 0
-  shieldRange: 5
-  shieldAmount: 1
-  shieldCollider: {fileID: -4700614505450337928}
-  shieldableTags:
-  - Enemy
-  debugShieldingLogs: 0
+  behaviourType: 1
+  healthThreshold: 0.15
 --- !u!54 &5464121699189145045
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -304,27 +298,6 @@ SphereCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 7
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!135 &-4700614505450337928
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8641729460655824074}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 3
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &7752569114488961828
 PrefabInstance:

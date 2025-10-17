@@ -42,7 +42,7 @@ public abstract class ObjectManager : MonoBehaviour
     // Keep prefab and scene instances updated in the editor
     private void OnValidate()
     {
-        cost = Mathf.RoundToInt(((attackDamage * attackSpeed * attackRadius) + maxHealth) * (specialityModifier + 1));
+        cost = Mathf.RoundToInt(((attackDamage * attackSpeed * (attackRadius/1.5f)) + maxHealth) * specialityModifier);
         if (cost < 0) cost = 0;
         if (spawnLikelihood < 0f) spawnLikelihood = 0f;
     }
