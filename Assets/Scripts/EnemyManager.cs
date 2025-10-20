@@ -9,18 +9,18 @@ public class EnemyManager : ObjectManager
     public List<SubCell> pathFromSpawner;
 
     public event Action<int> OnEnemyDeath;
+    bool initialized = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Setup();
-        movement = GetComponent<EnemyMovement>() ?? gameObject.AddComponent<EnemyMovement>();
-        movement.Setup();
+        EnsureInitialized();
     }
 
     // Update method removed - movement handled by EnemyMovement component
     public void SetupEnemy(float attackModifier, float healthModifier, float speedModifier)
     {
+        EnsureInitialized();
         movement.speed *= speedModifier;
         health.maxHealth *= healthModifier;
         attack.attackDamage *= attackModifier;
@@ -37,5 +37,19 @@ public class EnemyManager : ObjectManager
         }
 
         OnEnemyDeath?.Invoke(movement != null ? movement.currentPathIndex : 0);
+    }
+
+    void EnsureInitialized()
+    {
+        if (!initialized)
+        {
+            Setup();
+            initialized = true;
+        }
+        if (movement == null)
+        {
+            movement = GetComponent<EnemyMovement>() ?? gameObject.AddComponent<EnemyMovement>();
+            movement.Setup();
+        }
     }
 }

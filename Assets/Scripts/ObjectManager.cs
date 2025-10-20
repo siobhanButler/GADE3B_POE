@@ -47,6 +47,15 @@ public abstract class ObjectManager : MonoBehaviour
         if (spawnLikelihood < 0f) spawnLikelihood = 0f;
     }
 
+    public int GetCurrentCost()
+    {
+        if (health == null) return cost;
+
+        int currentCost = cost;
+        currentCost = Mathf.RoundToInt(((attackDamage * attackSpeed * (attackRadius / 1.5f)) + health.currentHealth) * specialityModifier);
+        return currentCost;
+    }
+
     public void Setup()
     {
         //Debug.Log($"ObjectManager Setup() called for {gameObject.name}");

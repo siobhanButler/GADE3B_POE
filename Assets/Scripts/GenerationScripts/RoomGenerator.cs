@@ -560,7 +560,40 @@ public class RoomGenerator : MonoBehaviour
         // Generate paths from all spawners to the main tower using stored references
         pathGenerator.GenerateEnemyPaths(mainTowerCell, enemySpawnerCells);
         
+        // Ensure all existing towers (including main tower) are registered to paths immediately
+        TryRegisterExistingTowersToPaths();
+
         Debug.Log("RoomGenerator GenerateEnemyPaths(): Enemy paths generated successfully");
+    }
+
+    void TryRegisterExistingTowersToPaths()
+    {
+        if (pathGenerator == null) return;
+
+        // Register the main tower (tagged "MainTower") if present
+        GameObject mainTowerObj = GameObject.FindGameObjectWithTag("MainTower");
+        if (mainTowerObj != null)
+        {
+            TowerManager tm = mainTowerObj.GetComponent<TowerManager>();
+            if (tm != null)
+            {
+                pathGenerator.RegisterTowerOverlaps(tm);
+            }
+        }
+
+        // Register any defence towers already placed in the scene
+        var defenceTowers = GameObject.FindGameObjectsWithTag("DefenceTower");
+        if (defenceTowers != null)
+        {
+            for (int i = 0; i < defenceTowers.Length; i++)
+            {
+                var go = defenceTowers[i];
+                if (go == null) continue;
+                TowerManager tm = go.GetComponent<TowerManager>();
+                if (tm == null) continue;
+                pathGenerator.RegisterTowerOverlaps(tm);
+            }
+        }
     }
 
 // ============================ FURNITURE METHODS ============================

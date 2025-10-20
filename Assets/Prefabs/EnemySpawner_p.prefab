@@ -103,12 +103,12 @@ MonoBehaviour:
   - {fileID: 8641729460655824074, guid: 52896ee9db52e8047875dd59742519e8, type: 3}
   - {fileID: 8641729460655824074, guid: 51ce47592213db84e9944016912a15c3, type: 3}
   - {fileID: 8641729460655824074, guid: 0393de24abe64fb4eb036aed52e9a1f5, type: 3}
+  spawnLikelihoods: []
   spawnInterval: 2
-  waveInterval: 20
+  waveInterval: 10
   minEnemies: 1
   maxEnemies: 1
-  enemyQuantityToSpawn: 0
+  enemiesToSpawn: 0
   numberOfWaves: 3
   wavesCompleted: 0
-  enemyBudget: 100
-  enemiesToSpawn: []
+  baseEnemyCost: 30
