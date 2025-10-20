@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,6 +32,8 @@ public abstract class ObjectManager : MonoBehaviour
     [Min(0)]
     public int cost; // unified value for enemy reward and tower purchase cost (serialized for prefabs)
     public float specialityModifier;
+
+    public event Action<ObjectManager> OnDeathEvent;
 
     // Start and Update methods removed - functionality handled in derived classes
 
@@ -99,6 +102,12 @@ public abstract class ObjectManager : MonoBehaviour
     }
 
     public abstract void OnDeath();
+
+    // Allow this type to raise its event internally
+    protected void RaiseOnDeathEvent()
+    {
+        OnDeathEvent?.Invoke(this);
+    }
 
     public void AddStatus(StatusEffectType newStatusType, float newDuration, float newEffectStrength)    //called by external classes
     {

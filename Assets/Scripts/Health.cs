@@ -27,16 +27,10 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if (OnDamageTaken != null)  //if there are listeners 
-        {
-            // Let listeners handle damage routing (shielding, transfers, etc.)
-            OnDamageTaken.Invoke(damage, this);
-        }
-        else
-        {
-            // No listeners: apply default damage
-            ApplyRawDamage(damage);
-        }
+        if (isDead) return;
+        // Always apply damage, then notify listeners for tracking or secondary effects
+        ApplyRawDamage(damage);
+        OnDamageTaken?.Invoke(damage, this);
     }
 
     // Apply damage without raising events (used by systems that already handle routing)
@@ -65,7 +59,15 @@ public class Health : MonoBehaviour
     void Die()
     {
         isDead = true;
-        GetComponentInParent<ObjectManager>()?.OnDeath();
+        var om = GetComponentInParent<ObjectManager>();
+        if (om != null)
+        {
+            om.OnDeath();
+            // Raise event from within the type via protected helper
+            var type = om.GetType();
+            // call protected method via dynamic dispatch
+            (om as ObjectManager).GetType().GetMethod("RaiseOnDeathEvent", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(om, null);
+        }
         
         // Destroy the object after a short delay to allow for any death animations
         Destroy(gameObject, 0.1f);

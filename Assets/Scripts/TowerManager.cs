@@ -3,6 +3,7 @@ using UnityEngine;
 public class TowerManager : ObjectManager
 {
     public int pathCellsInRange;
+    public int pathsInRange;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -55,11 +56,13 @@ public class TowerManager : ObjectManager
         if (pathGenerator == null || attack == null || attack.rangeCollider == null)
         {
             pathCellsInRange = 0;
+            pathsInRange = 0;
             return;
         }
 
         // Delegate overlap registration to path system (which also updates path difficulty)
         pathCellsInRange = pathGenerator.RegisterTowerOverlaps(this);
+        pathsInRange = pathGenerator.GetTowerPathCount(this);
     }
 
     public int RecalculateCost()

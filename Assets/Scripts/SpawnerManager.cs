@@ -7,7 +7,7 @@ public class SpawnerManager : MonoBehaviour
     [Header("Spawner Settings")]
     public GameObject[] enemyPrefabs;      // Assign in inspector
     public float[] spawnLikelihoods;
-    public float spawnInterval = 2f;    // Time in seconds between spawns
+    public float spawnInterval = 3f;    // Time in seconds between spawns
     public float waveInterval = 20f;   // Time in seconds between waves
     public int minEnemies = 5;          // Minimum number of enemies to spawn
     public int maxEnemies = 20;         // Maximum number of enemies to spawn
@@ -15,11 +15,13 @@ public class SpawnerManager : MonoBehaviour
     public int numberOfWaves = 3;       // Total number of waves
     public bool wavesCompleted = false;
     public int baseEnemyCost = 30;
+public float difficultyModifier = 0.5f;
 
     private Coroutine spawnCoroutine;
     private int currentWave = 0;
 
     private GameManager gameManager;
+    private TowerManager mainTower;
     private SubCell parentCell;
     private PathGenerator pathGenerator;
     PathObj pathObj;
@@ -28,10 +30,31 @@ public class SpawnerManager : MonoBehaviour
     private List<TowerManager> towers = new List<TowerManager>();      //towersOnPath
     private int enemyBudget;
     private int towerBudget;
+    private Health mainTowerHealth;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private float difficulty        //=> enemyDamageTaken / towerDamageTaken; (difficulty of the wave)
     {
+        get
+        {
+            float d = (towerDamageTaken > 0f) ? (enemyDamageTaken / towerDamageTaken) : 1f; // Neutral difficulty if no data yet
+            if (float.IsNaN(d) || float.IsInfinity(d)) return 1f;
+            // Clamp difficulty based on wave: wave 1 => [0.5, 1.5], wave 2 => [0.1, 2.0], and so on
+            int waveIndex = Mathf.Max(1, currentWave + 1); // currentWave is 0-based while spawning
+            float minAllowed = Mathf.Max(0.1f, 1f - (0.5f + 0.4f * (waveIndex - 1)));
+            float maxAllowed = 1f + (0.5f + 0.5f * (waveIndex - 1));
+            return Mathf.Clamp(d, minAllowed, maxAllowed);
+        }
+    }
+    private float towerDamageTaken = 1f;
+    private float enemyDamageTaken = 1f;
+    private int towerDeathCount = 1;
+    private int enemyDeathCount = 1;
+
+// Start is called once before the first execution of Update after the MonoBehaviour is created
+void Start()
+    {
+        EnsureMainTowerHealth();
+        numberOfWaves = numberOfWaves * gameManager.currentLevel;
         StartWave();
     }
 
@@ -57,6 +80,7 @@ public class SpawnerManager : MonoBehaviour
         pathObj = pathGenerator.GetPathObjForSpawner(parentCell);
 
         gameManager = FindFirstObjectByType<GameManager>();
+        EnsureMainTowerHealth();
         // Sync wave count from GameManager (rounded from float-based progression)
         if (gameManager != null)
         {
@@ -92,6 +116,7 @@ public class SpawnerManager : MonoBehaviour
 
         SetMinAndMaxEniemies();
         enemiesToSpawn = Random.Range(minEnemies, maxEnemies + 1);  //randomly assign how many enemies to spawn
+
         spawnCoroutine = StartCoroutine(SpawnRoutine());
 
         Debug.Log($"SpawnerManager StartWave(): min {minEnemies} and max {maxEnemies}, with enemiesToSpawn: {enemiesToSpawn}");
@@ -103,13 +128,24 @@ public class SpawnerManager : MonoBehaviour
         while (enemiesToSpawn > 0)
         {
             SpawnEnemy();
-            yield return new WaitForSeconds(spawnInterval);
+            // Single calc: add 0.5s per 5% health lost = floor((1 - frac)*20)*0.5
+            float interval = spawnInterval;
+            if (mainTowerHealth == null) EnsureMainTowerHealth();
+            if (mainTowerHealth != null && mainTowerHealth.maxHealth > 0f)
+            {
+                interval += Mathf.FloorToInt((1f - (mainTowerHealth.currentHealth / mainTowerHealth.maxHealth)) * 20f) * 0.5f;
+            }
+
+            Debug.Log($"SpawnerManager SpawnRoutine(): Pausing between waves for {interval} seconds.");
+            // scale spawn interval based on tower health; every 5% lost adds +0.5 sec
+            yield return new WaitForSeconds(interval);
         }
 
         // Wave completed, wait for next wave
         currentWave++;
         if (currentWave < numberOfWaves)
         {
+            
             yield return new WaitForSeconds(waveInterval); // pause between waves
             StartWave();
         }
@@ -132,7 +168,7 @@ public class SpawnerManager : MonoBehaviour
         GameObject enemyPrefab = SelectEnemyWithinBudget();
         if (enemyPrefab == null) return;
 
-        Debug.Log($"SpawnerManager SpawnEnemy(): Spawning enemy {enemyPrefab.name}");
+        //Debug.Log($"SpawnerManager SpawnEnemy(): Spawning enemy {enemyPrefab.name}");
 
         RefreshPathObj();         // Ensure fresh path object after paths are generated
 
@@ -148,7 +184,9 @@ public class SpawnerManager : MonoBehaviour
             enemyManager.pathFromSpawner = path;
             // Ensure core components are initialized prior to applying modifiers (mirror WaveManager)
             enemyManager.Setup();
-            enemyManager.SetupEnemy(1f, 1f, 1f);
+            var speedMod = Mathf.Clamp((1f + (difficulty - 1f) * 0.5f), 0.1f, 2f); // half as effective
+            enemyManager.SetupEnemy(difficulty, difficulty , speedMod);
+            Debug.Log($"SpawnerManager CalculateDifficulty: difficulty = {difficulty} = enemyDamageTaken / towerDamageTaken = {enemyDamageTaken} / {towerDamageTaken}");
         }
 
         //Add spawned enemy to GameManager's and own enemy list
@@ -178,13 +216,17 @@ public class SpawnerManager : MonoBehaviour
 
     GameObject SelectEnemyWithinBudget()
     {
-        GameObject enemy = ChooseEnemyWeightedByLikelihood();  //randomly select enemy within prefabs
-        if (enemyBudget + enemy.GetComponent<EnemyManager>().cost > towerBudget)
+        GameObject enemy = null;
+        for (int attempt = 0; attempt <= 10; attempt++)
         {
-            //apply modifiers to reduce enemy cost within range
-            enemy = SelectEnemyWithinBudget();  //for now regenerate
+            enemy = ChooseEnemyWeightedByLikelihood();  //randomly select enemy from prefabs
+            if (enemyBudget + enemy.GetComponent<EnemyManager>().cost <= towerBudget)
+            {
+                //ELSE: apply modifiers to reduce enemy cost within range
+                return enemy;
+            }
         }
-        return enemy;
+        return enemyPrefabs[0];
     }
 
     GameObject ChooseEnemyWeightedByLikelihood()
@@ -226,7 +268,7 @@ public class SpawnerManager : MonoBehaviour
         Debug.Log($"SpawnerManager RefreshEnemyBudget(): Enemy Budget is: {enemyBudget}");
     }
 
-    void RefreshTowerBudget()
+    int RefreshTowerBudget()
     {
         RefreshTowers();
 
@@ -234,10 +276,22 @@ public class SpawnerManager : MonoBehaviour
         foreach (TowerManager tower in towers)
         {
             if (tower == null) continue;
-            towerBudget += tower.GetCurrentCost();
+            towerBudget += tower.GetCurrentCost() / tower.pathsInRange;     //if tower is on multiple paths, divide cost by number of paths
         }
 
+        // Distribute player coins across all paths
+        int totalPaths = 0;
+        if (pathGenerator != null)
+        {
+            var allPaths = pathGenerator.GetAllPathObjects();
+            totalPaths = (allPaths != null) ? allPaths.Count : 0;
+        }
+        if (gameManager != null && gameManager.playerManager != null && totalPaths > 0)
+        {
+            towerBudget += Mathf.RoundToInt((float)gameManager.playerManager.coins / (float)totalPaths);
+        }
         Debug.Log($"SpawnerManager RefreshTowerBudget(): Tower Budget is: {towerBudget}");
+        return towerBudget;
     }
 
     void RefreshEnemies()
@@ -247,6 +301,10 @@ public class SpawnerManager : MonoBehaviour
         foreach (EnemyManager enemy in enemies)
         {
             if (enemy == null) enemiesToRemove.Add(enemy);
+            else {
+                enemy.health.OnDamageTaken += OnEnemyDamageTaken;  // add listeners
+                enemy.OnDeathEvent += OnEnemyDeath;                     //add listeners
+            }
         }
         foreach(EnemyManager enemy in enemiesToRemove)
         {
@@ -272,6 +330,12 @@ public class SpawnerManager : MonoBehaviour
         }
 
         towers = pathObj.towers;
+
+        foreach (TowerManager tower in towers) 
+        {
+            tower.health.OnDamageTaken += OnTowerDamageTaken;  //add listener
+            tower.OnDeathEvent += OnTowerDeath;
+        }
     }
 
     void RefreshPathObj()
@@ -318,11 +382,64 @@ public class SpawnerManager : MonoBehaviour
         }
     }
 
+    void EnsureMainTowerHealth()
+    {
+        // Prefer cached from GameManager's playerManager
+        if (mainTowerHealth == null && gameManager != null && gameManager.playerManager != null)
+        {
+            mainTowerHealth = gameManager.playerManager.mainTowerHealth;
+            if (mainTowerHealth != null) return;
+        }
+        // Fallback: find by tag in scene
+        try
+        {
+            GameObject mainTowerObj = GameObject.FindGameObjectWithTag("MainTower");
+            if (mainTowerObj != null)
+            {
+                mainTowerHealth = mainTowerObj.GetComponent<Health>();
+                if (mainTowerHealth == null) mainTowerHealth = mainTowerObj.GetComponentInChildren<Health>();
+            }
+        }
+        catch { /* ignore */ }
+    }
+
     void SetMinAndMaxEniemies()
     {
         RefreshTowerBudget();
 
         minEnemies = Mathf.RoundToInt((towerBudget/baseEnemyCost) * 0.8f);      //TODO: Replace 0.8 and 1.2 with player adpatable difficulty modifier
         maxEnemies = Mathf.RoundToInt((towerBudget / baseEnemyCost) * 1.2f);
+    }
+
+    void OnEnemyDamageTaken(float damage, Health health)
+    {
+        enemyDamageTaken += damage / health.maxHealth;      
+    }
+
+    void OnTowerDamageTaken(float damage, Health health)
+    {
+        towerDamageTaken += damage / health.maxHealth;
+    }
+
+    void OnEnemyDeath(ObjectManager objectManager)
+    {
+        enemyDeathCount++;
+        if (objectManager is EnemyManager enemy)
+        {
+            enemies.Remove(enemy);
+            enemy.OnDeathEvent -= OnEnemyDeath;
+            enemy.health.OnDamageTaken -= OnEnemyDamageTaken;
+        }
+    }
+
+    void OnTowerDeath(ObjectManager objectManager)
+    {
+        towerDeathCount++;
+        if (objectManager is TowerManager tower)
+        {
+            towers.Remove(tower);
+            tower.OnDeathEvent -= OnTowerDeath;
+            tower.health.OnDamageTaken -= OnTowerDamageTaken;
+        }
     }
 }

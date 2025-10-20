@@ -223,6 +223,7 @@ MonoBehaviour:
   cost: 180
   specialityModifier: 0.94
   pathCellsInRange: 0
+  pathsInRange: 0
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0

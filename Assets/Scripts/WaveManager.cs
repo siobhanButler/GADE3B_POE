@@ -577,7 +577,7 @@ public class WaveManager : MonoBehaviour
     {
         // Recompute style-based modifiers and speed whenever needed
         // This relies on GetPlayerStyleForPath totals, so reuse that computation path
-        float dummyTotalHealth = 0f; // not used directly here, but keeps logic grouped
+        //float dummyTotalHealth = 0f; // not used directly here, but keeps logic grouped
         PlayerStyle style = GetPlayerStyleForPath();
         // The assignments for attackModifier/healthModifier were already computed in GetPlayerStyleForPath()
         // We recompute speed only here

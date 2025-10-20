@@ -104,7 +104,7 @@ MonoBehaviour:
   - {fileID: 8641729460655824074, guid: 51ce47592213db84e9944016912a15c3, type: 3}
   - {fileID: 8641729460655824074, guid: 0393de24abe64fb4eb036aed52e9a1f5, type: 3}
   spawnLikelihoods: []
-  spawnInterval: 2
+  spawnInterval: 1
   waveInterval: 10
   minEnemies: 1
   maxEnemies: 1
@@ -112,3 +112,4 @@ MonoBehaviour:
   numberOfWaves: 3
   wavesCompleted: 0
   baseEnemyCost: 30
+  difficultyModifier: 0.25

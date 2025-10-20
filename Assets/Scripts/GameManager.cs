@@ -127,7 +127,8 @@ public class GameManager : MonoBehaviour
         enemies.Clear();                       //clear the enemies, as they should all be destroyed upon game win/next level
         spawnerManagers.Clear();               //clear the spawnerManagers
         spawnersDone = false;                  //reset spawners done
-        startingCoins = playerManager.coins;  //how many coins at the beginning of the game = player's coins from last level
+        // Reset starting coins to a flat 100 for the next level
+        startingCoins = 100; //= 100 + (playerManager.coins / 2)
 
         //Destroying and setting all classes to null
             Destroy(player);
@@ -195,7 +196,7 @@ public class GameManager : MonoBehaviour
             if (playerManager != null)
             {
                 playerManager.coins += levelReward;
-                startingCoins = playerManager.coins; // Carry over coins to next level
+                // startingCoins will be recalculated on StartNextLevel
             }
         } 
     }

@@ -91,8 +91,10 @@ public class TankEnemyBehaviour : CustomBehaviour
         if (targetHealth.isDead) return;
 
         float shieldValue = incomingDamage * shieldAmount;
-        targetHealth.ApplyRawDamage(incomingDamage - shieldValue); //undo the damage that is shielded without re-raising events
-        tankHealth.ApplyRawDamage(shieldValue); //transfer the damage to the tank without re-raising events
+        // Health.TakeDamage now applies damage before raising events; refund the shielded portion to the target
+        targetHealth.Heal(shieldValue);
+        // Transfer the shielded portion to the tank
+        tankHealth.ApplyRawDamage(shieldValue);
     }
 
     protected override void AttackBehaviour(ObjectManager target, float damage)

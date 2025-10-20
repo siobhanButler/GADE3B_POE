@@ -500,6 +500,27 @@ public class PathGenerator : MonoBehaviour
             }
         }
     }
+
+    // Returns how many distinct paths currently include this tower
+    public int GetTowerPathCount(TowerManager tower)
+    {
+        if (tower == null) return 0;
+        int count = 0;
+        foreach (var kv in spawnerPaths)
+        {
+            PathObj obj = kv.Value;
+            if (obj.towers == null || obj.towers.Count == 0) continue;
+            for (int i = 0; i < obj.towers.Count; i++)
+            {
+                if (obj.towers[i] == tower)
+                {
+                    count++;
+                    break; // count each path at most once
+                }
+            }
+        }
+        return count;
+    }
 }
 
 public struct PathObj

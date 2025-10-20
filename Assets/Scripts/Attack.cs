@@ -18,7 +18,7 @@ public class Attack : MonoBehaviour
     [Header("Attack Settings")]
     public float attackDamage = 2f;
     public float rangeRadius = 30f;
-    public float attackSpeed = 1f;
+    public float attackSpeed = 1f;      //seconds between each attack
     public List<string> attackableTags;
     
     [Header("Attack Visuals")]
@@ -64,7 +64,7 @@ public class Attack : MonoBehaviour
 
         // Apply incoming configuration
         attackDamage = pAttackDamage;
-        attackSpeed = pAttackSpeed;
+        attackSpeed = 1 / pAttackSpeed;     //convert pAttackSpeed (attacks per second) to attackSpeed (seconds per/between each attack)
         rangeRadius = pAttackRadius;
 
         rangeCollider = p_sphereCollider;
@@ -74,7 +74,7 @@ public class Attack : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Attack OnTriggerEnter(): " + this.name + " detected " + other.name);
+        //Debug.Log("Attack OnTriggerEnter(): " + this.name + " detected " + other.name);
         if (attackableTags.Contains(other.tag) && IsRangeIntersectingWithHitbox(other))  //is it a valid target
         {
             targetsInRange.Add(other);  //add as a target
@@ -99,7 +99,7 @@ public class Attack : MonoBehaviour
 
     public void RefreshAttack()  //refresh list of targets in range
     {
-        Debug.Log("Attack RefreshAttack(): " + this.name + " is refreshing its attack");
+        //Debug.Log("Attack RefreshAttack(): " + this.name + " is refreshing its attack");
         targetsInRange.Clear();   //clear current list of targets
         Collider[] colliders = Physics.OverlapSphere(transform.position, rangeRadius);
         foreach (Collider other in colliders)
@@ -169,6 +169,15 @@ public class Attack : MonoBehaviour
     {
         while (IsTargetValid(currentTarget))    //while the target is valid, continue
         {
+            // If focusing the MainTower and other valid targets exist, switch off the main tower
+            if (currentTarget != null && currentTarget.CompareTag("MainTower"))
+            {
+                Collider alternative = GetBestNonMainTowerTarget();
+                if (alternative != null)
+                {
+                    currentTarget = alternative;
+                }
+            }
             RangeAttack(currentTarget);
             yield return new WaitForSeconds(attackSpeed);
         }
@@ -200,6 +209,33 @@ public class Attack : MonoBehaviour
             isAttacking = true;
         }
         */
+    }
+
+    // Prefer any valid non-MainTower target if available (closest wins)
+    Collider GetBestNonMainTowerTarget()
+    {
+        Collider bestTarget = null;
+        float closestDistance = float.MaxValue;
+
+        // Clean up invalid entries first
+        targetsInRange.RemoveAll(target => !IsTargetValid(target));
+
+        for (int i = 0; i < targetsInRange.Count; i++)
+        {
+            Collider target = targetsInRange[i];
+            if (target == null) continue;
+            if (target.CompareTag("MainTower")) continue; // skip main tower
+            if (!IsTargetValid(target)) continue;
+
+            float distance = Vector3.Distance(transform.position, target.transform.position);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                bestTarget = target;
+            }
+        }
+
+        return bestTarget;
     }
 
     bool IsRangeIntersectingWithHitbox(Collider target)
