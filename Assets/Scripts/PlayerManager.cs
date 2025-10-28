@@ -5,6 +5,7 @@ public class PlayerManager : MonoBehaviour
     public int coins = 100;
     public float health = 100;    //from main tower health
     public Health mainTowerHealth;
+    public Inventory inventory;
 
     // Start method removed - initialization handled in Setup()
 
@@ -17,6 +18,7 @@ public class PlayerManager : MonoBehaviour
     public void Setup(int pCoins)
     {
         coins = pCoins;
+        inventory = GetComponent<Inventory>();
     }
 
     public void UpdateHealth()

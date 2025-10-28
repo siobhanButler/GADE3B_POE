@@ -89,10 +89,20 @@ void Start()
         }
         else Debug.Log($"SpawnerManager: Starting wave {currentWave + 1}/{numberOfWaves} (GameManager null)");
 
-        spawnLikelihoods = new float[enemyPrefabs.Length];
-        for (int i = 0; i < spawnLikelihoods.Length; i++) 
+        // Initialize defaults only if not set in the Inspector
+        if (spawnLikelihoods == null || spawnLikelihoods.Length != enemyPrefabs.Length)
         {
-            spawnLikelihoods[i] = baseEnemyCost / enemyPrefabs[i].GetComponent<EnemyManager>().cost;
+            spawnLikelihoods = new float[enemyPrefabs.Length];
+        }
+        for (int i = 0; i < enemyPrefabs.Length; i++)
+        {
+            if (i >= spawnLikelihoods.Length) break;
+            if (spawnLikelihoods[i] <= 0f)
+            {
+                var em = enemyPrefabs[i].GetComponent<EnemyManager>();
+                int cost = (em != null ? em.cost : baseEnemyCost);
+                spawnLikelihoods[i] = (float)baseEnemyCost / Mathf.Max(1, cost);
+            }
         }
     }
 
@@ -216,17 +226,59 @@ void Start()
 
     GameObject SelectEnemyWithinBudget()
     {
-        GameObject enemy = null;
-        for (int attempt = 0; attempt <= 10; attempt++)
+        // Try to spawn among enemies that fit within budget
+        List<int> eligible = new List<int>();
+        for (int i = 0; i < enemyPrefabs.Length; i++)
         {
-            enemy = ChooseEnemyWeightedByLikelihood();  //randomly select enemy from prefabs
-            if (enemyBudget + enemy.GetComponent<EnemyManager>().cost <= towerBudget)
+            var em = enemyPrefabs[i].GetComponent<EnemyManager>();
+            if (em == null) continue;
+            if (enemyBudget + em.cost <= towerBudget) eligible.Add(i);
+        }
+
+        if (eligible.Count > 0)
+        {
+            // Weighted choice among eligible using spawnLikelihoods
+            float total = 0f;
+            for (int j = 0; j < eligible.Count; j++)
             {
-                //ELSE: apply modifiers to reduce enemy cost within range
-                return enemy;
+                int idx = eligible[j];
+                float w = (spawnLikelihoods != null && idx < spawnLikelihoods.Length) ? spawnLikelihoods[idx] : 1f;
+                if (w > 0f) total += w;
+            }
+
+            if (total <= 0f)
+            {
+                return enemyPrefabs[eligible[Random.Range(0, eligible.Count)]];
+            }
+
+            float r = Random.value * total;
+            float acc = 0f;
+            for (int j = 0; j < eligible.Count; j++)
+            {
+                int idx = eligible[j];
+                float w = (spawnLikelihoods != null && idx < spawnLikelihoods.Length) ? spawnLikelihoods[idx] : 1f;
+                if (w <= 0f) continue;
+                acc += w;
+                if (r <= acc) return enemyPrefabs[idx];
+            }
+
+            return enemyPrefabs[eligible[eligible.Count - 1]];
+        }
+
+        // If none fit the budget, pick the cheapest enemy as fallback (not always index 0)
+        int cheapestIdx = 0;
+        int cheapestCost = int.MaxValue;
+        for (int i = 0; i < enemyPrefabs.Length; i++)
+        {
+            var em = enemyPrefabs[i].GetComponent<EnemyManager>();
+            if (em == null) continue;
+            if (em.cost < cheapestCost)
+            {
+                cheapestCost = em.cost;
+                cheapestIdx = i;
             }
         }
-        return enemyPrefabs[0];
+        return enemyPrefabs[cheapestIdx];
     }
 
     GameObject ChooseEnemyWeightedByLikelihood()

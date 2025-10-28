@@ -6,9 +6,11 @@ public class UIManager : MonoBehaviour
 {
     public GameManager gameManager;
     public TowerLocationManager towerLocationManager;
+    public InventoryUIManager inventoryUIManager;
 
-    [Header("Pause Button")]
+    [Header("Buttons")]
     public Button pauseButton;
+    public Button InventoryButton;
 
     [Header("Gameplay Panel")]
     public RectTransform GameplayPanel;
@@ -48,6 +50,14 @@ public class UIManager : MonoBehaviour
         gameManager = pGameManager;
         // Try to auto-bind any missing references under this UI hierarchy
         if (pauseButton == null) pauseButton = GetComponentInChildren<Button>(true);
+        if (InventoryButton == null)
+        {
+            foreach (var b in GetComponentsInChildren<Button>(true)) { if (b.name == "InventoryButton") { InventoryButton = b; break; } }
+        }
+        if (inventoryUIManager == null)
+        {
+            inventoryUIManager = GetComponentInChildren<InventoryUIManager>(true);
+        }
         if (menuPanel == null || resumeButton == null || exitButton == null || restartButton == null)
         {
             // Attempt to find elements safely
@@ -72,6 +82,7 @@ public class UIManager : MonoBehaviour
 
         // Pause button
         if (pauseButton != null) pauseButton.onClick.AddListener(OnPauseButtonClick);
+        if (InventoryButton != null) InventoryButton.onClick.AddListener(OnInventoryButtonClick);
         // Menu panel
         if (resumeButton != null) resumeButton.onClick.AddListener(OnResumeButtonClick);
         if (exitButton != null) exitButton.onClick.AddListener(OnExitButtonClick);
@@ -184,5 +195,12 @@ public class UIManager : MonoBehaviour
     void OnExitTowerLocationButtonClick()
     {
         EnableTowerLocationPanel(false, null);
+    }
+
+    void OnInventoryButtonClick()
+    {
+        if (inventoryUIManager == null || inventoryUIManager.panel_Inventory == null) return;
+        bool next = !inventoryUIManager.panel_Inventory.activeSelf;
+        inventoryUIManager.panel_Inventory.SetActive(next);
     }
 }

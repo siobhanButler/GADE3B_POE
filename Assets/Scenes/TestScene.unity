@@ -208,7 +208,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1551584757}
   - component: {fileID: 1551584758}
-  - component: {fileID: 1551584759}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -258,23 +257,10 @@ MonoBehaviour:
   startingCoins: 100
   ui: {fileID: 0}
   uiManager: {fileID: 0}
-  lootManager: {fileID: 0}
   proceduralGenerator: {fileID: 0}
   roomGenerator: {fileID: 0}
   meshGenerator: {fileID: 0}
   pathGenerator: {fileID: 0}
---- !u!114 &1551584759
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1551584755}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 270119b62ca193c48ae53b3145a8ced5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1741370971
 GameObject:
   m_ObjectHideFlags: 0

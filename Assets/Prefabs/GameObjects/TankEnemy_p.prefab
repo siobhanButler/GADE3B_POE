@@ -151,7 +151,7 @@ MonoBehaviour:
   attackDamage: 1
   attackRadius: 7.5
   attackSpeed: 1
-  spawnLikelihood: 0.8
+  spawnLikelihood: 5
   objectUiPrefab: {fileID: 0}
   objectTag: Enemy
   cost: 45

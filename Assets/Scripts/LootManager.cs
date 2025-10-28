@@ -75,7 +75,7 @@ public class LootManager : MonoBehaviour
         if (coinSplit + lootSplit != 1f) Debug.LogWarning($"LootManager SelectLootCoinSplit(): Invalid results, lootSplit is {lootSplit} and coinSplit is {coinSplit}");
 
         coinBudget = Mathf.RoundToInt(enemyCost * coinSplit);
-        lootBudget = Mathf.RoundToInt(enemyCost * lootSplit);
+        lootBudget = Mathf.RoundToInt(enemyCost * 0.5f);    //* lootSplit
     }
 
     void SetLootToGrant(LootItem[] lootItems)     //populates lootToGrant with randomly selected loot until 
@@ -179,6 +179,9 @@ public class LootManager : MonoBehaviour
 
     void GrantLoot()    //adds loot to the player's inventory
     {
-        
+        foreach(Loot loot in lootToGrant)
+        {
+            playerManager.inventory.AddItem(loot);
+        }
     }
 }
