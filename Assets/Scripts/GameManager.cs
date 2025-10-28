@@ -83,7 +83,7 @@ public class GameManager : MonoBehaviour
 
         if(player != null || proceduralGenerator != null || ui != null)
         {
-            Debug.LogWarning("GameManager StartGame(): One or more classes are not null during initialization");
+            Debug.Log("GameManager StartGame(): One or more classes are not null during initialization");
             return;
         }
 

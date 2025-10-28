@@ -8,6 +8,8 @@ public class EnemyManager : ObjectManager
     public EnemyMovement movement;
     public List<SubCell> pathFromSpawner;
 
+    public LootItem[] lootItems;
+
     public event Action<int> OnEnemyDeath;
     bool initialized = false;
 
@@ -28,13 +30,8 @@ public class EnemyManager : ObjectManager
 
     public override void OnDeath()
     {
-        // Find the PlayerManager and add coins
-        PlayerManager playerManager = FindFirstObjectByType<PlayerManager>();
-        if (playerManager != null)
-        {
-                // Add coins when enemy dies (you can adjust the amount as needed)
-                 playerManager.coins += Mathf.RoundToInt(cost);
-        }
+        LootManager lootManager = FindFirstObjectByType<LootManager>();
+        if(lootManager != null) lootManager.GrantRewards(this);
 
         OnEnemyDeath?.Invoke(movement != null ? movement.currentPathIndex : 0);
     }
