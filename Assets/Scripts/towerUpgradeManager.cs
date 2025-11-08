@@ -89,6 +89,7 @@ public class towerUpgradeManager : MonoBehaviour
         tower.attackDamage = Mathf.Max(0f, tower.attack.attackDamage + deltaD);
         tower.attackSpeed = Mathf.Max(0f, tower.attack.attackSpeed + deltaS);
         tower.attackRadius = Mathf.Max(0f, tower.attack.rangeRadius + deltaR);
+        tower.level++;
         //Apply the upgrade to the Tower's classes (health and attack)
         tower.UpdateStats();
 
@@ -106,8 +107,22 @@ public class towerUpgradeManager : MonoBehaviour
 		return !IsMaxLevel() && HasAllItems();
     }
 
+	// Lazily (re)acquire the player's Inventory if it is missing (e.g., after scene/level load)
+	bool EnsureInventory()
+	{
+		if (inventory != null) return true;
+
+		inventory = FindAnyObjectByType<Inventory>();
+		if (inventory == null && gameManager != null && gameManager.playerManager != null)
+		{
+			inventory = gameManager.playerManager.inventory;
+		}
+		return inventory != null;
+	}
+
     public bool HasAllItems()
     {
+		if (!EnsureInventory()) return false;
         var req = GetCurrentRequirement();
         if (req == null || req.items == null || req.items.Count == 0) return false;
         foreach (var entry in req.items)
@@ -133,31 +148,45 @@ public class towerUpgradeManager : MonoBehaviour
     // Selects the first applicable loot items per requirement and stores them in selectedItems
     public bool SelectRequiredItems()
     {
+		if (!EnsureInventory()) return false;
         var req = GetCurrentRequirement();
         if (req == null || req.items == null || req.items.Count == 0) return false;
 
         playerLoot.Clear();
         selectedItems.Clear();
+		// Track how many times we have already selected each specific Loot key to avoid double-using the same stack
+		Dictionary<Loot, int> selectedCountByKey = new Dictionary<Loot, int>();
 
         foreach (var entry in req.items)
         {
-            // Build playerLoot: all loot entries in inventory that match the LootItem (across all properties)
+			if (entry == null || entry.lootItem == null) return false;
+
+			// Build an availability list for this specific requirement, subtracting already selected counts per key
+			List<Loot> availableForThisEntry = new List<Loot>();
             foreach (var itemEntry in inventory.GetAllItems())
             {
                 var lootKey = itemEntry.Key;
                 var qty = itemEntry.Value;
-                if (lootKey != null && entry != null && entry.lootItem != null && lootKey.lootID == entry.lootItem.lootID)
+                if (lootKey != null && lootKey.lootID == entry.lootItem.lootID)
                 {
-                    for (int i = 0; i < qty; i++) playerLoot.Add(lootKey);
+					int alreadySelected = 0;
+					selectedCountByKey.TryGetValue(lootKey, out alreadySelected);
+					int remaining = Mathf.Max(0, qty - alreadySelected);
+					for (int i = 0; i < remaining; i++) availableForThisEntry.Add(lootKey);
                 }
             }
 
             // Select the first N applicable items for this requirement
             int needed = Mathf.Max(0, entry.quantity);
-            for (int i = 0; i < needed && i < playerLoot.Count; i++) selectedItems.Add(playerLoot[i]);
+			if (availableForThisEntry.Count < needed) return false; // not enough distinct instances left
 
-            // Not enough items for this requirement
-            if (selectedItems.Count(l => l.lootID == entry.lootItem.lootID) < needed) return false;
+			for (int i = 0; i < needed; i++)
+			{
+				var pick = availableForThisEntry[i];
+				selectedItems.Add(pick);
+				if (!selectedCountByKey.ContainsKey(pick)) selectedCountByKey[pick] = 0;
+				selectedCountByKey[pick] = selectedCountByKey[pick] + 1;
+			}
         }
 
         return true;
@@ -289,10 +318,22 @@ public class towerUpgradeManager : MonoBehaviour
     // Consumes the already selected items from the inventory
     void ConsumeSelectedItems()
     {
+		if (!EnsureInventory()) return;
         if (selectedItems == null || selectedItems.Count == 0) return;
+        Debug.Log("towerUpgradeManager ConsumeSelectedItems(): Checks passed, removing items.");
         foreach (var group in selectedItems.GroupBy(l => l))
         {
-            inventory.RemoveItem(group.Key, group.Count());
+			int toRemove = group.Count();
+			bool ok = inventory.RemoveItem(group.Key, toRemove);
+			if (!ok)
+			{
+				Debug.LogWarning($"towerUpgradeManager ConsumeSelectedItems(): Failed to remove {toRemove}x '{group.Key?.lootName}'");
+			}
+			else
+			{
+				int remaining = inventory.GetItemQuantity(group.Key);
+				Debug.Log($"towerUpgradeManager ConsumeSelectedItems(): Removed {toRemove}x '{group.Key?.lootName}'. Remaining: {remaining}");
+			}
         }
     }
 

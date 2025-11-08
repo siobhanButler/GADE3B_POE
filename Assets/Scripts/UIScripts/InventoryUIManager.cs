@@ -24,7 +24,7 @@ public class InventoryUIManager : MonoBehaviour
             if (inventory == null)
             {
                 Debug.LogWarning("InventoryUIManager Start(): No inventory found");
-                return;
+					// don't return yet; UIManager may bind later via BindInventory
             }
         }
         // Wire up the close button to hide the inventory panel
@@ -42,22 +42,9 @@ public class InventoryUIManager : MonoBehaviour
             }
         }
         //Get Inventory from the attached player if not assigned
-        if (inventory == null)
-        {
-            inventory = GetComponentInParent<Inventory>();
-            if (inventory == null)
-            {
-                Debug.LogWarning("InventoryUIManager Start(): No player inventory found");
-                return;
-            }
-        }
-        // Subscribe to inventory add events so UI reflects changes
-        if (inventory != null)
-        {
-            inventory.OnItemAdded += AddItem;
-            inventory.OnItemRemoved += RemoveItem;
-            inventory.OnItemQuantityChanged += ChangeItemQuantity;
-        }
+			if (inventory == null) { inventory = GetComponentInParent<Inventory>(); }
+			// Subscribe to inventory events and build initial UI if we have one now
+			if (inventory != null) { BindInventory(inventory); }
     }
 
     // Update is called once per frame
@@ -66,29 +53,29 @@ public class InventoryUIManager : MonoBehaviour
         
     }
 
-    /*
-    void OnEnable()
-    {
-        // Subscribe to inventory add events so UI reflects changes
-        if (inventory != null)
-        {
-            inventory.OnItemAdded += AddItem;
-            inventory.OnItemRemoved += RemoveItem;
-            inventory.OnItemQuantityChanged += ChangeItemQuantity;
-        }
-    }
+	void OnEnable()
+	{
+		// When the panel is shown, ensure we are bound to the correct inventory and refresh UI
+		if (inventory == null)
+		{
+			Inventory candidate = null;
+			if (uiManager != null && uiManager.gameManager != null && uiManager.gameManager.playerManager != null)
+			{
+				candidate = uiManager.gameManager.playerManager.inventory;
+			}
+			if (candidate == null)
+			{
+				candidate = FindFirstObjectByType<Inventory>();
+			}
+			if (candidate != null)
+			{
+				BindInventory(candidate);
+			}
+		}
 
-    void OnDisable()
-    {
-        // Unsubscribe to avoid memory leaks and duplicate bindings
-        if (inventory != null)
-        {
-            //inventory.OnItemAdded -= AddItem;
-            //inventory.OnItemRemoved -= RemoveItem;
-            //inventory.OnItemQuantityChanged -= ChangeItemQuantity;
-        }
-    }
-    */
+		// Rebuild from the current inventory snapshot so removed items are not displayed
+		RebuildAllFromInventory();
+	}
 
     // Add a UI entry when an item is added to the Inventory (listener for Inventory.AddItem)
     public void AddItem(Loot item, int quantity)
@@ -151,4 +138,56 @@ public class InventoryUIManager : MonoBehaviour
     {
         panel_Inventory.SetActive(true);
     }
+
+		// Rebind to a specific Inventory instance and rebuild UI to match it
+		public void BindInventory(Inventory newInventory)
+		{
+			if (newInventory == inventory && newInventory != null) return;
+
+			// Unsubscribe from previous inventory events
+			if (inventory != null)
+			{
+				inventory.OnItemAdded -= AddItem;
+				inventory.OnItemRemoved -= RemoveItem;
+				inventory.OnItemQuantityChanged -= ChangeItemQuantity;
+			}
+
+			inventory = newInventory;
+
+			// Clear existing UI and map
+			RebuildAllFromInventory();
+
+			// Subscribe to new inventory events
+			if (inventory != null)
+			{
+				inventory.OnItemAdded += AddItem;
+				inventory.OnItemRemoved += RemoveItem;
+				inventory.OnItemQuantityChanged += ChangeItemQuantity;
+			}
+		}
+
+		void RebuildAllFromInventory()
+		{
+			// Clear content children
+			if (content != null)
+			{
+				for (int i = content.childCount - 1; i >= 0; i--)
+				{
+					Destroy(content.GetChild(i).gameObject);
+				}
+			}
+			ItemUiMap.Clear();
+
+			// Populate from current inventory snapshot
+			if (inventory == null || content == null || itemUIPrefab == null) return;
+
+			var items = inventory.GetAllItems();
+			foreach (var kvp in items)
+			{
+				var loot = kvp.Key;
+				var qty = kvp.Value;
+				if (loot == null || qty <= 0) continue;
+				AddItem(loot, qty);
+			}
+		}
 }

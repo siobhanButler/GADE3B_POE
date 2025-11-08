@@ -8,6 +8,7 @@ public class TowerManager : ObjectManager, IClickable
 
     public towerUpgradeManager towerUpgradeManager;
     public UpgradeRequirement[] upgradeRequirements;
+    public Mesh[] levelMeshes;  //corresponds to the level
     private GameManager gameManager;
 
 
@@ -108,5 +109,9 @@ public class TowerManager : ObjectManager, IClickable
         attack.attackSpeed = attackSpeed;
         attack.rangeRadius = attackRadius;
         attack.rangeCollider.radius = attackRadius;
+
+        //swap out to the new mesh
+        MeshFilter meshFilter =  GetComponent<MeshFilter>();
+        if (meshFilter != null) meshFilter.mesh = levelMeshes[level];
     }
 }

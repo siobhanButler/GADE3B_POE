@@ -47,7 +47,27 @@ public class TowerUpgradeUIManager : MonoBehaviour
     void BasicUpdate()
     {
         //Upgrade Button and If can be upgraded
-        upgradeButton.enabled = towerUpgradeManager.CanBeUpgraded();
+		if (towerUpgradeManager == null)
+		{
+			upgradeButton.enabled = false;
+			return;
+		}
+		if (towerUpgradeManager.tower == null)
+		{
+			upgradeButton.enabled = false;
+			if (title != null) title.text = "Select a tower to upgrade";
+			if (upgradeText != null) upgradeText.text = "";
+			if (requiredItemsPanel != null)
+			{
+				for (int i = requiredItemsPanel.childCount - 1; i >= 0; i--)
+				{
+					Destroy(requiredItemsPanel.GetChild(i).gameObject);
+				}
+			}
+			return;
+		}
+
+		upgradeButton.enabled = towerUpgradeManager.CanBeUpgraded();
         if (towerUpgradeManager.IsMaxLevel())
         {
             title.text = "Tower is Maximum Level.";
@@ -123,9 +143,9 @@ public class TowerUpgradeUIManager : MonoBehaviour
         if (towerUpgradeManager == null) return;
 
         upgradeText.text =
-        $"Health: {towerUpgradeManager.tower.maxHealth} (+{towerUpgradeManager.deltaH}) \t\t" +
-        $"Attack Damage: {towerUpgradeManager.tower.attackDamage} (+{towerUpgradeManager.deltaD}) \t\t" +
-        $"Attack Rate: {towerUpgradeManager.tower.attackSpeed} (+{towerUpgradeManager.deltaS}) \t\t" +
-        $"Attack Range: {towerUpgradeManager.tower.attackRadius} (+{towerUpgradeManager.deltaR})";
+        $"Health: {towerUpgradeManager.tower.maxHealth} (+{towerUpgradeManager.deltaH:F2}) \t\t" +
+        $"Attack Damage: {towerUpgradeManager.tower.attackDamage} (+{towerUpgradeManager.deltaD:F2}) \t\t" +
+        $"Attack Rate: {towerUpgradeManager.tower.attackSpeed} (+{towerUpgradeManager.deltaS:F2}) \t\t" +
+        $"Attack Range: {towerUpgradeManager.tower.attackRadius} (+{towerUpgradeManager.deltaR:F2})";
     }
 }

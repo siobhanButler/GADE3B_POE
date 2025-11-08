@@ -67,10 +67,10 @@ public class UIManager : MonoBehaviour
         {
             foreach (var b in GetComponentsInChildren<Button>(true)) { if (b.name == "InventoryButton") { InventoryButton = b; break; } }
         }
-        if (inventoryUIManager == null)
-        {
-            inventoryUIManager = GetComponentInChildren<InventoryUIManager>(true);
-        }
+		if (inventoryUIManager == null)
+		{
+			inventoryUIManager = GetComponentInChildren<InventoryUIManager>(true);
+		}
         if (menuPanel == null || resumeButton == null || exitButton == null || restartButton == null)
         {
             // Attempt to find elements safely
@@ -102,6 +102,12 @@ public class UIManager : MonoBehaviour
         if (restartButton != null) restartButton.onClick.AddListener(OnRestartButtonClick);
         // Tower location panel
         if (exitTowerLocationButton != null) exitTowerLocationButton.onClick.AddListener(OnExitTowerLocationButtonClick);
+
+		// Bind the inventory UI to the player's inventory so its events reflect the correct instance
+		if (inventoryUIManager != null && gameManager != null && gameManager.playerManager != null)
+		{
+			inventoryUIManager.BindInventory(gameManager.playerManager.inventory);
+		}
 
         EnableMenuPanel(false);
         EnableTowerLocationPanel(false, null);
@@ -181,9 +187,9 @@ public class UIManager : MonoBehaviour
             Debug.Log("UIManager EnableTowerUpgradePanel(): towerUpgradePanel is null!");
             return;
         }
-        towerUpgradeUIManager.EnableUI(enable);
-        towerUpgradePanel.gameObject.SetActive(enable);
         towerUpgradeManager = caller;
+		towerUpgradeUIManager.EnableUI(enable);
+		towerUpgradePanel.gameObject.SetActive(enable);
 
         // Ensure tower location panel renders on top
         if (enable)

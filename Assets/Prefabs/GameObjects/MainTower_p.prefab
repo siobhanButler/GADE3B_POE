@@ -228,7 +228,7 @@ MonoBehaviour:
   towerUpgradeManager: {fileID: 0}
   upgradeRequirements:
   - items:
-    - lootItem: {fileID: 11400000, guid: d0a6e7e1e0fe55e45aaf75b1389fc588, type: 2}
+    - lootItem: {fileID: 11400000, guid: c53cac3809ff8244ca014eb905875ab4, type: 2}
       quantity: 1
 --- !u!114 &7564483025522920281
 MonoBehaviour:
