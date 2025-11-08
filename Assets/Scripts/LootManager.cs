@@ -82,7 +82,7 @@ public class LootManager : MonoBehaviour
         if (coinSplit + lootSplit != 1f) Debug.LogWarning($"LootManager SelectLootCoinSplit(): Invalid results, lootSplit is {lootSplit} and coinSplit is {coinSplit}");
 
         coinBudget = Mathf.RoundToInt(enemyCost * coinSplit);
-        lootBudget = Mathf.RoundToInt(enemyCost * lootSplit);
+        lootBudget = Mathf.RoundToInt(enemyCost * lootSplit+1);
     }
 
     void SetLootToGrant(LootItem[] lootItems)     //populates lootToGrant with randomly selected loot until 

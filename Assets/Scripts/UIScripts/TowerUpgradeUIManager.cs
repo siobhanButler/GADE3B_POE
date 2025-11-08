@@ -7,6 +7,7 @@ public class TowerUpgradeUIManager : MonoBehaviour
     towerUpgradeManager towerUpgradeManager;
 
     // UI references: parent panel for required items and prefab for each item UI
+    public RectTransform towerUpgradePanel;
     public TMP_Text title;
     public TMP_Text upgradeText;
     public RectTransform requiredItemsPanel;
@@ -37,7 +38,7 @@ public class TowerUpgradeUIManager : MonoBehaviour
             if (towerUpgradeManager == null) towerUpgradeManager = FindFirstObjectByType<towerUpgradeManager>();
             if (towerUpgradeManager == null) Debug.LogError("TowerUpgradeManager EnableUI(): TowerUpgradeManager not found");
         }
-        requiredItemsPanel.gameObject.SetActive(enable);
+        if (towerUpgradePanel != null) towerUpgradePanel.gameObject.SetActive(enable);
 
         if(enable) BasicUpdate();
         
@@ -47,7 +48,7 @@ public class TowerUpgradeUIManager : MonoBehaviour
     {
         //Upgrade Button and If can be upgraded
         upgradeButton.enabled = towerUpgradeManager.CanBeUpgraded();
-        if (!towerUpgradeManager.IsMaxLevel())
+        if (towerUpgradeManager.IsMaxLevel())
         {
             title.text = "Tower is Maximum Level.";
             upgradeText.text = "Tower can not be upgradeded further";
@@ -62,8 +63,18 @@ public class TowerUpgradeUIManager : MonoBehaviour
             }
                 return;
         }
-        else if (!towerUpgradeManager.SelectRequiredItems()) upgradeText.text = "You do not posess the required items";
-        else SetUpgradeText();
+        else
+        {
+            if (!towerUpgradeManager.SelectRequiredItems())
+            {
+                upgradeText.text = "You do not posess the required items";
+            }
+            else
+            {
+                towerUpgradeManager.ComputeUpgradePreview();
+                SetUpgradeText();
+            }
+        }
 
         //Title Text
         title.text = "Upgrade " + towerUpgradeManager.tower.name + " to Level " + (towerUpgradeManager.tower.level+1) + "?";

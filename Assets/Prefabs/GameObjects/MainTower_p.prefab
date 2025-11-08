@@ -224,6 +224,12 @@ MonoBehaviour:
   specialityModifier: 0.94
   pathCellsInRange: 0
   pathsInRange: 0
+  level: 0
+  towerUpgradeManager: {fileID: 0}
+  upgradeRequirements:
+  - items:
+    - lootItem: {fileID: 11400000, guid: d0a6e7e1e0fe55e45aaf75b1389fc588, type: 2}
+      quantity: 1
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0

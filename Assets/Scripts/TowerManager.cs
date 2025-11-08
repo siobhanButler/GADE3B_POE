@@ -30,6 +30,8 @@ public class TowerManager : ObjectManager, IClickable
         {
             attack.rangeCollider.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
         }
+
+        level = 0;  //start/default level is always 1
     }
 
     // Update method removed - no per-frame logic needed

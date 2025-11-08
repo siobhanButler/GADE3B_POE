@@ -193,6 +193,13 @@ MonoBehaviour:
   cost: 100
   specialityModifier: 1.25
   pathCellsInRange: 0
+  pathsInRange: 0
+  level: 0
+  towerUpgradeManager: {fileID: 0}
+  upgradeRequirements:
+  - items:
+    - lootItem: {fileID: 11400000, guid: c53cac3809ff8244ca014eb905875ab4, type: 2}
+      quantity: 3
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0

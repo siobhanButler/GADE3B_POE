@@ -102,8 +102,8 @@ public class towerUpgradeManager : MonoBehaviour
 
     public bool CanBeUpgraded()
     {
-		// Check if required loot exists in inventory and if it has reached max level
-		return HasAllItems() && IsMaxLevel();
+		// Can upgrade only if not at max level and requirements are met
+		return !IsMaxLevel() && HasAllItems();
     }
 
     public bool HasAllItems()
@@ -121,6 +121,13 @@ public class towerUpgradeManager : MonoBehaviour
     public bool IsMaxLevel()
     {
         return (tower.level >= upgradeRequirements.Length);
+    }
+
+    // Recompute preview deltas for the UI (requires SelectRequiredItems has populated selectedItems)
+    public void ComputeUpgradePreview()
+    {
+        CalculatePropertyValues();
+        CalculateDeltas();
     }
 
     // Selects the first applicable loot items per requirement and stores them in selectedItems

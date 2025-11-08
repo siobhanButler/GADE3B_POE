@@ -196,6 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 276ba3fd312e384499f9c50324a20103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  towerUpgradePanel: {fileID: 3271588979048742333}
   title: {fileID: 7154375249568624413}
   upgradeText: {fileID: 2202462382240655695}
   requiredItemsPanel: {fileID: 3911138189957022029}
