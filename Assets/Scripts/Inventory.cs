@@ -94,6 +94,22 @@ public class Inventory : MonoBehaviour
         return GetItemQuantity(loot) >= quantity;
     }
     
+    public bool HasLoot(LootItem loot, int quantity = 1)
+    {
+        if (loot == null || quantity <= 0) return false;
+        int total = 0;
+        foreach (var kvp in items)
+        {
+            // Match by logical item identity, independent of property
+            if (kvp.Key != null && kvp.Key.lootID == loot.lootID)
+            {
+                total += kvp.Value;
+                if (total >= quantity) return true;
+            }
+        }
+        return total >= quantity;
+    }
+
     // Get all items as a list (for UI display)
     public List<KeyValuePair<Loot, int>> GetAllItems()
     {

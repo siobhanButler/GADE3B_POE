@@ -33,15 +33,28 @@ public class UIManager : MonoBehaviour
     //public RectTransform content;
     public Button exitTowerLocationButton;
 
+    [Header("Tower Location Panel")]
+    public RectTransform towerUpgradePanel;
+    public TowerUpgradeUIManager towerUpgradeUIManager;
+    public towerUpgradeManager towerUpgradeManager;
+
     // Start method removed - initialization handled in Setup()
 
     // Update is called once per frame
     void Update()
     {
-        if (Application.isPlaying && gameManager != null && gameManager.playerManager != null && coinAmountText != null)
+        if (Application.isPlaying && gameManager != null && gameManager.playerManager != null)
         {
-            coinAmountText.text = gameManager.playerManager.coins.ToString();
-            playerHealthBar.value = gameManager.playerManager.mainTowerHealth.currentHealth/ gameManager.playerManager.mainTowerHealth.maxHealth;
+            if (coinAmountText != null)
+            {
+                coinAmountText.text = gameManager.playerManager.coins.ToString();
+            }
+            if (playerHealthBar != null && gameManager.playerManager.mainTowerHealth != null)
+            {
+                float maxH = Mathf.Max(0.0001f, gameManager.playerManager.mainTowerHealth.maxHealth);
+                float frac = Mathf.Clamp01(gameManager.playerManager.mainTowerHealth.currentHealth / maxH);
+                playerHealthBar.value = frac;
+            }
         }
     }
 
@@ -92,6 +105,8 @@ public class UIManager : MonoBehaviour
 
         EnableMenuPanel(false);
         EnableTowerLocationPanel(false, null);
+        EnableTowerUpgradePanel(false, null);
+        inventoryUIManager.CloseInventory();
 
         levelText.text = gameManager.currentLevel.ToString();
     }
@@ -152,6 +167,33 @@ public class UIManager : MonoBehaviour
                 panelCanvas = towerLocationPanel.GetComponentInParent<Canvas>();
             }
             
+            if (panelCanvas != null)
+            {
+                panelCanvas.sortingOrder = 200; // Higher than main UI
+            }
+        }
+    }
+
+    public void EnableTowerUpgradePanel(bool enable, towerUpgradeManager caller)
+    {
+        if(towerUpgradePanel == null)
+        {
+            Debug.Log("UIManager EnableTowerUpgradePanel(): towerUpgradePanel is null!");
+            return;
+        }
+        towerUpgradeUIManager.EnableUI(enable);
+        towerUpgradePanel.gameObject.SetActive(enable);
+        towerUpgradeManager = caller;
+
+        // Ensure tower location panel renders on top
+        if (enable)
+        {
+            Canvas panelCanvas = towerUpgradePanel.GetComponent<Canvas>();
+            if (panelCanvas == null)
+            {
+                panelCanvas = towerUpgradePanel.GetComponentInParent<Canvas>();
+            }
+
             if (panelCanvas != null)
             {
                 panelCanvas.sortingOrder = 200; // Higher than main UI

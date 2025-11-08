@@ -9,14 +9,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2964228985481913276}
+  - component: {fileID: 1813358772858288331}
+  - component: {fileID: 9083771151248980207}
+  - component: {fileID: 7564483025522920281}
   - component: {fileID: 1534021467462223235}
   - component: {fileID: 1481394894103930080}
   - component: {fileID: 7616818667897185361}
   - component: {fileID: -6139288050314450791}
   - component: {fileID: 2241444040307235550}
-  - component: {fileID: 1813358772858288331}
-  - component: {fileID: 7564483025522920281}
-  - component: {fileID: 9083771151248980207}
   m_Layer: 0
   m_Name: DefenceTower
   m_TagString: DefenceTower
@@ -41,6 +41,86 @@ Transform:
   - {fileID: 3583849549998299417}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1813358772858288331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4481481441890430569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: feb3a5902849f414d8d09d7533f0815b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rigidBody: {fileID: 0}
+  hitBox: {fileID: 0}
+  rangeCollider: {fileID: 0}
+  objectUI: {fileID: 3094916705883050836}
+  uiManager: {fileID: 0}
+  health: {fileID: 9083771151248980207}
+  attack: {fileID: 7564483025522920281}
+  maxHealth: 40
+  attackDamage: 2.5
+  attackRadius: 12
+  attackSpeed: 2
+  spawnLikelihood: 1
+  objectUiPrefab: {fileID: 0}
+  objectTag: DefenceTower
+  cost: 80
+  specialityModifier: 1
+  pathCellsInRange: 0
+  pathsInRange: 0
+  level: 1
+  towerUpgradeManager: {fileID: 0}
+  upgradeRequirements:
+  - items:
+    - lootItem: {fileID: 11400000, guid: 1120d7b71d02f74408b0cd297c0e6886, type: 2}
+      quantity: 2
+    - lootItem: {fileID: 11400000, guid: c53cac3809ff8244ca014eb905875ab4, type: 2}
+      quantity: 1
+--- !u!114 &9083771151248980207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4481481441890430569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 836f7aa9109816d49aca171b6534eeaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 30
+  currentHealth: 0
+  isDead: 0
+  healthBarUIManager: {fileID: 0}
+--- !u!114 &7564483025522920281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4481481441890430569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e27b8ccd2974a0645a3d62afab4f0a47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rigidBody: {fileID: 0}
+  hitBox: {fileID: 0}
+  rangeCollider: {fileID: 0}
+  attackDamage: 2
+  rangeRadius: 12
+  attackSpeed: 2
+  attackableTags:
+  - Enemy
+  projectilePrefab: {fileID: 1696814602365286989, guid: aa09ffa1c93ec6f45a66c6ab3da660e0, type: 3}
+  firePoint: {fileID: 3583849549998299417}
+  projectileSpeed: 100
+  rotationSpeed: 20
+  maxProjectileLifetime: 10
+  isAttacking: 0
 --- !u!33 &1534021467462223235
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -163,77 +243,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 32
   m_CollisionDetection: 0
---- !u!114 &1813358772858288331
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4481481441890430569}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: feb3a5902849f414d8d09d7533f0815b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rigidBody: {fileID: 0}
-  hitBox: {fileID: 0}
-  rangeCollider: {fileID: 0}
-  objectUI: {fileID: 3094916705883050836}
-  uiManager: {fileID: 0}
-  health: {fileID: 9083771151248980207}
-  attack: {fileID: 7564483025522920281}
-  maxHealth: 40
-  attackDamage: 2.5
-  attackRadius: 12
-  attackSpeed: 2
-  spawnLikelihood: 1
-  objectUiPrefab: {fileID: 0}
-  objectTag: DefenceTower
-  cost: 80
-  specialityModifier: 1
-  pathCellsInRange: 0
---- !u!114 &7564483025522920281
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4481481441890430569}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e27b8ccd2974a0645a3d62afab4f0a47, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rigidBody: {fileID: 0}
-  hitBox: {fileID: 0}
-  rangeCollider: {fileID: 0}
-  attackDamage: 2
-  rangeRadius: 12
-  attackSpeed: 2
-  attackableTags:
-  - Enemy
-  projectilePrefab: {fileID: 1696814602365286989, guid: aa09ffa1c93ec6f45a66c6ab3da660e0, type: 3}
-  firePoint: {fileID: 3583849549998299417}
-  projectileSpeed: 100
-  rotationSpeed: 20
-  maxProjectileLifetime: 10
-  isAttacking: 0
---- !u!114 &9083771151248980207
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4481481441890430569}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 836f7aa9109816d49aca171b6534eeaa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 30
-  currentHealth: 0
-  isDead: 0
-  healthBarUIManager: {fileID: 0}
 --- !u!1 &6468974241732476346
 GameObject:
   m_ObjectHideFlags: 0

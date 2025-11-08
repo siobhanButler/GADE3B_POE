@@ -127,7 +127,7 @@ public class Attack : MonoBehaviour
             attackRoutine = StartCoroutine(AttackLoop());
             isAttacking = true;
 
-            Debug.Log("Attack StartAttack(): " + this.name + " is starting to attack " );
+            //Debug.Log("Attack StartAttack(): " + this.name + " is starting to attack " );
         }
     }
 
@@ -136,7 +136,7 @@ public class Attack : MonoBehaviour
         if (attackRoutine != null)
         {
             StopCoroutine(attackRoutine);   //stop attacking
-            Debug.Log("Attack StopAttack(): " + this.name + " is stopping its attack");
+            //Debug.Log("Attack StopAttack(): " + this.name + " is stopping its attack");
         }
         isAttacking = false;
         currentTarget = null;           //clear current target  
@@ -154,7 +154,7 @@ public class Attack : MonoBehaviour
         if (otherHealth != null)
         {        
             otherHealth.TakeDamage(attackDamage);
-            Debug.Log("Attack RangeAttack(): " + this.name + " attacked " + other.name + " for " + attackDamage + " damage. Remaining Health: " + otherHealth.currentHealth);
+            //Debug.Log("Attack RangeAttack(): " + this.name + " attacked " + other.name + " for " + attackDamage + " damage. Remaining Health: " + otherHealth.currentHealth);
 
             // Execute custom behaviour if attached
             CustomBehaviour customBehaviour = GetComponent<CustomBehaviour>();

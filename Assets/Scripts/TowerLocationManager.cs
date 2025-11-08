@@ -24,9 +24,6 @@ public class TowerLocationManager : MonoBehaviour, IClickable
             gameManager.uiManager.EnableTowerLocationPanel(true, this);
         }
         else Debug.LogWarning("TowerLocationManager OnClick(): GameManager or UIManager not available");
-        {
-            
-        }
     }
 
     public void PurchaseTower(GameObject towerPrefab)

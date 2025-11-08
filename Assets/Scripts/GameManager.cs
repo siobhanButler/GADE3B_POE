@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
     public int startingCoins = 100;     //how many coins at the beginning of the game, later how many from previous level
     public GameObject ui;       //UI instance
     public UIManager uiManager;
+    public towerUpgradeManager towerUpgradeManager;
 
     public GameObject proceduralGenerator; //Procedural Generator instance
     public RoomGenerator roomGenerator;
@@ -64,6 +65,8 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         gameState = GameState.Playing;
+        towerUpgradeManager = GetComponent<towerUpgradeManager>();
+        if (towerUpgradeManager == null) Debug.LogError("GameManager Start(): TowerUpgradeManager not found");
         StartGame();
     }
  

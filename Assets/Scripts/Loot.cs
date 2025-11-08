@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Loot
 {
+    public int lootID;
     public string lootName;
     public int lootCost;
     public float lootLikelihood;
@@ -12,6 +13,7 @@ public class Loot
 
     public Loot(LootItem lootItem, LootProperty property)
     {
+        this.lootID = lootItem.lootID;
         this.lootName = lootItem.lootName;
         this.lootCost = lootItem.lootCost;
         this.lootLikelihood = lootItem.lootBaseLikelihood;

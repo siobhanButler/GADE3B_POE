@@ -41,4 +41,14 @@ public class ItemUIManager : MonoBehaviour
         }
     */
     }  
+
+    // Overload for showing requirements that are defined by LootItem + quantity
+    public void UpdateItemUI(LootItem lootItem, int itemQuantity)
+    {
+        if (lootItem == null) return;
+        img_ItemIcon.sprite = lootItem.lootSprite;
+        txt_itemName.text = lootItem.lootName;
+        txt_itemQuantity.text = itemQuantity.ToString();
+        if (btn_itemAction != null) btn_itemAction.gameObject.SetActive(false);
+    }
 }

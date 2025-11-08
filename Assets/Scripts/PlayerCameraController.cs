@@ -83,7 +83,7 @@ public class PlayerCameraController : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(new Vector3(mousePos.x, mousePos.y, 0f));
             
             // Get all hits along the ray
-            RaycastHit[] hits = Physics.RaycastAll(ray, clickDistance, clickableLayers);
+            RaycastHit[] hits = Physics.RaycastAll(ray, clickDistance, clickableLayers, QueryTriggerInteraction.Ignore);
             
             // Sort by distance to prioritize closest clickable objects
             System.Array.Sort(hits, (x, y) => x.distance.CompareTo(y.distance));
@@ -91,11 +91,8 @@ public class PlayerCameraController : MonoBehaviour
             // Find the first clickable object
             foreach (RaycastHit hit in hits)
             {
-                IClickable clickable = hit.collider.GetComponentInParent<IClickable>();
-                if (clickable == null)
-                {
-                    clickable = hit.collider.GetComponent<IClickable>();
-                }
+                IClickable clickable = hit.collider.GetComponent<IClickable>();
+                if (clickable == null) clickable = hit.collider.GetComponentInParent<IClickable>();
                 if (clickable != null)
                 {
                     clickable.OnClick();

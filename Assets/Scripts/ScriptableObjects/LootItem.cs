@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LootItem", menuName = "Scriptable Objects/LootItem")]
 public class LootItem : ScriptableObject
 {
+    public int lootID;
     public string lootName;
     public int lootCost;
     public float lootBaseLikelihood;
@@ -13,6 +14,7 @@ public class LootItem : ScriptableObject
     private void OnValidate()
     {
         SetLikelihood();
+        lootID = lootName.GetHashCode();
     }
 
     void SetLikelihood() 

@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerManager))]
 public class LootManager : MonoBehaviour
 {
+    [SerializeField] private bool giveLoot = true;
     [SerializeField] private Dictionary<LootItem, float> lootTable;     //weighted loot table with the loot type the enemy can drop and the chance of it dropping that loot
     
     PlayerManager playerManager;
@@ -63,6 +64,12 @@ public class LootManager : MonoBehaviour
 
     void UpdateLootCoinBudget(int enemyCost)  //sets coinSplit and lootSplit based on the split between number of occupied vs unoccupied tower locations
     {
+        if (giveLoot)
+        {
+            coinBudget = Mathf.RoundToInt(enemyCost * 0.5f);
+            lootBudget = Mathf.RoundToInt(enemyCost * 0.5f);
+            return;
+        }
         int occupiedLocations = 0;
         int unoccupiedLocations = 0;
         foreach (TowerLocationManager towerLocation in towerLocations)
@@ -75,7 +82,7 @@ public class LootManager : MonoBehaviour
         if (coinSplit + lootSplit != 1f) Debug.LogWarning($"LootManager SelectLootCoinSplit(): Invalid results, lootSplit is {lootSplit} and coinSplit is {coinSplit}");
 
         coinBudget = Mathf.RoundToInt(enemyCost * coinSplit);
-        lootBudget = Mathf.RoundToInt(enemyCost * 0.5f);    //* lootSplit
+        lootBudget = Mathf.RoundToInt(enemyCost * lootSplit);
     }
 
     void SetLootToGrant(LootItem[] lootItems)     //populates lootToGrant with randomly selected loot until 

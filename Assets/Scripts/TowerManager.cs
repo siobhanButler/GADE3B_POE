@@ -1,15 +1,35 @@
 using UnityEngine;
 
-public class TowerManager : ObjectManager
+public class TowerManager : ObjectManager, IClickable
 {
     public int pathCellsInRange;
     public int pathsInRange;
+    public int level = 0;
+
+    public towerUpgradeManager towerUpgradeManager;
+    public UpgradeRequirement[] upgradeRequirements;
+    private GameManager gameManager;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         Setup();
         ComputePathCellsInRange();
+
+        gameManager = FindFirstObjectByType<GameManager>();
+        if (gameManager == null) Debug.LogError("TowerManager Start(): GameManager not found in scene");
+
+        if(towerUpgradeManager == null) towerUpgradeManager = FindFirstObjectByType<towerUpgradeManager>();
+        if (towerUpgradeManager == null) Debug.LogError("TowerManager Start(): TowerUpgradeManager not found");
+
+        gameObject.layer = LayerMask.NameToLayer("Clickable");
+
+        // Ensure the range sphere collider does not intercept click raycasts
+        if (attack != null && attack.rangeCollider != null)
+        {
+            attack.rangeCollider.gameObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+        }
     }
 
     // Update method removed - no per-frame logic needed
@@ -70,5 +90,21 @@ public class TowerManager : ObjectManager
         cost = Mathf.RoundToInt(((attackDamage * attackSpeed * attackRadius) + health.currentHealth) * (specialityModifier + 1));
         if (cost < 0) cost = 0;
         return cost;
+    }
+
+    public void OnClick()
+    {
+        Debug.Log($"TowerManager OnClick(): {name} was clicked!");
+        if (towerUpgradeManager == null) return;
+        towerUpgradeManager.UpgradeTower(this);
+    }
+
+    public void UpdateStats()
+    {
+        health.maxHealth = maxHealth;
+        attack.attackDamage = attackDamage;
+        attack.attackSpeed = attackSpeed;
+        attack.rangeRadius = attackRadius;
+        attack.rangeCollider.radius = attackRadius;
     }
 }
