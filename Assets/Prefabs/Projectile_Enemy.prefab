@@ -223,7 +223,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 0.72296786, g: 0.14360262, b: 0.9169811, a: 1}
+      maxColor: {r: 0.91764706, g: 0.30705285, b: 0.145098, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -4904,7 +4904,7 @@ GameObject:
   - component: {fileID: 589618007592074519}
   - component: {fileID: 8806703338069346863}
   m_Layer: 0
-  m_Name: Projectile_p
+  m_Name: Projectile_Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5085,7 +5085,7 @@ TrailRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Time: 0.3
+  m_Time: 0.5
   m_PreviewTimeScale: 1
   m_Parameters:
     serializedVersion: 3
@@ -5107,7 +5107,7 @@ TrailRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.72156864, g: 0.14509805, b: 0.91764706, a: 1}
+      key0: {r: 0.91764706, g: 0.36287367, b: 0.145098, a: 1}
       key1: {r: 0, g: 0, b: 0, a: 0}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}

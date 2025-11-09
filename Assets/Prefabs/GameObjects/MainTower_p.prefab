@@ -353,7 +353,7 @@ MonoBehaviour:
   - Enemy
   projectilePrefab: {fileID: 1696814602365286989, guid: aa09ffa1c93ec6f45a66c6ab3da660e0, type: 3}
   firePoint: {fileID: 7465585819622725733}
-  projectileSpeed: 200
+  projectileSpeed: 100
   rotationSpeed: 10
   maxProjectileLifetime: 10
   isAttacking: 0

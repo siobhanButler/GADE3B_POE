@@ -318,9 +318,9 @@ MonoBehaviour:
   attackSpeed: 2
   attackableTags:
   - Enemy
-  projectilePrefab: {fileID: 1696814602365286989, guid: aa09ffa1c93ec6f45a66c6ab3da660e0, type: 3}
+  projectilePrefab: {fileID: 1696814602365286989, guid: fdf6dcc4313532d49b373af04bbdb1f2, type: 3}
   firePoint: {fileID: 3583849549998299417}
-  projectileSpeed: 100
+  projectileSpeed: 80
   rotationSpeed: 20
   maxProjectileLifetime: 10
   isAttacking: 0
