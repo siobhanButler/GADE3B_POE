@@ -81,11 +81,11 @@ MonoBehaviour:
     - lootItem: {fileID: 11400000, guid: c53cac3809ff8244ca014eb905875ab4, type: 2}
       quantity: 1
     - lootItem: {fileID: 11400000, guid: 1120d7b71d02f74408b0cd297c0e6886, type: 2}
-      quantity: 1
+      quantity: 2
   levelMeshes:
   - {fileID: 5608771404437207644, guid: 627e07ca05da1fd49a378dc15bb74b8d, type: 3}
-  - {fileID: -2180786686882843324, guid: f4ae6127397720946a0c342900ea2e36, type: 3}
-  - {fileID: -8618094014426297315, guid: 6ef38ef91cb593e4db26d04b8fe0bb00, type: 3}
+  - {fileID: 5608771404437207644, guid: 3172d71fbedf4564b94fcac655441ff8, type: 3}
+  - {fileID: 1675624145672925557, guid: e481b3545a84f934d9da735ade28df14, type: 3}
 --- !u!114 &9083771151248980207
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -199,8 +199,17 @@ MonoBehaviour:
   towerUpgradeManager: {fileID: 0}
   upgradeRequirements:
   - items:
-    - lootItem: {fileID: 11400000, guid: c6d8e87b845e1bb478a2dc545371e0de, type: 2}
+    - lootItem: {fileID: 11400000, guid: 1e34b90391d87de4e8e67c7fd4261f2c, type: 2}
+      quantity: 1
+  - items:
+    - lootItem: {fileID: 11400000, guid: 1e34b90391d87de4e8e67c7fd4261f2c, type: 2}
+      quantity: 1
+    - lootItem: {fileID: 11400000, guid: c53cac3809ff8244ca014eb905875ab4, type: 2}
       quantity: 2
+  levelMeshes:
+  - {fileID: -8618094014426297315, guid: 6ef38ef91cb593e4db26d04b8fe0bb00, type: 3}
+  - {fileID: -8618094014426297315, guid: 812547f6aa56497409c33fcb1f8ff9a8, type: 3}
+  - {fileID: 3835479322079720923, guid: 60865c90a70fe5c478d8f351c7953a8b, type: 3}
 --- !u!114 &7564483025522920281
 MonoBehaviour:
   m_ObjectHideFlags: 0

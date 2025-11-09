@@ -156,6 +156,10 @@ MonoBehaviour:
   cost: 60
   specialityModifier: 2
   movement: {fileID: 0}
+  lootItems:
+  - {fileID: 11400000, guid: 1e34b90391d87de4e8e67c7fd4261f2c, type: 2}
+  - {fileID: 11400000, guid: c6d8e87b845e1bb478a2dc545371e0de, type: 2}
+  - {fileID: 11400000, guid: d0a6e7e1e0fe55e45aaf75b1389fc588, type: 2}
 --- !u!114 &-914249002432701815
 MonoBehaviour:
   m_ObjectHideFlags: 0
