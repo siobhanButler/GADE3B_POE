@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class TowerManager : ObjectManager, IClickable
 {
+    public GameObject attackRangeSphere;
     public int pathCellsInRange;
     public int pathsInRange;
     public int level = 0;
@@ -109,6 +110,7 @@ public class TowerManager : ObjectManager, IClickable
         attack.attackSpeed = attackSpeed;
         attack.rangeRadius = attackRadius;
         attack.rangeCollider.radius = attackRadius;
+        attackRangeSphere.transform.localScale = new Vector3(attackRadius * 2, attackRadius * 2, attackRadius * 2);
 
         //swap out to the new mesh
         MeshFilter meshFilter =  GetComponent<MeshFilter>();
