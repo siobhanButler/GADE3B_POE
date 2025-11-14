@@ -63,8 +63,8 @@ Material:
     - _ScrollSpeed: 0.05
     - _TotalTransparency: 0.2
     m_Colors:
-    - _BaseColour: {r: 0.909434, g: 0.909434, b: 0.909434, a: 1}
+    - _BaseColour: {r: 0.909434, g: 0.909434, b: 0.909434, a: 0.21176471}
     - _BorderColour: {r: 1, g: 0.09688748, b: 0, a: 1}
-    - _Emission: {r: 0, g: 2, b: 0.5496182, a: 1}
+    - _Emission: {r: 0, g: 3.9999998, b: 1.0992362, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
