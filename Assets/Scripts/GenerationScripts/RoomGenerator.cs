@@ -353,7 +353,7 @@ public class RoomGenerator : MonoBehaviour
             // Pick a random valid position
             int index = Random.Range(0, validSubCells.Count);
             
-            Vector3 worldPos = validSubCells[index].worldPosition;
+            Vector3 worldPos = validSubCells[index].worldPosition + Vector3.up * 0.5f;
             GameObject spawner = Instantiate(enemySpawnerPrefab, worldPos, Quaternion.identity);
             spawner.transform.SetParent(transform);
             spawner.GetComponent<SpawnerManager>().Setup(validSubCells[index]);
