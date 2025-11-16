@@ -22,19 +22,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 35c3af0b7c9f35e499fd0b02efa48995, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 35c3af0b7c9f35e499fd0b02efa48995, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.0000019292042
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 35c3af0b7c9f35e499fd0b02efa48995, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 5.6747975e-14
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 35c3af0b7c9f35e499fd0b02efa48995, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.000000029415222
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 35c3af0b7c9f35e499fd0b02efa48995, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -42,7 +42,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 35c3af0b7c9f35e499fd0b02efa48995, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 35c3af0b7c9f35e499fd0b02efa48995, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -101,7 +101,7 @@ MonoBehaviour:
   spawnOffset: {x: 0, y: 0, z: 0}
   type: 1
   prefab: {fileID: 7952418649968878496}
-  takenSmallCellGrid: 00000000000000000000000000000000000000000000000000000000000001000000000000000001000000000000000000000000000000000000000000000000000000000000010000000000000000010000000000000000000000000000000000000000
+  takenSmallCellGrid: 00000001000001000000000000000000000000000000000000000000000001000000000000000001000000000000000000000000000000000000000000000000000000000000010000000000000000010000000000000000000000000001000001000000
   subCellsPerAxis: 10
   furnitureMask:
     serializedVersion: 2

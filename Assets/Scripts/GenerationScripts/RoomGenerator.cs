@@ -415,28 +415,87 @@ public class RoomGenerator : MonoBehaviour
     
     void PlaceDefenceTowerLocations()
     {
-        int defenceCount = Random.Range(minDefenceCount, maxDefenceCount + 1); // Random number between min and max (inclusive)
-        defenceTowerCells = new SubCell[defenceCount];
-        List<SubCell> validSubCells = GetValidLocationSubCells();
-         
-        // Placing defence tower locations
-         
-        for (int i = 0; i < defenceCount && validSubCells.Count > 0; i++)
-        {
-            // Pick a random valid position
-            int index = Random.Range(0, validSubCells.Count);
-            
-            Vector3 worldPos = validSubCells[index].worldPosition + Vector3.up * 0.1f;  //offset by 0.1 in up direction so its not inside the mesh
-            GameObject defenceTower = Instantiate(defenseTowerLocationPrefab, worldPos, Quaternion.identity);
-            defenceTower.transform.SetParent(transform);
+		var paths = pathGenerator != null ? pathGenerator.GetAllPathObjects() : null;
+		if (paths == null || paths.Count == 0)
+		{
+			// Fallback to previous behavior if no paths are available
+			int fallbackCount = Random.Range(minDefenceCount, maxDefenceCount + 1);
+			defenceTowerCells = new SubCell[fallbackCount];
+			List<SubCell> valid = GetValidLocationSubCells();
+			for (int i = 0; i < fallbackCount && valid.Count > 0; i++)
+			{
+				int idx = Random.Range(0, valid.Count);
+				SpawnDefenceLocationAt(valid[idx]);
+				defenceTowerCells[i] = valid[idx];
+				valid.RemoveAt(idx);
+			}
+			Debug.Log($"RoomGenerator PlaceDefenceTowerLocations(): Placed {fallbackCount} locations (fallback, no paths).");
+			return;
+		}
 
-            validSubCells[index].state = CellState.DefenseTower;
-            validSubCells[index].parentCell.state = CellState.DefenseTower;     //but what if its an enemy path? now it has lost that tag...?
-            defenceTowerCells[i] = validSubCells[index];
-            validSubCells.RemoveAt(index); // Remove to avoid duplicates
-        }
-         
-        Debug.Log($"RoomGenerator PlaceDefenceTowerLocations(): Successfully placed {defenceCount} spawners");
+		// Distribute total locations roughly evenly across paths, but with randomness
+		int totalDesired = Random.Range(minDefenceCount, maxDefenceCount + 1);
+		int numPaths = paths.Count;
+		int perPathMin = Mathf.Max(0, minDefenceCount / Mathf.Max(1, numPaths));
+		int perPathMax = Mathf.Max(perPathMin, Mathf.CeilToInt((float)maxDefenceCount / Mathf.Max(1, numPaths)));
+
+		List<SubCell> placed = new List<SubCell>();
+		int totalPlaced = 0;
+
+		// First pass: attempt per-path random within [perPathMin, perPathMax]
+		for (int p = 0; p < numPaths; p++)
+		{
+			int targetForPath = Random.Range(perPathMin, perPathMax + 1);
+			// Make sure we don't exceed totalDesired too early
+			if (totalPlaced + targetForPath > totalDesired)
+			{
+				targetForPath = Mathf.Max(0, totalDesired - totalPlaced);
+			}
+			if (targetForPath == 0) continue;
+
+			List<SubCell> candidates = GetValidLocationSubCellsForPath(paths[p]);
+			// Remove any already used cells
+			if (candidates != null && candidates.Count > 0)
+				candidates.RemoveAll(sc => placed.Contains(sc));
+
+			int placedForPath = 0;
+			while (candidates != null && candidates.Count > 0 && placedForPath < targetForPath)
+			{
+				int idx = Random.Range(0, candidates.Count);
+				SubCell choice = candidates[idx];
+				SpawnDefenceLocationAt(choice);
+				placed.Add(choice);
+				placedForPath++;
+				totalPlaced++;
+				candidates.RemoveAt(idx);
+			}
+			if (totalPlaced >= totalDesired) break;
+		}
+
+		// If we still have remaining quota, fill from any path candidates
+		if (totalPlaced < totalDesired)
+		{
+			List<SubCell> anyCandidates = new List<SubCell>();
+			for (int p = 0; p < numPaths; p++)
+			{
+				var list = GetValidLocationSubCellsForPath(paths[p]);
+				if (list != null) anyCandidates.AddRange(list);
+			}
+			anyCandidates.RemoveAll(sc => placed.Contains(sc));
+			while (totalPlaced < totalDesired && anyCandidates.Count > 0)
+			{
+				int idx = Random.Range(0, anyCandidates.Count);
+				SubCell sc = anyCandidates[idx];
+				SpawnDefenceLocationAt(sc);
+				placed.Add(sc);
+				totalPlaced++;
+				anyCandidates.RemoveAt(idx);
+			}
+		}
+
+		// Save results
+		defenceTowerCells = placed.ToArray();
+		Debug.Log($"RoomGenerator PlaceDefenceTowerLocations(): Placed {totalPlaced} locations across {numPaths} paths.");
     }
 
     List<SubCell> GetValidLocationSubCells()
@@ -477,6 +536,44 @@ public class RoomGenerator : MonoBehaviour
 
         return validSubCells;
     } 
+
+	List<SubCell> GetValidLocationSubCellsForPath(PathObj pathObj)
+	{
+		List<SubCell> valid = new List<SubCell>();
+		if (pathObj.pathCells == null || pathObj.pathCells.Count == 0) return valid;
+
+		Dictionary<SubCell, int> distance = ComputeSubCellDistancesFromSeeds(pathObj.pathCells);
+
+		for (int x = 0; x < roomWidth; x++)
+		{
+			for (int z = 0; z < roomLength; z++)
+			{
+				LargeCell cell = grid[x, z];
+				if (cell == null || cell.state == CellState.Removed) continue;
+
+				for (int sx = 0; sx < subCellsPerLargeCell; sx++)
+				{
+					for (int sz = 0; sz < subCellsPerLargeCell; sz++)
+					{
+						SubCell subCell = cell.subCells[sx, sz];
+						if (subCell == null) continue;
+						if (subCell.state != CellState.Floor) continue; // only place on floor
+
+						int dist;
+						if (distance != null && distance.TryGetValue(subCell, out dist))
+						{
+							if (dist >= 1 && dist <= maxLocationDistance)
+							{
+								valid.Add(subCell);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return valid;
+	}
 
     // Compute minimum subcell-distance (8-directional) from all EnemyPath subcells up to maxLocationDistance
     Dictionary<SubCell, int> ComputeSubCellDistancesFromPaths()
@@ -522,6 +619,48 @@ public class RoomGenerator : MonoBehaviour
             SubCell current = queue.Dequeue();
             int currentDist = distances[current];
             if (currentDist >= maxLocationDistance) continue; // don't expand further
+
+            SubCell[] neighbors = GetSubCellNeighbors(current);
+            for (int i = 0; i < neighbors.Length; i++)
+            {
+                SubCell n = neighbors[i];
+                if (n == null) continue;
+                if (n.state == CellState.Removed || n.state == CellState.Wall) continue;
+                if (distances.ContainsKey(n)) continue;
+
+                distances[n] = currentDist + 1;
+                queue.Enqueue(n);
+            }
+        }
+
+        return distances;
+    }
+
+    // Compute distance map from a provided list of seed subcells (e.g., for a single path)
+    Dictionary<SubCell, int> ComputeSubCellDistancesFromSeeds(List<SubCell> seeds)
+    {
+        Queue<SubCell> queue = new Queue<SubCell>();
+        Dictionary<SubCell, int> distances = new Dictionary<SubCell, int>();
+        if (seeds == null || seeds.Count == 0) return distances;
+
+        // Seed
+        for (int i = 0; i < seeds.Count; i++)
+        {
+            SubCell sc = seeds[i];
+            if (sc == null) continue;
+            if (!distances.ContainsKey(sc))
+            {
+                distances[sc] = 0;
+                queue.Enqueue(sc);
+            }
+        }
+
+        // BFS limited by maxLocationDistance
+        while (queue.Count > 0)
+        {
+            SubCell current = queue.Dequeue();
+            int currentDist = distances[current];
+            if (currentDist >= maxLocationDistance) continue;
 
             SubCell[] neighbors = GetSubCellNeighbors(current);
             for (int i = 0; i < neighbors.Length; i++)
@@ -770,6 +909,20 @@ public class RoomGenerator : MonoBehaviour
 			}
 		}
 		return false;
+	}
+
+	void SpawnDefenceLocationAt(SubCell subCell)
+	{
+		if (subCell == null || defenseTowerLocationPrefab == null) return;
+		Vector3 worldPos = subCell.worldPosition + Vector3.up * 0.1f;
+		GameObject defenceTower = Instantiate(defenseTowerLocationPrefab, worldPos, Quaternion.identity);
+		defenceTower.transform.SetParent(transform);
+		subCell.state = CellState.DefenseTower;
+		// Only mark parent cell if it was floor to avoid overwriting special states
+		if (subCell.parentCell != null && subCell.parentCell.state == CellState.Floor)
+		{
+			subCell.parentCell.state = CellState.DefenseTower;
+		}
 	}
 }
 
