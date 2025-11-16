@@ -50,7 +50,7 @@ public class LootManager : MonoBehaviour
             return;
         }
         UpdateLootCoinBudget(enemy.GetCurrentCost());
-        SetLootToGrant(enemy.lootItems);    //using GetCurrentCost(0 so that the enemy modifiers are taken into consideration
+        SetLootToGrant(enemy.lootItems, enemy.preferredLootProperty);    // using GetCurrentCost so that enemy modifiers are considered
 
         GrantCoins(enemy.GetCurrentCost());
         GrantLoot();
@@ -85,7 +85,7 @@ public class LootManager : MonoBehaviour
         lootBudget = Mathf.RoundToInt(enemyCost * lootSplit);
     }
 
-    void SetLootToGrant(LootItem[] lootItems)     //populates lootToGrant with randomly selected loot until 
+    void SetLootToGrant(LootItem[] lootItems, LootProperty preferredProperty)     //populates lootToGrant with randomly selected loot until 
     {
         //Select random loot items up to the cost of the lootSplit
         lootToGrant.Clear();
@@ -113,22 +113,9 @@ public class LootManager : MonoBehaviour
             {
                 lootCost += newLootItem.lootCost;
 
-                //select a random property for the new loot
-                switch (Random.Range(0, 4)) //0 to 3 (4 cause range is exclusive) for the LootProperty options
-                {
-                    case 0:
-                        newLoot = new Loot(newLootItem, LootProperty.Health);
-                        break;
-                    case 1:
-                        newLoot = new Loot(newLootItem, LootProperty.AttackDamage);
-                        break;
-                    case 2:
-                        newLoot = new Loot(newLootItem, LootProperty.AttackSpeed);
-                        break;
-                    case 3:
-                        newLoot = new Loot(newLootItem, LootProperty.AttackRange);
-                        break;
-                }
+                // select a property with +20% weight bias toward the enemy's preferred property
+                LootProperty chosen = SelectWeightedProperty(preferredProperty, 1.2f);
+                newLoot = new Loot(newLootItem, chosen);
 
                 lootToGrant.Add(newLoot);
             }               
@@ -141,6 +128,31 @@ public class LootManager : MonoBehaviour
             lootNames += loot.lootName + "(" + loot.lootProperty + "), ";
         }
         Debug.Log($"LootManager SetLootToGrant(): Loot to grant is: {lootNames}");
+    }
+
+    LootProperty SelectWeightedProperty(LootProperty preferred, float preferredMultiplier)
+    {
+        // Base equal weights
+        float wHealth = 1f;
+        float wADmg = 1f;
+        float wASpd = 1f;
+        float wARng = 1f;
+        // Boost preferred
+        switch (preferred)
+        {
+            case LootProperty.Health: wHealth *= preferredMultiplier; break;
+            case LootProperty.AttackDamage: wADmg *= preferredMultiplier; break;
+            case LootProperty.AttackSpeed: wASpd *= preferredMultiplier; break;
+            case LootProperty.AttackRange: wARng *= preferredMultiplier; break;
+        }
+        float total = wHealth + wADmg + wASpd + wARng;
+        float roll = Random.Range(0f, total);
+        if (roll < wHealth) return LootProperty.Health;
+        roll -= wHealth;
+        if (roll < wADmg) return LootProperty.AttackDamage;
+        roll -= wADmg;
+        if (roll < wASpd) return LootProperty.AttackSpeed;
+        return LootProperty.AttackRange;
     }
 
     LootItem SelectRandomWeightedLoot(LootItem[] lootItems)

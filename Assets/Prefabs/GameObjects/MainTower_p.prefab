@@ -320,13 +320,13 @@ MonoBehaviour:
     - lootItem: {fileID: 11400000, guid: d0a6e7e1e0fe55e45aaf75b1389fc588, type: 2}
       quantity: 1
     - lootItem: {fileID: 11400000, guid: 1120d7b71d02f74408b0cd297c0e6886, type: 2}
-      quantity: 1
-    - lootItem: {fileID: 11400000, guid: c53cac3809ff8244ca014eb905875ab4, type: 2}
-      quantity: 1
-  - items:
-    - lootItem: {fileID: 11400000, guid: d0a6e7e1e0fe55e45aaf75b1389fc588, type: 2}
       quantity: 2
-    - lootItem: {fileID: 11400000, guid: c6d8e87b845e1bb478a2dc545371e0de, type: 2}
+  - items:
+    - lootItem: {fileID: 11400000, guid: 217f57ab694c87948ba49ce708a8df08, type: 2}
+      quantity: 2
+    - lootItem: {fileID: 11400000, guid: d0f55248cf528704ca4afffda35959b3, type: 2}
+      quantity: 1
+    - lootItem: {fileID: 11400000, guid: d0a6e7e1e0fe55e45aaf75b1389fc588, type: 2}
       quantity: 1
   levelMeshes:
   - {fileID: -1218276871325334146, guid: 58620df91864bff4f9db72e0fa35fb7d, type: 3}

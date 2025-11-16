@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 553b036e24ec5044f96850c1f62f7127, type: 3}
-  m_Name: EnemySoul
+  m_Name: VitalEssence
   m_EditorClassIdentifier: 
-  lootID: 371857150
-  lootName: 
-  lootCost: 25
-  lootBaseLikelihood: 0.3
-  lootRarity: 3
-  lootSprite: {fileID: 210803750, guid: 2ffcceda964448949a4ddbb50dfbdd52, type: 3}
+  lootID: -2065987794
+  lootName: Vital Essence
+  lootCost: 20
+  lootBaseLikelihood: 0.5
+  lootRarity: 2
+  lootSprite: {fileID: 329836624, guid: 2ffcceda964448949a4ddbb50dfbdd52, type: 3}
   lootColor: {r: 0, g: 0, b: 0, a: 0}

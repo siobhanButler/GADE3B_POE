@@ -9,6 +9,8 @@ public class EnemyManager : ObjectManager
     public List<SubCell> pathFromSpawner;
 
     public LootItem[] lootItems;
+    [Header("Loot Settings")]
+    public LootProperty preferredLootProperty = LootProperty.Health;
 
     public event Action<int> OnEnemyDeath;
     bool initialized = false;

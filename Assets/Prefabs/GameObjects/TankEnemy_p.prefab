@@ -158,9 +158,12 @@ MonoBehaviour:
   specialityModifier: 1.5
   movement: {fileID: 0}
   lootItems:
-  - {fileID: 11400000, guid: 1120d7b71d02f74408b0cd297c0e6886, type: 2}
   - {fileID: 11400000, guid: eeecf95f22bfa1043a4ac7dd035a4074, type: 2}
+  - {fileID: 11400000, guid: 1120d7b71d02f74408b0cd297c0e6886, type: 2}
+  - {fileID: 11400000, guid: 0bc3d4c31259a5a4990df0384dc93f8b, type: 2}
+  - {fileID: 11400000, guid: 4c0c93708af13264f8c96061fb3edc5b, type: 2}
   - {fileID: 11400000, guid: d0a6e7e1e0fe55e45aaf75b1389fc588, type: 2}
+  preferredLootProperty: 2
 --- !u!114 &-914249002432701815
 MonoBehaviour:
   m_ObjectHideFlags: 0
