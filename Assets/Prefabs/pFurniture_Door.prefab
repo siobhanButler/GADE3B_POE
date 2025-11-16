@@ -50,7 +50,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
       propertyPath: m_Name
-      value: Furniture_Door
+      value: pFurniture_Door
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

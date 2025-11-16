@@ -14,6 +14,48 @@ public class FurnitureObj : MonoBehaviour
     public bool[] takenSmallCellGrid;   //10x10 grid of small cells, true = occupied by furniture, false = free
     public bool[,] takenSmallCellGrid2D;                //optional: (length*subCellsPerAxis) x (width*subCellsPerAxis)
     public int subCellsPerAxis = 10;                    //number of subcells along one big-cell edge
+	[SerializeField] private LayerMask furnitureMask;	// should map to \"Furniture\" layer
+
+	void Awake()
+	{
+		// Ensure this object (and children) are on the Furniture layer
+		int furnitureLayer = LayerMask.NameToLayer("Furniture");
+		if (furnitureLayer >= 0)
+		{
+			furnitureMask = 1 << furnitureLayer;
+			SetLayerRecursively(transform, furnitureLayer);
+		}
+		else
+		{
+			Debug.LogWarning("FurnitureObj Awake(): Layer 'Furniture' not found. Please add it to Project Settings > Tags and Layers.");
+		}
+
+		EnsureTriggerCollider();
+	}
+
+	void SetLayerRecursively(Transform root, int layer)
+	{
+		root.gameObject.layer = layer;
+		for (int i = 0; i < root.childCount; i++)
+		{
+			SetLayerRecursively(root.GetChild(i), layer);
+		}
+	}
+
+	void EnsureTriggerCollider()
+	{
+		Collider col = GetComponent<Collider>();
+		if (col == null)
+		{
+			col = gameObject.AddComponent<BoxCollider>();
+		}
+		MeshCollider meshCol = col as MeshCollider;
+		if (meshCol != null)
+		{
+			meshCol.convex = true;	// ensure triggers work reliably for mesh colliders
+		}
+		col.isTrigger = true;
+	}
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
