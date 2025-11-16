@@ -146,6 +146,10 @@ MonoBehaviour:
   mainTowerPrefab: {fileID: 4481481441890430569, guid: 18b1b8f3ae417974e874922978af492b, type: 3}
   enemySpawnerPrefab: {fileID: 3698806880055105173, guid: a412eeb1b377c844eaeb295a58b60acf, type: 3}
   defenseTowerLocationPrefab: {fileID: 4423518689117694565, guid: c02f6566198ec1147bc17989d09c4aae, type: 3}
+  furniturePrefabs:
+  - {fileID: 3788764829251185524, guid: fc19af74d74f6154f955334c6cf2622c, type: 3}
+  - {fileID: 7952418649968878496, guid: 6c0b297ff52c1e44c8a3257afb765a7e, type: 3}
+  - {fileID: 5721257106197537711, guid: ed4b731dca688c84bbb1f9e39137edcd, type: 3}
 --- !u!114 &9011841608979362386
 MonoBehaviour:
   m_ObjectHideFlags: 0

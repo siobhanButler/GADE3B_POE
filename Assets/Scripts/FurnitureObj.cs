@@ -14,7 +14,9 @@ public class FurnitureObj : MonoBehaviour
     public bool[] takenSmallCellGrid;   //10x10 grid of small cells, true = occupied by furniture, false = free
     public bool[,] takenSmallCellGrid2D;                //optional: (length*subCellsPerAxis) x (width*subCellsPerAxis)
     public int subCellsPerAxis = 10;                    //number of subcells along one big-cell edge
-	[SerializeField] private LayerMask furnitureMask;	// should map to \"Furniture\" layer
+	[SerializeField] private LayerMask furnitureMask;	// should map to "Furniture" layer
+	[Header("Spawn Settings")]
+	[Range(0.1f, 1f)] public float likelihood = 1f;		// 0.1 = unlikely, 1 = very likely
 
 	void Awake()
 	{

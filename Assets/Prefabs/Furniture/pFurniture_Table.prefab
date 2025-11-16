@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 89dccfc29e2114849b5cf3867f5d49e0, type: 3}
       propertyPath: m_Name
-      value: Furniture_Table
+      value: pFurniture_Table
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -81,9 +81,77 @@ MonoBehaviour:
   width: 2
   length: 1
   height: 0
-  occupiedIndexes: []
+  occupiedIndexes:
+  - x: 0
+    z: 0
+    sx: 0
+    sz: 0
+  - x: 0
+    z: 0
+    sx: 1
+    sz: 0
+  - x: 0
+    z: 0
+    sx: 0
+    sz: 1
+  - x: 0
+    z: 0
+    sx: 1
+    sz: 1
+  - x: 0
+    z: 0
+    sx: 0
+    sz: 8
+  - x: 0
+    z: 0
+    sx: 1
+    sz: 8
+  - x: 0
+    z: 0
+    sx: 0
+    sz: 9
+  - x: 0
+    z: 0
+    sx: 1
+    sz: 9
+  - x: 1
+    z: 0
+    sx: 0
+    sz: 0
+  - x: 1
+    z: 0
+    sx: 1
+    sz: 0
+  - x: 1
+    z: 0
+    sx: 0
+    sz: 1
+  - x: 1
+    z: 0
+    sx: 1
+    sz: 1
+  - x: 1
+    z: 0
+    sx: 0
+    sz: 8
+  - x: 1
+    z: 0
+    sx: 1
+    sz: 8
+  - x: 1
+    z: 0
+    sx: 0
+    sz: 9
+  - x: 1
+    z: 0
+    sx: 1
+    sz: 9
   spawnOffset: {x: 0, y: 0, z: 0}
   type: 1
   prefab: {fileID: 5721257106197537711}
   takenSmallCellGrid: 0101000000000000000001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010100000000000000000101000000000000000000000000000000000101000000000000000001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010100000000000000000101
   subCellsPerAxis: 10
+  furnitureMask:
+    serializedVersion: 2
+    m_Bits: 0
+  likelihood: 0.187

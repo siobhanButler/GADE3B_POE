@@ -49,6 +49,11 @@ public class RoomGenerator : MonoBehaviour
     public GameObject mainTowerPrefab;
     public GameObject enemySpawnerPrefab;
     public GameObject defenseTowerLocationPrefab;
+
+    [Header("Furniture Options")]
+    public GameObject[] furniturePrefabs;   // Multiple furniture types to choose from
+	[Tooltip("Editor/debug helper. When true, spawns a furniture instance at every subcell marked Furniture. Leave off for gameplay.")]
+	public bool enableFurnitureDebugPlacement = false;
     
     // Private fields
     private GridSystem gridSystem;
@@ -608,21 +613,39 @@ public class RoomGenerator : MonoBehaviour
             for (int y = 1; y < roomLength; y++)
             {
                 LargeCell cell = grid[x, y];
-                if (cell != null && cell.IsWalkable() && !cell.IsRemoved() && cell.state != CellState.MainTower && cell.state != CellState.EnemySpawner && cell.state != CellState.EnemyPath)
+				if (cell != null
+					&& cell.IsWalkable()
+					&& !cell.IsRemoved()
+					&& cell.state != CellState.MainTower
+					&& cell.state != CellState.EnemySpawner
+					&& cell.state != CellState.EnemyPath
+					&& !CellAlreadyHasFurniture(cell))
                 {
                     if (Random.value < furniturePlacementChance && furnitureAmount < maxFurnitureAmount)
                     {
-                        FurnitureObj furnitureObj = chairPrefab.GetComponent<FurnitureObj>();
+                        // Pick a random furniture prefab that has a FurnitureObj component
+                        GameObject selectedPrefab = SelectRandomFurniturePrefab();
+                        if (selectedPrefab == null)
+                        {
+                            Debug.LogWarning("RoomGenerator PlaceFurniture(): No valid furniture prefabs assigned. Skipping.");
+                            continue;
+                        }
+                        FurnitureObj furnitureObj = selectedPrefab.GetComponent<FurnitureObj>();
+                        if (furnitureObj == null)
+                        {
+                            Debug.LogWarning($"RoomGenerator PlaceFurniture(): Selected prefab {selectedPrefab.name} has no FurnitureObj. Skipping.");
+                            continue;
+                        }
                         grid = furnitureObj.SetGridState(grid, cell);
                         Vector3 furniturePos = cell.worldPosition + furnitureObj.spawnOffset;
-                        GameObject furniture = Instantiate(chairPrefab, furniturePos, Quaternion.identity);
+                        GameObject furniture = Instantiate(selectedPrefab, furniturePos, Quaternion.identity);
                         furniture.transform.SetParent(transform);
                         furnitureAmount++;
                     }
                 }
             }
         }
-        DebugPlaceFurnitureSubCells();
+		if (enableFurnitureDebugPlacement) DebugPlaceFurnitureSubCells();
     }
 
     /// <summary>
@@ -632,10 +655,10 @@ public class RoomGenerator : MonoBehaviour
     /// </summary>
     void DebugPlaceFurnitureSubCells()
     {
-        // Check if furniture prefab is assigned to avoid null reference errors
-        if (furniturePrefab == null)
+		// Check if at least one furniture prefab is assigned to avoid null reference errors
+		if ((furniturePrefabs == null || furniturePrefabs.Length == 0) && furniturePrefab == null)
         {
-            Debug.LogWarning("RoomGenerator DebugPlaceFurnitureSubCells(): Furniture: furniturePrefab is not assigned.");
+            Debug.LogWarning("RoomGenerator DebugPlaceFurnitureSubCells(): No furniture prefabs assigned.");
             return;
         }
 
@@ -665,8 +688,10 @@ public class RoomGenerator : MonoBehaviour
                             // Get the world position of the sub-cell
                             Vector3 worldPos = subCell.worldPosition;
                             
-                            // Instantiate furniture prefab at the sub-cell's position
-                            GameObject instance = Instantiate(furniturePrefab, worldPos, Quaternion.identity);
+                            // Instantiate a random furniture prefab at the sub-cell's position (debug visualization)
+                            GameObject debugPrefab = SelectRandomFurniturePrefab() ?? furniturePrefab;
+                            if (debugPrefab == null) continue;
+                            GameObject instance = Instantiate(debugPrefab, worldPos, Quaternion.identity);
                             
                             // Parent the furniture to this room generator for organization
                             instance.transform.SetParent(transform);
@@ -676,6 +701,76 @@ public class RoomGenerator : MonoBehaviour
             }
         }
     }
+
+    GameObject SelectRandomFurniturePrefab()
+    {
+		if (furniturePrefabs == null || furniturePrefabs.Length == 0) return null;
+
+		// Build weighted list based on FurnitureObj.likelihood
+		float totalWeight = 0f;
+		for (int i = 0; i < furniturePrefabs.Length; i++)
+		{
+			var go = furniturePrefabs[i];
+			if (go == null) continue;
+			var fo = go.GetComponent<FurnitureObj>();
+			if (fo == null) continue;
+			float w = Mathf.Clamp(fo.likelihood, 0.1f, 1f);
+			totalWeight += w;
+		}
+		if (totalWeight <= 0f)
+		{
+			// Fallback: first valid in array
+			for (int i = 0; i < furniturePrefabs.Length; i++)
+			{
+				var cand = furniturePrefabs[i];
+				if (cand != null && cand.GetComponent<FurnitureObj>() != null) return cand;
+			}
+			return null;
+		}
+
+		float roll = Random.Range(0f, totalWeight);
+		float cumulative = 0f;
+		for (int i = 0; i < furniturePrefabs.Length; i++)
+		{
+			var go = furniturePrefabs[i];
+			if (go == null) continue;
+			var fo = go.GetComponent<FurnitureObj>();
+			if (fo == null) continue;
+			float w = Mathf.Clamp(fo.likelihood, 0.1f, 1f);
+			cumulative += w;
+			if (roll <= cumulative)
+			{
+				return go;
+			}
+		}
+		// Safety fallback
+		for (int i = 0; i < furniturePrefabs.Length; i++)
+		{
+			var cand = furniturePrefabs[i];
+			if (cand != null && cand.GetComponent<FurnitureObj>() != null) return cand;
+		}
+		return null;
+    }
+
+	bool CellAlreadyHasFurniture(LargeCell cell)
+	{
+		if (cell == null) return false;
+		// If the large cell state is already Furniture, treat as occupied
+		if (cell.state == CellState.Furniture) return true;
+		// Otherwise scan subcells for any furniture markers
+		if (cell.subCells == null) return false;
+		int width = cell.subCells.GetLength(0);
+		int length = cell.subCells.GetLength(1);
+		for (int sx = 0; sx < width; sx++)
+		{
+			for (int sz = 0; sz < length; sz++)
+			{
+				var sc = cell.subCells[sx, sz];
+				if (sc != null && sc.state == CellState.Furniture) return true;
+			}
+		}
+		return false;
+	}
 }
 
 /* ============================ UNUSED/OLD METHODS ============================
