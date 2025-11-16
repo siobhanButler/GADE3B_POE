@@ -1,2 +1,18 @@
 fileFormatVersion: 2
 guid: 34857bcadf8b98b439d8fe7bb5d5f8af
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - wallPrefab: {instanceID: 0}
+  - doorPrefab: {instanceID: 0}
+  - furniturePrefab: {fileID: 3788764829251185524, guid: fc19af74d74f6154f955334c6cf2622c, type: 3}
+  - chairPrefab: {instanceID: 0}
+  - mainTowerPrefab: {instanceID: 0}
+  - enemySpawnerPrefab: {instanceID: 0}
+  - defenseTowerLocationPrefab: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

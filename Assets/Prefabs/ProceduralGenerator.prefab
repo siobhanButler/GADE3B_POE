@@ -139,10 +139,10 @@ MonoBehaviour:
   minDefenceCount: 10
   maxDefenceCount: 30
   maxLocationDistance: 5
-  wallPrefab: {fileID: 1324545293484928417, guid: a8e9b9372c3c29d46909e1f0288c29a0, type: 3}
-  doorPrefab: {fileID: 7002816945552119249, guid: f3aec781ae2fc294e821a3dd2734de5c, type: 3}
-  furniturePrefab: {fileID: 4390529268743058174, guid: a87439584d63b6547b63eacf32943974, type: 3}
-  chairPrefab: {fileID: 3892867858004100326, guid: 24b30411bfe23bd4b8f69395a789f723, type: 3}
+  wallPrefab: {fileID: 6058813853482125413, guid: 47bc3bd57d5d93c4f9e4644acf27d79e, type: 3}
+  doorPrefab: {fileID: 4905294096219137258, guid: 01655aea4cce2394996b5e8893654806, type: 3}
+  furniturePrefab: {fileID: 0}
+  chairPrefab: {fileID: 3788764829251185524, guid: fc19af74d74f6154f955334c6cf2622c, type: 3}
   mainTowerPrefab: {fileID: 4481481441890430569, guid: 18b1b8f3ae417974e874922978af492b, type: 3}
   enemySpawnerPrefab: {fileID: 3698806880055105173, guid: a412eeb1b377c844eaeb295a58b60acf, type: 3}
   defenseTowerLocationPrefab: {fileID: 4423518689117694565, guid: c02f6566198ec1147bc17989d09c4aae, type: 3}
