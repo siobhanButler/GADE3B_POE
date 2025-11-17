@@ -61,7 +61,7 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ScrollSpeed: 0.05
-    - _TotalTransparency: 0.2
+    - _TotalTransparency: 0.03
     m_Colors:
     - _BaseColour: {r: 0.909434, g: 0.909434, b: 0.909434, a: 0.21176471}
     - _BorderColour: {r: 1, g: 0.09688748, b: 0, a: 1}

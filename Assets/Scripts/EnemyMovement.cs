@@ -10,6 +10,11 @@ public class EnemyMovement : MonoBehaviour
     List<SubCell> pathFromSpawner;
     public int currentPathIndex = 0;
     private bool isMoving = false;
+	
+	[Header("Stuck Safety")]
+	public float stuckTeleportTimeout = 5f;	// seconds to wait before teleporting to target tile
+	private float timeSinceTargetAssigned = 0f;
+	private int lastProgressIndex = -1;
 
     public float speed = 2f;
     public float speedWhenAttacking = 0.3f;
@@ -40,6 +45,8 @@ public class EnemyMovement : MonoBehaviour
             isMoving = true;
             // Set initial position to first path point
             transform.position = pathFromSpawner[0].worldPosition;
+			lastProgressIndex = currentPathIndex;
+			timeSinceTargetAssigned = 0f;
         }
     }
 
@@ -72,6 +79,13 @@ public class EnemyMovement : MonoBehaviour
             currentSpeed = speed;
         }
         
+		// If we've advanced to a new target index, reset the stuck timer
+		if (lastProgressIndex != currentPathIndex)
+		{
+			lastProgressIndex = currentPathIndex;
+			timeSinceTargetAssigned = 0f;
+		}
+
         // Move towards the current target
         float step = currentSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
@@ -81,6 +95,30 @@ public class EnemyMovement : MonoBehaviour
         {
             // Move to the next path point
             currentPathIndex++;
+			timeSinceTargetAssigned = 0f;
+			lastProgressIndex = currentPathIndex;
+			return;
+		}
+
+		// Safety: If actively moving and not attacking, and we haven't reached this target within timeout, teleport
+		bool isAttacking = (attackComponent != null && attackComponent.isAttacking);
+		if (!isAttacking)
+		{
+			timeSinceTargetAssigned += Time.deltaTime;
+			if (timeSinceTargetAssigned >= stuckTeleportTimeout)
+			{
+				// Teleport to the target tile to recover from being stuck/falling
+				transform.position = targetPosition;
+				var rb = GetComponent<Rigidbody>();
+				if (rb != null)
+				{
+					rb.linearVelocity = Vector3.zero;
+					rb.angularVelocity = Vector3.zero;
+				}
+				currentPathIndex++;
+				timeSinceTargetAssigned = 0f;
+				lastProgressIndex = currentPathIndex;
+			}
         }
     }
 

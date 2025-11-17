@@ -34,6 +34,8 @@ public class TowerManager : ObjectManager, IClickable
         }
 
         level = 0;  //start/default level is always 1
+
+        transform.position = transform.position + new Vector3(0, -3, 0);
     }
 
     // Update method removed - no per-frame logic needed
