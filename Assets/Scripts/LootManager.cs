@@ -77,8 +77,13 @@ public class LootManager : MonoBehaviour
             if(towerLocation.isOccupied) occupiedLocations++;
             else unoccupiedLocations++;
         }
-        float coinSplit = (float)unoccupiedLocations / (float)towerLocations.Length;
-        float lootSplit = (float)occupiedLocations / (float)towerLocations.Length;
+		float coinSplit = (float)unoccupiedLocations / (float)towerLocations.Length;
+		float lootSplit = (float)occupiedLocations / (float)towerLocations.Length;
+
+		// Apply small jitter (±10%) to coin/loot ratio, then renormalize
+		float jitter = Random.Range(-0.1f, 0.1f);
+		coinSplit = Mathf.Clamp01(coinSplit * (1f + jitter));
+		lootSplit = 1f - coinSplit;
         if (coinSplit + lootSplit != 1f) Debug.LogWarning($"LootManager SelectLootCoinSplit(): Invalid results, lootSplit is {lootSplit} and coinSplit is {coinSplit}");
 
         coinBudget = Mathf.RoundToInt(enemyCost * coinSplit);
