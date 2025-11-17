@@ -31,6 +31,12 @@ public class RoomGenerator : MonoBehaviour
      [Range(0f, 1f)]
      public float maxFurniturePercent = 0.4f;
      
+     [Header("Decor Settings")]
+     [Range(0f, 1f)]
+     public float decorPlacementChance = 0.5f;
+     [Range(0f, 1f)]
+     public float maxDecorPercent = 0.6f;
+     
      [Header("Spawner Settings")]
      public int minSpawnerCount = 2;
      public int maxSpawnerCount = 5;
@@ -54,6 +60,9 @@ public class RoomGenerator : MonoBehaviour
     public GameObject[] furniturePrefabs;   // Multiple furniture types to choose from
 	[Tooltip("Editor/debug helper. When true, spawns a furniture instance at every subcell marked Furniture. Leave off for gameplay.")]
 	public bool enableFurnitureDebugPlacement = false;
+
+    [Header("Decor Options")]
+    public GameObject[] decorPrefabs;       // Multiple decor types to choose from
     
     // Private fields
     private GridSystem gridSystem;
@@ -142,6 +151,9 @@ public class RoomGenerator : MonoBehaviour
 
         // Step 7: Place furniture (on walkable active cells)
         PlaceFurniture();
+        
+        // Step 7.5: Place decor (on free subcells; can share large cells with walkable furniture)
+        PlaceDecor();
 
         // Step 8: Generate enemy paths (from enemy spawners to main tower)
         GenerateEnemyPaths();
@@ -924,6 +936,128 @@ public class RoomGenerator : MonoBehaviour
 			subCell.parentCell.state = CellState.DefenseTower;
 		}
 	}
+
+    // ============================ DECOR METHODS ============================
+    void PlaceDecor()
+    {
+        if (decorPrefabs == null || decorPrefabs.Length == 0)
+        {
+            Debug.LogWarning("RoomGenerator PlaceDecor(): No decor prefabs assigned. Skipping decor.");
+            return;
+        }
+
+        int maxDecorAmount = Mathf.RoundToInt(maxDecorPercent * (roomLength * roomWidth));
+        int decorPlaced = 0;
+
+        for (int x = 1; x < roomWidth; x++)
+        {
+            for (int z = 1; z < roomLength; z++)
+            {
+                if (decorPlaced >= maxDecorAmount) return;
+
+                LargeCell cell = grid[x, z];
+                if (cell == null) continue;
+                if (!cell.IsWalkable()) continue;                  // only on walkable large cells
+                if (cell.IsRemoved()) continue;                    // skip removed corners
+                if (cell.state == CellState.MainTower) continue;
+                if (cell.state == CellState.EnemySpawner) continue;
+                if (cell.state == CellState.EnemyPath) continue;
+
+                if (Random.value >= decorPlacementChance) continue;
+
+                // Select a random decor prefab (weighted by DecorObj.likelihood)
+                GameObject selected = SelectRandomDecorPrefab();
+                if (selected == null)
+                {
+                    continue;
+                }
+                DecorObj decor = selected.GetComponent<DecorObj>();
+                if (decor == null)
+                {
+                    continue;
+                }
+
+                // Try a few random anchors within the subcell grid
+                int subW = cell.subCells.GetLength(0);
+                int subH = cell.subCells.GetLength(1);
+                int maxAnchorX = Mathf.Max(0, subW - decor.width);
+                int maxAnchorZ = Mathf.Max(0, subH - decor.height);
+                if (maxAnchorX < 0 || maxAnchorZ < 0) continue;
+
+                const int maxTries = 5;
+                bool placedThisCell = false;
+                for (int attempt = 0; attempt < maxTries && !placedThisCell; attempt++)
+                {
+                    int anchorSubX = Random.Range(0, maxAnchorX + 1);
+                    int anchorSubZ = Random.Range(0, maxAnchorZ + 1);
+                    if (!decor.CanPlaceInCell(cell, anchorSubX, anchorSubZ))
+                    {
+                        continue;
+                    }
+
+                    // Reserve subcells and spawn
+                    decor.ApplyToGrid(cell, anchorSubX, anchorSubZ);
+                    Vector3 pos = decor.GetSpawnPosition(cell, anchorSubX, anchorSubZ);
+                    Quaternion rot = decor.GetSpawnRotation();
+                    GameObject inst = Instantiate(selected, pos, rot);
+                    inst.transform.SetParent(transform);
+
+                    decorPlaced++;
+                    placedThisCell = true;
+                    if (decorPlaced >= maxDecorAmount) break;
+                }
+            }
+        }
+        Debug.Log($"RoomGenerator PlaceDecor(): Placed {decorPlaced} decor (max allowed {maxDecorAmount}).");
+    }
+
+    GameObject SelectRandomDecorPrefab()
+    {
+        if (decorPrefabs == null || decorPrefabs.Length == 0) return null;
+
+        // Use decorPrefabs array and require DecorObj component
+        float totalWeight = 0f;
+        for (int i = 0; i < decorPrefabs.Length; i++)
+        {
+            var go = decorPrefabs[i];
+            if (go == null) continue;
+            var d = go.GetComponent<DecorObj>();
+            if (d == null) continue;
+            float w = Mathf.Clamp(d.likelihood, 0.1f, 1f);
+            totalWeight += w;
+        }
+        if (totalWeight <= 0f)
+        {
+            for (int i = 0; i < decorPrefabs.Length; i++)
+            {
+                var cand = decorPrefabs[i];
+                if (cand != null && cand.GetComponent<DecorObj>() != null) return cand;
+            }
+            return null;
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        float cumulative = 0f;
+        for (int i = 0; i < decorPrefabs.Length; i++)
+        {
+            var go = decorPrefabs[i];
+            if (go == null) continue;
+            var d = go.GetComponent<DecorObj>();
+            if (d == null) continue;
+            float w = Mathf.Clamp(d.likelihood, 0.1f, 1f);
+            cumulative += w;
+            if (roll <= cumulative)
+            {
+                return go;
+            }
+        }
+        for (int i = 0; i < decorPrefabs.Length; i++)
+        {
+            var cand = decorPrefabs[i];
+            if (cand != null && cand.GetComponent<DecorObj>() != null) return cand;
+        }
+        return null;
+    }
 }
 
 /* ============================ UNUSED/OLD METHODS ============================

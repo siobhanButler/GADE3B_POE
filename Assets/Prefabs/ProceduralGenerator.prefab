@@ -133,6 +133,8 @@ MonoBehaviour:
   cornerRemovalChance: 0.8
   furniturePlacementChance: 0.4
   maxFurniturePercent: 0.3
+  decorPlacementChance: 0.7
+  maxDecorPercent: 0.6
   minSpawnerCount: 1
   maxSpawnerCount: 3
   spawnerCount: 0
@@ -155,6 +157,16 @@ MonoBehaviour:
   - {fileID: 4672017837413619679, guid: ce39148c3c2ea9f4aa6419f6d7d0bf92, type: 3}
   - {fileID: 7805711760121533770, guid: c1b05fddd9103da44a60832f50b13b0f, type: 3}
   enableFurnitureDebugPlacement: 0
+  decorPrefabs:
+  - {fileID: 1823459416085750059, guid: aeebfac94c4c7f54dbe68c52bf9a436f, type: 3}
+  - {fileID: 7826469927220539858, guid: 9184b742c89b760478a4c7b9232fd87c, type: 3}
+  - {fileID: 6400821845758389361, guid: 9a2fc3263caf28041ae4536192f780bd, type: 3}
+  - {fileID: 2978757130053553918, guid: 8ac4d5d79030b5c44a8a9bc353e67e35, type: 3}
+  - {fileID: 1834943990660293579, guid: f3011e268ba361043bdb91d0fea945e2, type: 3}
+  - {fileID: 2668641485633701682, guid: 5a14de12e81d4c74d9e1c73ba3a85532, type: 3}
+  - {fileID: 3226319131417813461, guid: 52e839e12ec9080438fabb5c24773259, type: 3}
+  - {fileID: 7512860908531980717, guid: 1392d4ddc710a9440be9b9fde5d1ec22, type: 3}
+  - {fileID: 1169295320391820447, guid: bf7d8fc44ba880541a505325fddbc61a, type: 3}
 --- !u!114 &9011841608979362386
 MonoBehaviour:
   m_ObjectHideFlags: 0
