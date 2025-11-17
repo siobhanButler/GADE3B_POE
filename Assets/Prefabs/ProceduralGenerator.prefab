@@ -133,6 +133,7 @@ MonoBehaviour:
   cornerRemovalChance: 0.8
   furniturePlacementChance: 0.4
   maxFurniturePercent: 0.3
+  doorCount: 2
   decorPlacementChance: 0.7
   maxDecorPercent: 0.6
   minSpawnerCount: 1
@@ -141,8 +142,8 @@ MonoBehaviour:
   minDefenceCount: 10
   maxDefenceCount: 30
   maxLocationDistance: 5
-  wallPrefab: {fileID: 6058813853482125413, guid: 47bc3bd57d5d93c4f9e4644acf27d79e, type: 3}
-  doorPrefab: {fileID: 4905294096219137258, guid: 01655aea4cce2394996b5e8893654806, type: 3}
+  wallPrefab: {fileID: 5292838075289492345, guid: f51e9a46e6f14de4eae6119c87974c5c, type: 3}
+  doorPrefab: {fileID: 3761455827622649094, guid: 5fe54f676a6114f4f809890a62d9b889, type: 3}
   furniturePrefab: {fileID: 0}
   chairPrefab: {fileID: 3788764829251185524, guid: fc19af74d74f6154f955334c6cf2622c, type: 3}
   mainTowerPrefab: {fileID: 4481481441890430569, guid: 18b1b8f3ae417974e874922978af492b, type: 3}

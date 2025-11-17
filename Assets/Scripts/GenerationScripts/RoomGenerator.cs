@@ -31,6 +31,10 @@ public class RoomGenerator : MonoBehaviour
      [Range(0f, 1f)]
      public float maxFurniturePercent = 0.4f;
      
+     [Header("Door Settings")]
+     [Range(1, 8)]
+     public int doorCount = 2;
+     
      [Header("Decor Settings")]
      [Range(0f, 1f)]
      public float decorPlacementChance = 0.5f;
@@ -46,6 +50,12 @@ public class RoomGenerator : MonoBehaviour
      public int minDefenceCount = 10;
      public int maxDefenceCount = 30;
      public int maxLocationDistance = 5; // max subcell steps from an EnemyPath
+     
+     [Header("Vertical Offsets")]
+     public bool alignWallsToFloor = true;
+     public float wallExtraYOffset = 0f;
+     public bool alignDoorsToFloor = true;
+     public float doorExtraYOffset = 0f;
     
     [Header("Prefabs")]
     public GameObject wallPrefab;
@@ -145,6 +155,9 @@ public class RoomGenerator : MonoBehaviour
         
         // Step 5: Place walls (on border and removed cells)
         PlaceWalls();
+        
+        // Step 5.5: Place doors on perimeter walls
+        PlaceDoorsOnPerimeter();
         
         // Step 6: Place gameplay elements (main tower and enemy spawners)
         PlaceGameplayElements();
@@ -335,9 +348,155 @@ public class RoomGenerator : MonoBehaviour
     
     void PlaceWallAtPosition(Vector3 position)
     {
-        GameObject wall = Instantiate(wallPrefab, position, Quaternion.identity);
-        wall.transform.SetParent(transform);
+        SpawnAligned(wallPrefab, position, Quaternion.identity, alignWallsToFloor, wallExtraYOffset);
     }
+	
+	// ============================ DOOR METHODS ============================
+	HashSet<LargeCell> cellsWithDoorOnPerimeter = new HashSet<LargeCell>();
+	
+	void PlaceDoorsOnPerimeter()
+	{
+		if (doorPrefab == null)
+		{
+			Debug.LogWarning("RoomGenerator PlaceDoorsOnPerimeter(): doorPrefab not assigned.");
+			return;
+		}
+		
+		// Build candidates from current border states (positions align with PlaceWalls placement)
+		List<(LargeCell cell, Vector3 pos, WallDirection dir)> candidates = new List<(LargeCell, Vector3, WallDirection)>();
+		
+		for (int x = 0; x < roomWidth; x++)
+		{
+			for (int z = 0; z < roomLength; z++)
+			{
+				LargeCell cell = grid[x, z];
+				if (cell == null) continue;
+				if (!cell.bActive || cell.state == CellState.Removed) continue;
+				
+				switch (cell.borderState)
+				{
+					case CellBorderState.North:
+						candidates.Add((cell, cell.worldPosition + Vector3.forward * (largeCellSize), WallDirection.North));
+						break;
+					case CellBorderState.East:
+						candidates.Add((cell, cell.worldPosition + Vector3.right * (largeCellSize), WallDirection.East));
+						break;
+					case CellBorderState.South:
+						candidates.Add((cell, cell.worldPosition + Vector3.back * (largeCellSize), WallDirection.South));
+						break;
+					case CellBorderState.West:
+						candidates.Add((cell, cell.worldPosition + Vector3.left * (largeCellSize), WallDirection.West));
+						break;
+					case CellBorderState.NECorner:
+						candidates.Add((cell, cell.worldPosition + Vector3.forward * (largeCellSize), WallDirection.North));
+						candidates.Add((cell, cell.worldPosition + Vector3.right * (largeCellSize), WallDirection.East));
+						break;
+					case CellBorderState.SECorner:
+						candidates.Add((cell, cell.worldPosition + Vector3.back * (largeCellSize), WallDirection.South));
+						candidates.Add((cell, cell.worldPosition + Vector3.right * (largeCellSize), WallDirection.East));
+						break;
+					case CellBorderState.SWCorner:
+						candidates.Add((cell, cell.worldPosition + Vector3.back * (largeCellSize), WallDirection.South));
+						candidates.Add((cell, cell.worldPosition + Vector3.left * (largeCellSize), WallDirection.West));
+						break;
+					case CellBorderState.NWCorner:
+						candidates.Add((cell, cell.worldPosition + Vector3.forward * (largeCellSize), WallDirection.North));
+						candidates.Add((cell, cell.worldPosition + Vector3.left * (largeCellSize), WallDirection.West));
+						break;
+					case CellBorderState.None:
+					default:
+						break;
+				}
+			}
+		}
+		
+		if (candidates.Count == 0) return;
+		
+		// Shuffle
+		for (int i = candidates.Count - 1; i > 0; i--)
+		{
+			int j = Random.Range(0, i + 1);
+			var tmp = candidates[i];
+			candidates[i] = candidates[j];
+			candidates[j] = tmp;
+		}
+		
+		int toPlace = Mathf.Clamp(doorCount, 1, candidates.Count);
+		int placed = 0;
+		for (int i = 0; i < candidates.Count && placed < toPlace; i++)
+		{
+			var c = candidates[i];
+			
+			// Remove wall piece at target
+			bool removed = RemoveWallAtPosition(c.pos, Mathf.Max(0.25f, largeCellSize * 0.1f));
+			if (!removed)
+			{
+				removed = RemoveWallAtPosition(c.pos, Mathf.Max(0.35f, largeCellSize * 0.15f));
+			}
+			
+			// Orient door to match wall axis (E/W -> 90deg Y)
+			Quaternion rot = (c.dir == WallDirection.East || c.dir == WallDirection.West)
+				? Quaternion.Euler(0f, 90f, 0f)
+				: Quaternion.identity;
+			
+			SpawnAligned(doorPrefab, c.pos, rot, alignDoorsToFloor, doorExtraYOffset);
+			
+			cellsWithDoorOnPerimeter.Add(c.cell);
+			placed++;
+		}
+		
+		Debug.Log($"RoomGenerator PlaceDoorsOnPerimeter(): Placed {placed} door(s).");
+	}
+	
+	bool RemoveWallAtPosition(Vector3 position, float radius = 0.3f)
+	{
+		Collider[] colliders = Physics.OverlapSphere(position, radius);
+		bool removed = false;
+		for (int i = 0; i < colliders.Length; i++)
+		{
+			var col = colliders[i];
+			if (col == null) continue;
+			if (col.CompareTag("Wall") || (col.transform != null && col.transform.name.ToLower().Contains("wall")))
+			{
+				Destroy(col.gameObject);
+				removed = true;
+			}
+		}
+		return removed;
+	}
+	
+	GameObject SpawnAligned(GameObject prefab, Vector3 position, Quaternion rotation, bool alignBottom, float extraYOffset)
+	{
+		GameObject go = Instantiate(prefab, position, rotation);
+		go.transform.SetParent(transform);
+		if (alignBottom)
+		{
+			AlignBottomToY(go, position.y + extraYOffset);
+		}
+		else if (Mathf.Abs(extraYOffset) > 0.0001f)
+		{
+			go.transform.position += Vector3.up * extraYOffset;
+		}
+		return go;
+	}
+	
+	void AlignBottomToY(GameObject go, float targetY)
+	{
+		if (go == null) return;
+		Renderer[] renderers = go.GetComponentsInChildren<Renderer>();
+		if (renderers == null || renderers.Length == 0) return;
+		Bounds b = renderers[0].bounds;
+		for (int i = 1; i < renderers.Length; i++)
+		{
+			b.Encapsulate(renderers[i].bounds);
+		}
+		float bottomY = b.min.y;
+		float deltaY = targetY - bottomY;
+		if (Mathf.Abs(deltaY) > 0.0001f)
+		{
+			go.transform.position += new Vector3(0f, deltaY, 0f);
+		}
+	}
     
 // ============================ GAMEPLAY ELEMENT METHODS ============================
     void PlaceGameplayElements()
@@ -406,6 +565,12 @@ public class RoomGenerator : MonoBehaviour
                 // Check if this large cell is on the border
                 if (cell.borderState != CellBorderState.None)
                 {
+					// Skip cells that received a door on their perimeter
+					if (cellsWithDoorOnPerimeter != null && cellsWithDoorOnPerimeter.Contains(cell))
+					{
+						continue;
+					}
+					
                     // Add all sub-cells of this border cell as valid spawner positions
                     for (int sx = 0; sx < subCellsPerLargeCell; sx++)
                     {

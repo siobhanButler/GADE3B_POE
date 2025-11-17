@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &5247383150266112443
+--- !u!1001 &4103353156476887127
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.4971714
+      value: 42.666424
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.28231537
+      value: 0.25691116
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.8452797
+      value: -8.965918
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -50,11 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
       propertyPath: m_Name
-      value: pFurniture_Door
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 0e27e66c87d2da8489e7fdd84d76704e, type: 3}
-      propertyPath: m_Layer
-      value: 7
+      value: Furniture_Door
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
