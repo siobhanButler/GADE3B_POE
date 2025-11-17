@@ -154,4 +154,4 @@ MonoBehaviour:
   furnitureMask:
     serializedVersion: 2
     m_Bits: 0
-  likelihood: 0.187
+  likelihood: 0.2
